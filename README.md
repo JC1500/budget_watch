@@ -1,36 +1,40 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Budget Watch
 
-## Getting Started
+Budget Watch is a Next.js public-finance dashboard for browsing department-level
+budget allocations.
 
-First, run the development server:
+## Run locally
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
+pnpm install
 pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+The app is available at [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Current data status
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+This checkout currently uses the one-period department/ministry/amount snapshot
+supplied for the prototype. The snapshot does not contain a financial-year
+label, an official source reference, or prior-year values. It is explicitly
+identified in the UI as preview data.
 
-## Learn More
+The overview, department directory, department detail pages, comparison view,
+trends page, and data explorer derive their figures from this same supplied
+snapshot. The app does not generate multi-year data. Historical charts,
+year-over-year calculations, CAGR, and volatility remain unavailable until
+labeled financial-year records are provided.
 
-To learn more about Next.js, take a look at the following resources:
+Snapshot rows are centralized in [`lib/budget-data.ts`](./lib/budget-data.ts).
+Formatting and calculation helpers are in [`lib/format.ts`](./lib/format.ts).
+When the database schema and API are available in this checkout, replace the
+preview data source with a typed API layer; do not treat this fixture as an
+official dataset.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Validation
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+pnpm lint
+pnpm exec tsc --noEmit
+pnpm build
+```
