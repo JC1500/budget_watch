@@ -1,0 +1,738 @@
+{
+  "financial_year": "2026-27",
+  "unit": "₹ crore",
+  "ministries": [
+    {
+      "ministry": "Ministry of Agriculture and Farmers Welfare",
+      "total": 164652.7,
+      "departments": [
+        {
+          "department": "Department of Agriculture and Farmers Welfare",
+          "total": 130561.38
+        },
+        {
+          "department": "Department of Agricultural Research and Education",
+          "total": 9967.4
+        },
+        {
+          "department": "Atomic Energy",
+          "total": 24123.92
+        }
+      ]
+    },
+    {
+      "ministry": "Ministry of AYUSH",
+      "total": 4408.93,
+      "departments": [
+        {
+          "department": "Ministry of Ayush",
+          "total": 4408.93
+        }
+      ]
+    },
+    {
+      "ministry": "Ministry of Chemicals and Fertilisers",
+      "total": 177061.47,
+      "departments": [
+        {
+          "department": "Department of Chemicals and Petrochemicals",
+          "total": 185.72
+        },
+        {
+          "department": "Department of Fertilisers",
+          "total": 170944.53
+        },
+        {
+          "department": "Department of Pharmaceuticals",
+          "total": 5931.22
+        }
+      ]
+    },
+    {
+      "ministry": "Ministry of Civil Aviation",
+      "total": 2102.87,
+      "departments": [
+        {
+          "department": "Ministry of Civil Aviation",
+          "total": 2102.87
+        }
+      ]
+    },
+    {
+      "ministry": "Ministry of Coal",
+      "total": 3635.32,
+      "departments": [
+        {
+          "department": "Ministry of Coal",
+          "total": 3635.32
+        }
+      ]
+    },
+    {
+      "ministry": "Ministry of Commerce and Industry",
+      "total": 17843.9,
+      "departments": [
+        {
+          "department": "Department of Commerce",
+          "total": 5873.07
+        },
+        {
+          "department": "Department for Promotion of Industry and Internal Trade",
+          "total": 11970.83
+        }
+      ]
+    },
+    {
+      "ministry": "Ministry of Communications",
+      "total": 102267.02,
+      "departments": [
+        {
+          "department": "Department of Posts",
+          "total": 28276.08
+        },
+        {
+          "department": "Department of Telecommunications",
+          "total": 73990.94
+        }
+      ]
+    },
+    {
+      "ministry": "Ministry of Consumer Affairs, Food and Public Distribution",
+      "total": 239521.37,
+      "departments": [
+        {
+          "department": "Department of Consumer Affairs",
+          "total": 4474.17
+        },
+        {
+          "department": "Department of Food and Public Distribution",
+          "total": 235047.2
+        }
+      ]
+    },
+    {
+      "ministry": "Ministry of Cooperation",
+      "total": 1744.74,
+      "departments": [
+        {
+          "department": "Ministry of Cooperation",
+          "total": 1744.74
+        }
+      ]
+    },
+    {
+      "ministry": "Ministry of Corporate Affairs",
+      "total": 5561.86,
+      "departments": [
+        {
+          "department": "Ministry of Corporate Affairs",
+          "total": 5561.86
+        }
+      ]
+    },
+    {
+      "ministry": "Ministry of Culture",
+      "total": 3416.63,
+      "departments": [
+        {
+          "department": "Ministry of Culture",
+          "total": 3416.63
+        }
+      ]
+    },
+    {
+      "ministry": "Ministry of Defence",
+      "total": 784678.28,
+      "departments": [
+        {
+          "department": "Ministry of Defence (Civil)",
+          "total": 28554.61
+        },
+        {
+          "department": "Defence Services (Revenue)",
+          "total": 365478.98
+        },
+        {
+          "department": "Capital Outlay on Defence Services",
+          "total": 219306.47
+        },
+        {
+          "department": "Defence Pensions",
+          "total": 171338.22
+        }
+      ]
+    },
+    {
+      "ministry": "Ministry of Development of North Eastern Region",
+      "total": 6812.3,
+      "departments": [
+        {
+          "department": "Ministry of Development of North Eastern Region",
+          "total": 6812.3
+        }
+      ]
+    },
+    {
+      "ministry": "Ministry of Earth Sciences",
+      "total": 3789.23,
+      "departments": [
+        {
+          "department": "Ministry of Earth Sciences",
+          "total": 3789.23
+        }
+      ]
+    },
+    {
+      "ministry": "Ministry of Education",
+      "total": 139289.48,
+      "departments": [
+        {
+          "department": "Department of School Education and Literacy",
+          "total": 83562.26
+        },
+        {
+          "department": "Department of Higher Education",
+          "total": 55727.22
+        }
+      ]
+    },
+    {
+      "ministry": "Ministry of Electronics and Information Technology",
+      "total": 21632.96,
+      "departments": [
+        {
+          "department": "Ministry of Electronics and Information Technology",
+          "total": 21632.96
+        }
+      ]
+    },
+    {
+      "ministry": "Ministry of Environment, Forests and Climate Change",
+      "total": 3759.46,
+      "departments": [
+        {
+          "department": "Ministry of Environment, Forests and Climate Change",
+          "total": 3759.46
+        }
+      ]
+    },
+    {
+      "ministry": "Ministry of External Affairs",
+      "total": 22118.97,
+      "departments": [
+        {
+          "department": "Ministry of External Affairs",
+          "total": 22118.97
+        }
+      ]
+    },
+    {
+      "ministry": "Ministry of Finance",
+      "total": 1972509.48,
+      "departments": [
+        {
+          "department": "Department of Economic Affairs",
+          "total": 20559.11
+        },
+        {
+          "department": "Department of Expenditure",
+          "total": 525.53
+        },
+        {
+          "department": "Department of Financial Services",
+          "total": 3746.95
+        },
+        {
+          "department": "Department of Public Enterprises",
+          "total": 29.6
+        },
+        {
+          "department": "Department of Investment and Public Asset Management (DIPAM)",
+          "total": 55.92
+        },
+        {
+          "department": "Department of Revenue",
+          "total": 2513.02
+        },
+        {
+          "department": "Direct Taxes",
+          "total": 15304.57
+        },
+        {
+          "department": "Indirect Taxes",
+          "total": 27682.63
+        },
+        {
+          "department": "Indian Audit and Accounts Department",
+          "total": 6436.84
+        },
+        {
+          "department": "Interest Payments",
+          "total": 1403971.79
+        },
+        {
+          "department": "Repayment of Debt",
+          "total": 0.0
+        },
+        {
+          "department": "Pensions",
+          "total": 97500.0
+        },
+        {
+          "department": "Transfers to States",
+          "total": 394183.52
+        }
+      ]
+    },
+    {
+      "ministry": "Ministry of Fisheries, Animal Husbandry and Dairying",
+      "total": 8915.26,
+      "departments": [
+        {
+          "department": "Department of Fisheries",
+          "total": 2761.8
+        },
+        {
+          "department": "Department of Animal Husbandry and Dairying",
+          "total": 6153.46
+        }
+      ]
+    },
+    {
+      "ministry": "Ministry of Food Processing Industries",
+      "total": 4064.16,
+      "departments": [
+        {
+          "department": "Ministry of Food Processing Industries",
+          "total": 4064.16
+        }
+      ]
+    },
+    {
+      "ministry": "Ministry of Health and Family Welfare",
+      "total": 106530.42,
+      "departments": [
+        {
+          "department": "Department of Health and Family Welfare",
+          "total": 101709.21
+        },
+        {
+          "department": "Department of Health Research",
+          "total": 4821.21
+        }
+      ]
+    },
+    {
+      "ministry": "Ministry of Heavy Industries",
+      "total": 7939.9,
+      "departments": [
+        {
+          "department": "Ministry of Heavy Industries",
+          "total": 7939.9
+        }
+      ]
+    },
+    {
+      "ministry": "Ministry of Home Affairs",
+      "total": 255233.53,
+      "departments": [
+        {
+          "department": "Ministry of Home Affairs",
+          "total": 10387.35
+        },
+        {
+          "department": "Cabinet",
+          "total": 1102.0
+        },
+        {
+          "department": "Police",
+          "total": 173802.53
+        },
+        {
+          "department": "Andaman and Nicobar Islands",
+          "total": 6680.94
+        },
+        {
+          "department": "Chandigarh",
+          "total": 5720.17
+        },
+        {
+          "department": "Dadra and Nagar Haveli and Daman and Diu",
+          "total": 2832.7
+        },
+        {
+          "department": "Ladakh",
+          "total": 4869.31
+        },
+        {
+          "department": "Lakshadweep",
+          "total": 1682.35
+        },
+        {
+          "department": "Transfers to Delhi",
+          "total": 1348.01
+        },
+        {
+          "department": "Transfers to Jammu and Kashmir",
+          "total": 43290.29
+        },
+        {
+          "department": "Transfers to Puducherry",
+          "total": 3517.88
+        }
+      ]
+    },
+    {
+      "ministry": "Ministry of Housing and Urban Affairs",
+      "total": 85522.39,
+      "departments": [
+        {
+          "department": "Ministry of Housing and Urban Affairs",
+          "total": 85522.39
+        }
+      ]
+    },
+    {
+      "ministry": "Ministry of Information and Broadcasting",
+      "total": 4551.94,
+      "departments": [
+        {
+          "department": "Ministry of Information and Broadcasting",
+          "total": 4551.94
+        }
+      ]
+    },
+    {
+      "ministry": "Ministry of Jal Shakti",
+      "total": 94807.84,
+      "departments": [
+        {
+          "department": "Department of Water Resources, River Development and Ganga Rejuvenation",
+          "total": 19912.98
+        },
+        {
+          "department": "Department of Drinking Water and Sanitation",
+          "total": 74894.86
+        }
+      ]
+    },
+    {
+      "ministry": "Ministry of Labour and Employment",
+      "total": 32666.31,
+      "departments": [
+        {
+          "department": "Ministry of Labour and Employment",
+          "total": 32666.31
+        }
+      ]
+    },
+    {
+      "ministry": "Ministry of Law and Justice",
+      "total": 5513.39,
+      "departments": [
+        {
+          "department": "Law and Justice",
+          "total": 4509.06
+        },
+        {
+          "department": "Election Commission",
+          "total": 382.22
+        },
+        {
+          "department": "Supreme Court of India",
+          "total": 622.11
+        }
+      ]
+    },
+    {
+      "ministry": "Ministry of Micro, Small and Medium Enterprises",
+      "total": 24566.27,
+      "departments": [
+        {
+          "department": "Ministry of Micro, Small and Medium Enterprises",
+          "total": 24566.27
+        }
+      ]
+    },
+    {
+      "ministry": "Ministry of Mines",
+      "total": 3806.45,
+      "departments": [
+        {
+          "department": "Ministry of Mines",
+          "total": 3806.45
+        }
+      ]
+    },
+    {
+      "ministry": "Ministry of Minority Affairs",
+      "total": 3400.0,
+      "departments": [
+        {
+          "department": "Ministry of Minority Affairs",
+          "total": 3400.0
+        }
+      ]
+    },
+    {
+      "ministry": "Ministry of New and Renewable Energy",
+      "total": 32914.67,
+      "departments": [
+        {
+          "department": "Ministry of New and Renewable Energy",
+          "total": 32914.67
+        }
+      ]
+    },
+    {
+      "ministry": "Ministry of Panchayati Raj",
+      "total": 1190.16,
+      "departments": [
+        {
+          "department": "Ministry of Panchayati Raj",
+          "total": 1190.16
+        }
+      ]
+    },
+    {
+      "ministry": "Ministry of Parliamentary Affairs",
+      "total": 68.45,
+      "departments": [
+        {
+          "department": "Ministry of Parliamentary Affairs",
+          "total": 68.45
+        }
+      ]
+    },
+    {
+      "ministry": "Ministry of Personnel, Public Grievances and Pensions",
+      "total": 2662.01,
+      "departments": [
+        {
+          "department": "Ministry of Personnel, Public Grievances and Pensions",
+          "total": 2607.45
+        },
+        {
+          "department": "Central Vigilance Commission",
+          "total": 54.56
+        }
+      ]
+    },
+    {
+      "ministry": "Ministry of Petroleum and Natural Gas",
+      "total": 30443.22,
+      "departments": [
+        {
+          "department": "Ministry of Petroleum and Natural Gas",
+          "total": 30443.22
+        }
+      ]
+    },
+    {
+      "ministry": "Ministry of Planning",
+      "total": 1232.16,
+      "departments": [
+        {
+          "department": "Ministry of Planning",
+          "total": 1232.16
+        }
+      ]
+    },
+    {
+      "ministry": "Ministry of Ports, Shipping and Waterways",
+      "total": 5164.8,
+      "departments": [
+        {
+          "department": "Ministry of Ports, Shipping and Waterways",
+          "total": 5164.8
+        }
+      ]
+    },
+    {
+      "ministry": "Ministry of Power",
+      "total": 29996.85,
+      "departments": [
+        {
+          "department": "Ministry of Power",
+          "total": 29996.85
+        }
+      ]
+    },
+    {
+      "ministry": "The President, Parliament, Union Public Service Commission and the Secretariat of the Vice President",
+      "total": 2083.83,
+      "departments": [
+        {
+          "department": "Staff, Household and Allowances of the President",
+          "total": 137.2
+        },
+        {
+          "department": "Lok Sabha",
+          "total": 1009.0
+        },
+        {
+          "department": "Rajya Sabha",
+          "total": 482.99
+        },
+        {
+          "department": "Secretariat of the Vice-President",
+          "total": 11.7
+        },
+        {
+          "department": "Union Public Service Commission",
+          "total": 442.94
+        }
+      ]
+    },
+    {
+      "ministry": "Ministry of Railways",
+      "total": 281377.32,
+      "departments": [
+        {
+          "department": "Ministry of Railways",
+          "total": 281377.32
+        }
+      ]
+    },
+    {
+      "ministry": "Ministry of Road Transport and Highways",
+      "total": 309875.3,
+      "departments": [
+        {
+          "department": "Ministry of Road Transport and Highways",
+          "total": 309875.3
+        }
+      ]
+    },
+    {
+      "ministry": "Ministry of Rural Development",
+      "total": 197023.14,
+      "departments": [
+        {
+          "department": "Department of Rural Development",
+          "total": 194368.81
+        },
+        {
+          "department": "Department of Land Resources",
+          "total": 2654.33
+        }
+      ]
+    },
+    {
+      "ministry": "Ministry of Science and Technology",
+      "total": 38260.94,
+      "departments": [
+        {
+          "department": "Department of Science and Technology",
+          "total": 28049.32
+        },
+        {
+          "department": "Department of Biotechnology",
+          "total": 3446.0
+        },
+        {
+          "department": "Department of Scientific and Industrial Research",
+          "total": 6765.62
+        }
+      ]
+    },
+    {
+      "ministry": "Ministry of Skill Development and Entrepreneurship",
+      "total": 9885.8,
+      "departments": [
+        {
+          "department": "Ministry of Skill Development and Entrepreneurship",
+          "total": 9885.8
+        }
+      ]
+    },
+    {
+      "ministry": "Ministry of Social Justice and Empowerment",
+      "total": 29062.94,
+      "departments": [
+        {
+          "department": "Department of Social Justice and Empowerment",
+          "total": 13687.59
+        },
+        {
+          "department": "Department of Empowerment of Persons with Disabilities",
+          "total": 1669.72
+        },
+        {
+          "department": "Department of Space",
+          "total": 13705.63
+        }
+      ]
+    },
+    {
+      "ministry": "Ministry of Statistics and Programme Implementation",
+      "total": 5502.89,
+      "departments": [
+        {
+          "department": "Ministry of Statistics and Programme Implementation",
+          "total": 5502.89
+        }
+      ]
+    },
+    {
+      "ministry": "Ministry of Steel",
+      "total": 443.18,
+      "departments": [
+        {
+          "department": "Ministry of Steel",
+          "total": 443.18
+        }
+      ]
+    },
+    {
+      "ministry": "Ministry of Textiles",
+      "total": 5279.01,
+      "departments": [
+        {
+          "department": "Ministry of Textiles",
+          "total": 5279.01
+        }
+      ]
+    },
+    {
+      "ministry": "Ministry of Tourism",
+      "total": 2438.4,
+      "departments": [
+        {
+          "department": "Ministry of Tourism",
+          "total": 2438.4
+        }
+      ]
+    },
+    {
+      "ministry": "Ministry of Tribal Affairs",
+      "total": 15421.97,
+      "departments": [
+        {
+          "department": "Ministry of Tribal Affairs",
+          "total": 15421.97
+        }
+      ]
+    },
+    {
+      "ministry": "Ministry of Women and Child Development",
+      "total": 28183.06,
+      "departments": [
+        {
+          "department": "Ministry of Women and Child Development",
+          "total": 28183.06
+        }
+      ]
+    },
+    {
+      "ministry": "Ministry of Youth Affairs and Sports",
+      "total": 4479.88,
+      "departments": [
+        {
+          "department": "Ministry of Youth Affairs and Sports",
+          "total": 4479.88
+        }
+      ]
+    }
+  ]
+}
