@@ -1,7 +1,7 @@
 # Budget Watch
 
-Budget Watch is a Next.js public-finance dashboard for browsing department-level
-budget allocations.
+Budget Watch is a Next.js public-finance dashboard for exploring department-level
+Government of India budget allocations across the local JSON datasets in `data/`.
 
 ## Run locally
 
@@ -10,26 +10,38 @@ pnpm install
 pnpm dev
 ```
 
-The app is available at [http://localhost:3000](http://localhost:3000).
+Open [http://localhost:3000](http://localhost:3000).
 
-## Current data status
+## Source data
 
-This checkout currently uses the one-period department/ministry/amount snapshot
-supplied for the prototype. The snapshot does not contain a financial-year
-label, an official source reference, or prior-year values. It is explicitly
-identified in the UI as preview data.
+The app reads all `data/*.json` files through [`lib/budget-data.ts`](./lib/budget-data.ts).
+The current files cover 2021–22 through 2026–27 and contain ministry groups
+with nested department totals in ₹ crore. Revenue and capital sub-totals and
+official source URLs/page metadata are not present.
 
-The overview, department directory, department detail pages, comparison view,
-trends page, and data explorer derive their figures from this same supplied
-snapshot. The app does not generate multi-year data. Historical charts,
-year-over-year calculations, CAGR, and volatility remain unavailable until
-labeled financial-year records are provided.
+The data layer validates and normalizes rows for the UI while retaining source
+display names. Whitespace and trailing punctuation are normalized safely; two
+explicit department-name changes (Agriculture and Ayush) are linked for history.
+Other name changes are kept separate unless their continuity is unambiguous.
+JSON parsing and missing-file errors are surfaced to the user without exposing
+stack traces.
 
-Snapshot rows are centralized in [`lib/budget-data.ts`](./lib/budget-data.ts).
-Formatting and calculation helpers are in [`lib/format.ts`](./lib/format.ts).
-When the database schema and API are available in this checkout, replace the
-preview data source with a typed API layer; do not treat this fixture as an
-official dataset.
+The page and chart components consume normalized data-service functions rather
+than importing JSON. This boundary can later be replaced with a PostgreSQL/API
+implementation.
+
+## Analytics
+
+- Total, average, median, standard deviation, department rank, and share are
+  computed from the selected year.
+- YoY percentage change is `(current - previous) / previous × 100`; it is not
+  calculated when the prior value is missing or zero.
+- CAGR is annualized between the first and last available comparable values.
+- Budget variation is the standard deviation of available year-over-year
+  percentage changes. It is descriptive and is not a performance score.
+- Rank changes use within-year department allocation rank.
+
+Allocation changes do not by themselves imply better or worse outcomes.
 
 ## Validation
 

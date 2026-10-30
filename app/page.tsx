@@ -1,23 +1,197 @@
+import { Suspense } from "react";
+import Link from "next/link";
+import {
+  BudgetDistributionHistogram,
+  BudgetChangeChart,
+  DepartmentHeatmap,
+  DepartmentHistoryChart,
+  TotalBudgetTimeline,
+} from "@/components/yearly-budget-charts";
 import { BudgetRanking } from "@/components/budget-ranking";
-import { BudgetOverTime } from "@/components/budget-over-time";
 import { BudgetTreemap } from "@/components/budget-treemap";
 import { DepartmentTable } from "@/components/department-table";
-import { budgetEntries, totalBudgetCrore } from "@/lib/budget-data";
 import {
-  calculateMedian,
-  formatCroreCompact,
-  formatCroreExact,
-} from "@/lib/format";
+  budgetRecords,
+  getBudgetsByYear,
+  getDataStatus,
+  getDepartments,
+  getFinancialYears,
+} from "@/lib/budget-data";
+import { buildYearTotals, summarizeBudget } from "@/lib/analytics/budget";
+import { formatCroreCompact, formatPercent, formatShare } from "@/lib/format";
 
-const sortedEntries = [...budgetEntries].sort(
-  (a, b) => b.amountCrore - a.amountCrore,
-);
-const highestAllocation = sortedEntries[0];
-const medianAllocation = calculateMedian(
-  budgetEntries.map((entry) => entry.amountCrore),
-);
+type PageProps = {
+  searchParams: Promise<{ year?: string }>;
+};
 
-export default function Home() {
+function DashboardSkeleton() {
+  return (
+    <div className="summary-grid" aria-label="Loading budget dashboard">
+      {Array.from({ length: 4 }, (_, index) => (
+        <div className="summary-card skeleton" key={index} />
+      ))}
+    </div>
+  );
+}
+
+async function DashboardData({ searchParams }: PageProps) {
+  const dataStatus = getDataStatus();
+  if (dataStatus.errors.length > 0 || dataStatus.isEmpty) {
+    return (
+      <section className="panel error-state" role="alert">
+        <h2>We couldn&apos;t load the budget data.</h2>
+        <p>
+          Check that valid JSON files are available in the project&apos;s{" "}
+          <code>data/</code> folder, then try again.
+        </p>
+        <Link className="secondary-button" href="/">Retry</Link>
+      </section>
+    );
+  }
+
+  const query = await searchParams;
+  const years = getFinancialYears().map((entry) => entry.year);
+  const selectedYear =
+    query.year && years.includes(query.year)
+      ? query.year
+      : years.at(-1) ?? "";
+  const selectedIndex = years.indexOf(selectedYear);
+  const previousYear = selectedIndex > 0 ? years[selectedIndex - 1] : "";
+  const entries = getDepartments(selectedYear);
+  const previousEntries = getBudgetsByYear(previousYear);
+  const summary = summarizeBudget(entries);
+  const yearTotals = buildYearTotals(budgetRecords, years);
+  const initialId = [...entries].sort(
+    (a, b) => b.amountCrore - a.amountCrore,
+  )[0]?.id ?? "";
+
+  return (
+    <>
+      <section className="summary-grid" aria-label={`Budget summary for ${selectedYear}`}>
+        <article className="summary-card">
+          <span className="summary-label">Total budget</span>
+          <strong className="summary-value">
+            {formatCroreCompact(summary.total)}
+          </strong>
+          <span className="summary-sub">{selectedYear} · ₹ crore</span>
+        </article>
+        <article className="summary-card">
+          <span className="summary-label">Departments</span>
+          <strong className="summary-value">{summary.count.toLocaleString("en-IN")}</strong>
+          <span className="summary-sub">With valid budget data</span>
+        </article>
+        <article className="summary-card">
+          <span className="summary-label">Highest allocation</span>
+          <strong className="summary-value">
+            {summary.largest
+              ? formatCroreCompact(summary.largest.amountCrore)
+              : "—"}
+          </strong>
+          <span className="summary-sub">
+            {summary.largest?.department ?? "No data"}
+          </span>
+        </article>
+        <article className="summary-card">
+          <span className="summary-label">Median department budget</span>
+          <strong className="summary-value">
+            {summary.median === null
+              ? "—"
+              : formatCroreCompact(summary.median)}
+          </strong>
+          <span className="summary-sub">Middle allocation by department</span>
+        </article>
+      </section>
+
+      <div className="dashboard-grid">
+        <BudgetRanking entries={entries} />
+        <section className="panel" aria-labelledby="year-insights-title">
+          <div className="panel-header">
+            <div>
+              <h2 className="panel-title" id="year-insights-title">
+                Snapshot insights
+              </h2>
+              <p className="panel-subtitle">Calculated from {selectedYear} source rows</p>
+            </div>
+          </div>
+          <div className="section-pad">
+            <div className="snapshot-facts">
+              <div>
+                <span>Average department allocation</span>
+                <strong>
+                  {summary.average === null
+                    ? "—"
+                    : formatCroreCompact(summary.average)}
+                </strong>
+              </div>
+              <div>
+                <span>Top 5 departments&apos; share</span>
+                <strong>{formatShare(summary.topFiveShare)}</strong>
+              </div>
+              <div>
+                <span>Top 10 departments&apos; share</span>
+                <strong>{formatShare(summary.topTenShare)}</strong>
+              </div>
+              <div>
+                <span>Smallest department allocation</span>
+                <strong>
+                  {summary.smallest
+                    ? formatCroreCompact(summary.smallest.amountCrore)
+                    : "—"}
+                </strong>
+              </div>
+              <div>
+                <span>Budget spread · standard deviation</span>
+                <strong>
+                  {summary.standardDeviation === null
+                    ? "—"
+                    : formatCroreCompact(summary.standardDeviation)}
+                </strong>
+              </div>
+              <div>
+                <span>Change in total vs {previousYear || "prior year"}</span>
+                <strong>
+                  {formatPercent(
+                    yearTotals.find((item) => item.financialYear === selectedYear)?.yoy ??
+                      null,
+                  )}
+                </strong>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <div className="dashboard-grid">
+        <BudgetChangeChart
+          currentEntries={entries}
+          previousEntries={previousEntries}
+          year={selectedYear}
+        />
+        <BudgetDistributionHistogram entries={entries} />
+      </div>
+
+      <div className="dashboard-grid">
+        <BudgetTreemap entries={entries} />
+        <TotalBudgetTimeline yearTotals={yearTotals} />
+      </div>
+
+      <DepartmentHistoryChart
+        entries={budgetRecords}
+        initialId={initialId}
+        financialYears={years}
+      />
+      <DepartmentHeatmap records={budgetRecords} years={years} />
+      <DepartmentTable
+        entries={entries}
+        previousEntries={previousEntries}
+        allRecords={budgetRecords}
+        years={years}
+      />
+    </>
+  );
+}
+
+export default function Home(props: PageProps) {
   return (
     <main className="page-shell">
       <section className="page-intro">
@@ -25,122 +199,25 @@ export default function Home() {
           <p className="eyebrow">Public finance · India</p>
           <h1>Budget Watch</h1>
           <p className="intro-copy">
-            Understand how government budget allocations are distributed across
-            departments.
+            Explore how government budget allocations change across departments
+            and financial years.
           </p>
         </div>
         <aside className="dataset-note" aria-label="Dataset status">
           <span className="status-dot" aria-hidden="true" />
           <span>
-            <strong>Preview data.</strong> The period and official source have not
-            been provided yet.
+            <strong>Local JSON datasets.</strong> Financial years and allocations
+            are read from the project&apos;s six data files.
           </span>
         </aside>
       </section>
-
-      <section className="summary-grid" aria-label="Snapshot summary">
-        <article className="summary-card">
-          <span className="summary-label">Departments with allocation</span>
-          <strong className="summary-value">
-            {budgetEntries.length.toLocaleString("en-IN")}
-          </strong>
-          <span className="summary-sub">In the supplied snapshot</span>
-        </article>
-        <article className="summary-card">
-          <span className="summary-label">Total allocation</span>
-          <strong className="summary-value">{formatCroreCompact(totalBudgetCrore)}</strong>
-          <span className="summary-sub">Sum of listed department amounts</span>
-        </article>
-        <article className="summary-card">
-          <span className="summary-label">Largest allocation</span>
-          <strong className="summary-value">
-            {formatCroreCompact(highestAllocation.amountCrore)}
-          </strong>
-          <span className="summary-sub">{highestAllocation.department}</span>
-        </article>
-        <article className="summary-card">
-          <span className="summary-label">Median department budget</span>
-          <strong className="summary-value">
-            {medianAllocation == null ? "—" : formatCroreCompact(medianAllocation)}
-          </strong>
-          <span className="summary-sub">Median of listed allocations</span>
-        </article>
+      <Suspense fallback={<DashboardSkeleton />}>
+        <DashboardData searchParams={props.searchParams} />
+      </Suspense>
+      <section className="data-footer-note">
+        Amounts are shown in ₹ crore. Allocation changes describe budget
+        movements only and do not imply performance or outcomes.
       </section>
-
-      <div className="dashboard-grid">
-        <BudgetRanking entries={budgetEntries} />
-        <section className="panel" aria-labelledby="snapshot-note-title">
-          <div className="panel-header">
-            <div>
-              <h2 className="panel-title" id="snapshot-note-title">Reading this snapshot</h2>
-              <p className="panel-subtitle">What the current data includes</p>
-            </div>
-          </div>
-          <div className="section-pad">
-            <p className="intro-copy">
-              Values below are shown exactly as provided, in crore rupees. This
-              preview has one allocation per department and no financial-year
-              label.
-            </p>
-            <div className="snapshot-facts">
-              <div>
-                <span>Top listed allocation</span>
-                <strong>{highestAllocation.department}</strong>
-                <small>{formatCroreExact(highestAllocation.amountCrore)}</small>
-              </div>
-              <div>
-                <span>Historical comparisons</span>
-                <strong>Not available</strong>
-                <small>A prior-year value was not included.</small>
-              </div>
-            </div>
-          </div>
-        </section>
-      </div>
-
-      <div className="dashboard-grid">
-        <BudgetTreemap entries={budgetEntries} />
-        <section className="panel" aria-labelledby="change-title">
-          <div className="panel-header">
-            <div>
-              <h2 className="panel-title" id="change-title">
-                Budget change vs previous year
-              </h2>
-              <p className="panel-subtitle">Neutral comparison · ₹ crore</p>
-            </div>
-          </div>
-          <div className="empty-chart" role="status">
-            <strong>Previous-year allocations are not available.</strong>
-            The supplied snapshot has no financial-year label or prior-year
-            amounts, so increases and decreases cannot be calculated.
-          </div>
-        </section>
-      </div>
-
-      <div className="dashboard-grid">
-        <BudgetOverTime />
-        <section className="panel" aria-labelledby="method-title">
-          <div className="panel-header">
-            <div>
-              <h2 className="panel-title" id="method-title">How to read the figures</h2>
-              <p className="panel-subtitle">Calculations used in this preview</p>
-            </div>
-          </div>
-          <div className="section-pad">
-            <p className="intro-copy">
-              Department share is its listed allocation divided by the sum of
-              all listed allocations. The median is the midpoint of the sorted
-              department values.
-            </p>
-            <p className="intro-copy method-note">
-              No trend, year-over-year change, or growth rate is inferred from
-              this one-period, undated snapshot.
-            </p>
-          </div>
-        </section>
-      </div>
-
-      <DepartmentTable entries={budgetEntries} />
     </main>
   );
 }

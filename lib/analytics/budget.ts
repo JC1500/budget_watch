@@ -1,0 +1,136 @@
+import type { BudgetEntry } from "@/lib/budget-data";
+import {
+  calculateCAGR,
+  calculateMedian,
+  calculateShare,
+  calculateVolatility,
+  calculateYoY,
+} from "@/lib/format";
+
+export function sum(values: number[]) {
+  return values.reduce((total, value) => total + value, 0);
+}
+
+export function average(values: number[]) {
+  const valid = values.filter(Number.isFinite);
+  return valid.length === 0 ? null : sum(valid) / valid.length;
+}
+
+export function variance(values: number[]) {
+  const valid = values.filter(Number.isFinite);
+  const mean = average(valid);
+  if (mean === null) return null;
+  return sum(valid.map((value) => (value - mean) ** 2)) / valid.length;
+}
+
+export function standardDeviation(values: number[]) {
+  const value = variance(values);
+  return value === null ? null : Math.sqrt(value);
+}
+
+export function summarizeBudget(entries: BudgetEntry[]) {
+  const amounts = entries
+    .map((entry) => entry.amountCrore)
+    .filter((amount) => Number.isFinite(amount) && amount >= 0);
+  const total = sum(amounts);
+  const sorted = [...entries].sort(
+    (a, b) => b.amountCrore - a.amountCrore,
+  );
+  const mean = average(amounts);
+
+  return {
+    total,
+    count: amounts.length,
+    largest: sorted[0] ?? null,
+    smallest: sorted.at(-1) ?? null,
+    median: calculateMedian(amounts),
+    average: mean,
+    topFiveShare:
+      total > 0
+        ? calculateShare(
+            sorted.slice(0, 5).reduce((sum, entry) => sum + entry.amountCrore, 0),
+            total,
+          )
+        : null,
+    topTenShare:
+      total > 0
+        ? calculateShare(
+            sorted.slice(0, 10).reduce((sum, entry) => sum + entry.amountCrore, 0),
+            total,
+          )
+        : null,
+    standardDeviation: standardDeviation(amounts),
+  };
+}
+
+export function populationStandardDeviation(values: number[]) {
+  return standardDeviation(values);
+}
+
+export function buildYearTotals(
+  records: BudgetEntry[],
+  years: string[],
+) {
+  return years.map((financialYear, index) => {
+    const entries = records.filter((entry) => entry.financialYear === financialYear);
+    const total = entries.reduce((sum, entry) => sum + entry.amountCrore, 0);
+    const previousYear = index > 0 ? years[index - 1] : undefined;
+    const previousTotal =
+      previousYear === undefined
+        ? null
+        : records
+            .filter((entry) => entry.financialYear === previousYear)
+            .reduce((sum, entry) => sum + entry.amountCrore, 0);
+    return {
+      financialYear,
+      total,
+      departmentCount: entries.length,
+      yoy: previousTotal === null ? null : calculateYoY(total, previousTotal),
+    };
+  });
+}
+
+export function getDepartmentRank(
+  entry: BudgetEntry,
+  entries: BudgetEntry[],
+) {
+  return (
+    1 +
+    entries.filter((candidate) => candidate.amountCrore > entry.amountCrore)
+      .length
+  );
+}
+
+export function getDepartmentCagr(
+  history: BudgetEntry[],
+  years: string[],
+) {
+  const available = years.flatMap((financialYear) => {
+    const entry = history.find((candidate) => candidate.financialYear === financialYear);
+    return entry ? [entry] : [];
+  });
+  const beginning = available[0];
+  const ending = available.at(-1);
+  if (!beginning || !ending || beginning === ending) return null;
+  const periods =
+    years.indexOf(ending.financialYear) -
+    years.indexOf(beginning.financialYear);
+  return calculateCAGR(
+    beginning.amountCrore,
+    ending.amountCrore,
+    periods,
+  );
+}
+
+export function getDepartmentVolatility(history: BudgetEntry[], years: string[]) {
+  const changes = years.slice(1).flatMap((financialYear, index) => {
+    const current = history.find((entry) => entry.financialYear === financialYear);
+    const previous = history.find(
+      (entry) => entry.financialYear === years[index],
+    );
+    if (!current || !previous) return [];
+    const change = calculateYoY(current.amountCrore, previous.amountCrore);
+    return change === null ? [] : [change];
+  });
+  return calculateVolatility(changes);
+}

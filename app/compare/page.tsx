@@ -1,6 +1,32 @@
+import { Suspense } from "react";
 import { DepartmentComparison } from "@/components/department-comparison";
+import {
+  budgetRecords,
+  getDepartments,
+  getFinancialYears,
+} from "@/lib/budget-data";
 
-export default function ComparePage() {
+type Props = { searchParams: Promise<{ year?: string }> };
+
+async function CompareData({ searchParams }: Props) {
+  const query = await searchParams;
+  const years = getFinancialYears().map((entry) => entry.year);
+  const year =
+    query.year && years.includes(query.year)
+      ? query.year
+      : years.at(-1) ?? "";
+
+  return (
+    <DepartmentComparison
+      records={budgetRecords}
+      years={years}
+      selectedYear={year}
+      departments={getDepartments(year)}
+    />
+  );
+}
+
+export default function ComparePage(props: Props) {
   return (
     <main className="page-shell">
       <section className="page-intro">
@@ -8,12 +34,14 @@ export default function ComparePage() {
           <p className="eyebrow">Side-by-side analysis</p>
           <h1>Compare departments</h1>
           <p className="intro-copy">
-            Compare the allocations in the supplied snapshot. Differences are
-            descriptive and do not imply performance or priority.
+            Compare up to three departments across all available financial
+            years. Budget differences are descriptive, not performance ratings.
           </p>
         </div>
       </section>
-      <DepartmentComparison />
+      <Suspense fallback={<div className="panel skeleton chart-skeleton" />}>
+        <CompareData searchParams={props.searchParams} />
+      </Suspense>
     </main>
   );
 }

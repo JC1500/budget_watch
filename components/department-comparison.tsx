@@ -1,33 +1,100 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { budgetEntries, totalBudgetCrore } from "@/lib/budget-data";
 import {
-  calculateAbsoluteChange,
+  CartesianGrid,
+  Legend,
+  Line,
+  LineChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
+import type { BudgetEntry } from "@/lib/budget-data";
+import { getDepartmentCagr } from "@/lib/analytics/budget";
+import {
   calculateShare,
   calculateYoY,
+  formatCroreCompact,
   formatCroreExact,
   formatPercent,
   formatShare,
 } from "@/lib/format";
 
-export function DepartmentComparison() {
+const lineColors = ["#245c46", "#b2874e", "#647da0"];
+
+export function DepartmentComparison({
+  records,
+  years,
+  selectedYear,
+  departments,
+}: {
+  records: BudgetEntry[];
+  years: string[];
+  selectedYear: string;
+  departments: BudgetEntry[];
+}) {
   const [selectedIds, setSelectedIds] = useState(
-    budgetEntries.slice(0, 2).map((entry) => entry.id),
+    departments.slice(0, 2).map((entry) => entry.id),
   );
-  const selectedEntries = useMemo(
+  const [searches, setSearches] = useState<string[]>([]);
+  const totalByYear = useMemo(
+    () =>
+      new Map(
+        years.map((year) => [
+          year,
+          records
+            .filter((entry) => entry.financialYear === year)
+            .reduce((sum, entry) => sum + entry.amountCrore, 0),
+        ]),
+      ),
+    [records, years],
+  );
+  const selected = useMemo(
     () =>
       selectedIds.flatMap((id) => {
-        const entry = budgetEntries.find((candidate) => candidate.id === id);
+        const entry = departments.find((candidate) => candidate.id === id);
         return entry ? [entry] : [];
       }),
-    [selectedIds],
+    [departments, selectedIds],
   );
-  const baseDepartment = selectedEntries[0];
-  const maxAmount = Math.max(
-    0,
-    ...selectedEntries.map((entry) => entry.amountCrore),
-  );
+  const selectedHistories = selected.map((entry) => ({
+    ...entry,
+    history: records.filter((record) => record.id === entry.id),
+  }));
+  const selectedYearTotal = totalByYear.get(selectedYear) ?? 0;
+  const currentRecords = records.filter((entry) => entry.financialYear === selectedYear);
+  const previousYearIndex = years.indexOf(selectedYear) - 1;
+  const previousYear =
+    previousYearIndex >= 0 ? years[previousYearIndex] : undefined;
+  const chartData = years.map((financialYear) => {
+    const row: Record<string, string | number | null> = { financialYear };
+    for (const department of selectedHistories) {
+      row[department.id] =
+        department.history.find((entry) => entry.financialYear === financialYear)
+          ?.amountCrore ?? null;
+    }
+    return row;
+  });
+  const differenceRows = years.map((financialYear) => {
+    const values = selectedHistories.map((department) =>
+      department.history.find((entry) => entry.financialYear === financialYear)
+        ?.amountCrore ?? null,
+    );
+    const first = values[0];
+    const second = values[1];
+    return {
+      financialYear,
+      values,
+      difference:
+        first !== null && second !== null ? second - first : null,
+      percentage:
+        first !== null && second !== null
+          ? calculateYoY(second, first)
+          : null,
+    };
+  });
 
   function updateSelection(index: number, nextId: string) {
     setSelectedIds((ids) =>
@@ -38,7 +105,7 @@ export function DepartmentComparison() {
   }
 
   function addDepartment() {
-    const next = budgetEntries.find(
+    const next = departments.find(
       (entry) => !selectedIds.includes(entry.id),
     );
     if (next && selectedIds.length < 3) {
@@ -46,155 +113,177 @@ export function DepartmentComparison() {
     }
   }
 
-  function removeThirdDepartment() {
-    setSelectedIds((ids) => ids.slice(0, 2));
-  }
-
   return (
     <>
       <section className="panel" aria-label="Choose departments to compare">
         <div className="compare-controls compare-controls-multi">
-          {selectedIds.map((id, index) => (
-            <label className="field-label" htmlFor={`compare-${index}`} key={index}>
-              Department {String.fromCharCode(65 + index)}
-              <select
-                className="select-field"
-                id={`compare-${index}`}
-                onChange={(event) => updateSelection(index, event.target.value)}
-                value={id}
-              >
-                {budgetEntries.map((entry) => (
-                  <option
-                    disabled={selectedIds.includes(entry.id) && entry.id !== id}
-                    key={entry.id}
-                    value={entry.id}
-                  >
-                    {entry.department}
-                  </option>
-                ))}
-              </select>
-            </label>
-          ))}
+          {selectedIds.map((id, index) => {
+            const search = searches[index] ?? "";
+            const choices = departments.filter((entry) => {
+              const matches =
+                entry.department.toLocaleLowerCase().includes(search.toLocaleLowerCase()) ||
+                entry.ministry.toLocaleLowerCase().includes(search.toLocaleLowerCase());
+              return matches || entry.id === id;
+            });
+            return (
+              <div className="compare-select-group" key={index}>
+                <label className="field-label" htmlFor={`compare-search-${index}`}>
+                  Search Department {String.fromCharCode(65 + index)}
+                  <input
+                    className="search-field"
+                    id={`compare-search-${index}`}
+                    onChange={(event) => {
+                      const value = event.target.value;
+                      setSearches((previous) => {
+                        const next = [...previous];
+                        next[index] = value;
+                        return next;
+                      });
+                    }}
+                    placeholder="Type a department name"
+                    type="search"
+                    value={search}
+                  />
+                </label>
+                <label className="sr-only" htmlFor={`compare-${index}`}>
+                  Department {String.fromCharCode(65 + index)}
+                </label>
+                <select
+                  className="select-field"
+                  id={`compare-${index}`}
+                  onChange={(event) => updateSelection(index, event.target.value)}
+                  value={id}
+                >
+                  {choices.map((entry) => (
+                    <option
+                      disabled={selectedIds.includes(entry.id) && entry.id !== id}
+                      key={entry.id}
+                      value={entry.id}
+                    >
+                      {entry.department}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            );
+          })}
           {selectedIds.length < 3 ? (
-            <button
-              className="secondary-button compare-add"
-              onClick={addDepartment}
-              type="button"
-            >
+            <button className="secondary-button compare-add" onClick={addDepartment} type="button">
               + Add department
             </button>
           ) : (
-            <button
-              className="secondary-button compare-add"
-              onClick={removeThirdDepartment}
-              type="button"
-            >
+            <button className="secondary-button compare-add" onClick={() => setSelectedIds((ids) => ids.slice(0, 2))} type="button">
               Remove Department C
             </button>
           )}
         </div>
-
-        {selectedEntries.length >= 2 ? (
+        {selected.length >= 2 ? (
           <>
             <div className="compare-results compare-results-multi" aria-live="polite">
-              {selectedEntries.map((entry, index) => (
-                <article className="compare-result" key={entry.id}>
-                  <span className="compare-result-label">
-                    Department {String.fromCharCode(65 + index)} · {entry.department}
-                  </span>
-                  <strong className="compare-result-value">
-                    {formatCroreExact(entry.amountCrore)}
-                  </strong>
-                  <span className="summary-sub">
-                    {formatShare(calculateShare(entry.amountCrore, totalBudgetCrore))} of listed total
-                  </span>
-                </article>
-              ))}
-            </div>
-            <div className="comparison-bars" aria-label="Snapshot allocation comparison">
-              {selectedEntries.map((entry, index) => (
-                <div className="comparison-bar-row" key={entry.id}>
-                  <div className="comparison-bar-label">
-                    <span>
-                      Department {String.fromCharCode(65 + index)} · {entry.department}
+              {selectedHistories.map((department, index) => {
+                const current = department.history.find(
+                  (entry) => entry.financialYear === selectedYear,
+                );
+                const old = previousYear
+                  ? department.history.find(
+                      (entry) => entry.financialYear === previousYear,
+                    )
+                  : undefined;
+                const cagr = getDepartmentCagr(department.history, years);
+                return (
+                  <article className="compare-result" key={department.id}>
+                    <span className="compare-result-label">
+                      Department {String.fromCharCode(65 + index)} · {department.department}
                     </span>
-                    <span>{formatCroreExact(entry.amountCrore)}</span>
-                  </div>
-                  <div
-                    className="comparison-track"
-                    role="img"
-                    aria-label={`${entry.department}: ${formatCroreExact(entry.amountCrore)}`}
-                  >
-                    <div
-                      className={`comparison-fill${index % 2 === 1 ? " alt" : ""}`}
-                      style={{
-                        width: `${maxAmount > 0 ? (entry.amountCrore / maxAmount) * 100 : 0}%`,
-                      }}
-                    />
-                  </div>
-                </div>
-              ))}
+                    <strong className="compare-result-value">
+                      {current ? formatCroreExact(current.amountCrore) : "—"}
+                    </strong>
+                    <span className="summary-sub">
+                      YoY {formatPercent(current && old ? calculateYoY(current.amountCrore, old.amountCrore) : null)}
+                      {" · "}CAGR {formatPercent(cagr)}
+                    </span>
+                    <span className="summary-sub">
+                      {formatShare(calculateShare(current?.amountCrore ?? 0, selectedYearTotal))} of total
+                    </span>
+                  </article>
+                );
+              })}
             </div>
-            {baseDepartment && (
-              <div className="table-wrap">
-                <table className="data-table">
-                  <thead>
-                    <tr>
-                      <th scope="col">Compared with Department A</th>
-                      <th className="numeric" scope="col">Difference (₹ crore)</th>
-                      <th className="numeric" scope="col">Difference (%)</th>
+            <div className="chart-frame">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={chartData} margin={{ top: 16, right: 24, bottom: 8, left: 18 }}>
+                  <CartesianGrid stroke="#e9ece7" strokeDasharray="3 4" vertical={false} />
+                  <XAxis dataKey="financialYear" axisLine={false} tickLine={false} />
+                  <YAxis axisLine={false} tickLine={false} tickFormatter={(value: number) => formatCroreCompact(value)} width={80} />
+                  <Tooltip
+                    labelFormatter={(label) => String(label)}
+                    formatter={(value) => typeof value === "number" ? formatCroreExact(value) : "—"}
+                  />
+                  <Legend />
+                  {selectedHistories.map((department, index) => (
+                    <Line
+                      connectNulls={false}
+                      dataKey={department.id}
+                      key={department.id}
+                      name={department.department}
+                      stroke={lineColors[index]}
+                      strokeWidth={2}
+                      dot={{ r: 2 }}
+                      activeDot={{ r: 4 }}
+                    />
+                  ))}
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+            <div className="table-wrap">
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th scope="col">Financial year</th>
+                    {selectedHistories.map((department, index) => (
+                      <th className="numeric" key={department.id} scope="col">
+                        {String.fromCharCode(65 + index)} · {department.department}
+                      </th>
+                    ))}
+                    <th className="numeric" scope="col">Difference (B − A)</th>
+                    <th className="numeric" scope="col">Difference %</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {differenceRows.map((row) => (
+                    <tr key={row.financialYear}>
+                      <td>{row.financialYear}</td>
+                      {row.values.map((value, index) => (
+                        <td className="numeric" key={selectedHistories[index].id}>
+                          {value === null ? "—" : formatCroreExact(value)}
+                        </td>
+                      ))}
+                      <td className="numeric">
+                        {row.difference === null ? "—" : formatCroreExact(row.difference)}
+                      </td>
+                      <td className="numeric">{formatPercent(row.percentage)}</td>
                     </tr>
-                  </thead>
-                  <tbody>
-                    {selectedEntries.slice(1).map((entry) => {
-                      const difference = calculateAbsoluteChange(
-                        entry.amountCrore,
-                        baseDepartment.amountCrore,
-                      );
-                      return (
-                        <tr key={entry.id}>
-                          <td>{entry.department}</td>
-                          <td className="numeric">
-                            {difference == null ? "—" : formatCroreExact(difference)}
-                          </td>
-                          <td className="numeric">
-                            {formatPercent(
-                              calculateYoY(
-                                entry.amountCrore,
-                                baseDepartment.amountCrore,
-                              ),
-                            )}
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            )}
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <p className="ranking-caption">
+              Historical difference compares Department B with A. For a third
+              selection, values are displayed in the chart and individual
+              summaries; no performance judgment is implied.
+            </p>
           </>
         ) : (
-          <div className="empty-state">
-            At least two departments with budget data are needed for comparison.
-          </div>
+          <div className="empty-state">At least two departments with budget data are needed.</div>
         )}
       </section>
-
-      <section className="panel table-panel" aria-labelledby="comparison-history-title">
-        <div className="panel-header">
-          <div>
-            <h2 className="panel-title" id="comparison-history-title">
-              Historical and growth comparison
-            </h2>
-            <p className="panel-subtitle">Year-by-year comparison · ₹ crore</p>
-          </div>
-        </div>
-        <div className="empty-chart" role="status">
-          <strong>No historical data is available.</strong>
-          This preview contains one unlabeled snapshot. A multi-year comparison
-          will be available when dated budget data is supplied.
-        </div>
-      </section>
+      <p className="ranking-caption">
+        Comparison for {selectedYear}. Budget allocation differences are
+        descriptive and do not imply performance or priority.
+      </p>
+      {currentRecords.length === 0 && (
+        <div className="empty-state">No budget data is available for {selectedYear}.</div>
+      )}
     </>
   );
 }

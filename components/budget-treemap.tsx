@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { BudgetEntry } from "@/lib/budget-data";
+import { getDepartmentRank } from "@/lib/analytics/budget";
 import {
   calculateShare,
   formatCroreExact,
@@ -79,7 +80,7 @@ export function BudgetTreemap({ entries }: { entries: BudgetEntry[] }) {
     .filter((entry) => entry.amountCrore > 0)
     .sort((a, b) => b.amountCrore - a.amountCrore);
   const rectangles = layoutTreemap(positiveEntries);
-  const zeroCount = entries.length - positiveEntries.length;
+  const nonPositiveCount = entries.length - positiveEntries.length;
 
   return (
     <section className="panel" aria-labelledby="treemap-title">
@@ -98,11 +99,12 @@ export function BudgetTreemap({ entries }: { entries: BudgetEntry[] }) {
           <div className="treemap" aria-label="Budget distribution treemap">
             {rectangles.map(({ entry, x, y, width, height }, index) => {
               const share = calculateShare(entry.amountCrore, total);
+              const rank = getDepartmentRank(entry, entries);
               return (
                 <Link
-                  aria-label={`${entry.department}, ${formatCroreExact(entry.amountCrore)}, ${formatShare(share)} of listed total`}
+                  aria-label={`${entry.department}, rank ${rank}, ${formatCroreExact(entry.amountCrore)}, ${formatShare(share)} of listed total`}
                   className={`treemap-tile${width > 13 && height > 14 ? " treemap-tile-labeled" : ""}`}
-                  href={`/departments/${entry.id}`}
+                  href={`/departments/${entry.id}?year=${encodeURIComponent(entry.financialYear)}`}
                   key={entry.id}
                   style={{
                     left: `${x}%`,
@@ -111,7 +113,7 @@ export function BudgetTreemap({ entries }: { entries: BudgetEntry[] }) {
                     height: `${height}%`,
                     backgroundColor: index % 2 === 0 ? "#e5eee7" : "#dce9df",
                   }}
-                  title={`${entry.department}\n${formatCroreExact(entry.amountCrore)}\n${formatShare(share)} of listed total`}
+                  title={`${entry.department}\nRank ${rank}\n${formatCroreExact(entry.amountCrore)}\n${formatShare(share)} of listed total`}
                 >
                   {width > 13 && height > 14 && (
                     <>
@@ -128,8 +130,8 @@ export function BudgetTreemap({ entries }: { entries: BudgetEntry[] }) {
           <p className="ranking-caption">
             Select a rectangle for department details. Hover or focus to view
             the exact allocation and share.
-            {zeroCount > 0 &&
-              ` ${zeroCount} zero-allocation department${zeroCount === 1 ? "" : "s"} cannot be shown with area.`}
+            {nonPositiveCount > 0 &&
+              ` ${nonPositiveCount} non-positive allocation${nonPositiveCount === 1 ? "" : "s"} cannot be shown with area.`}
           </p>
           <ul className="sr-only">
             {positiveEntries.map((entry) => (

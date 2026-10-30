@@ -4,23 +4,33 @@ const inr = new Intl.NumberFormat("en-IN", {
 });
 
 export function formatCroreExact(amount: number) {
-  return `₹${inr.format(amount)} Cr`;
+  const sign = amount < 0 ? "−" : "";
+  return `${sign}₹${inr.format(Math.abs(amount))} Cr`;
 }
 
 export function formatCroreCompact(amount: number) {
-  if (Math.abs(amount) >= 100_000) {
-    return `₹${(amount / 100_000).toLocaleString("en-IN", {
+  const sign = amount < 0 ? "−" : "";
+  const absoluteAmount = Math.abs(amount);
+  if (absoluteAmount >= 100_000) {
+    return `${sign}₹${(absoluteAmount / 100_000).toLocaleString("en-IN", {
       maximumFractionDigits: 2,
     })}L Cr`;
   }
 
-  return `₹${amount.toLocaleString("en-IN", {
+  return `${sign}₹${absoluteAmount.toLocaleString("en-IN", {
     maximumFractionDigits: 2,
   })} Cr`;
 }
 
 export function calculateYoY(current: number, previous?: number | null) {
-  if (previous == null || previous === 0) return null;
+  if (
+    previous == null ||
+    previous === 0 ||
+    !Number.isFinite(current) ||
+    !Number.isFinite(previous)
+  ) {
+    return null;
+  }
   return ((current - previous) / previous) * 100;
 }
 
@@ -28,22 +38,28 @@ export function calculateAbsoluteChange(
   current: number,
   previous?: number | null,
 ) {
-  if (previous == null) return null;
+  if (previous == null || !Number.isFinite(current) || !Number.isFinite(previous)) {
+    return null;
+  }
   return current - previous;
 }
 
 export function calculateShare(amount: number, total: number) {
-  if (total <= 0) return null;
+  if (!Number.isFinite(amount) || !Number.isFinite(total) || total <= 0) {
+    return null;
+  }
   return (amount / total) * 100;
 }
 
 export function calculateRank(amount: number, amounts: number[]) {
+  if (!Number.isFinite(amount)) return null;
   return 1 + amounts.filter((candidate) => candidate > amount).length;
 }
 
 export function calculateMedian(values: number[]) {
-  if (values.length === 0) return null;
-  const sorted = [...values].sort((a, b) => a - b);
+  const validValues = values.filter(Number.isFinite);
+  if (validValues.length === 0) return null;
+  const sorted = [...validValues].sort((a, b) => a - b);
   const middle = Math.floor(sorted.length / 2);
   return sorted.length % 2 === 0
     ? (sorted[middle - 1] + sorted[middle]) / 2
@@ -55,12 +71,26 @@ export function calculateCAGR(
   ending: number,
   periods: number,
 ) {
-  if (beginning <= 0 || ending < 0 || periods <= 0) return null;
+  if (
+    beginning <= 0 ||
+    ending < 0 ||
+    periods <= 0 ||
+    !Number.isFinite(beginning) ||
+    !Number.isFinite(ending) ||
+    !Number.isFinite(periods)
+  ) {
+    return null;
+  }
   return ((ending / beginning) ** (1 / periods) - 1) * 100;
 }
 
 export function calculateVolatility(yearlyChanges: number[]) {
-  if (yearlyChanges.length < 2) return null;
+  if (
+    yearlyChanges.length < 2 ||
+    yearlyChanges.some((change) => !Number.isFinite(change))
+  ) {
+    return null;
+  }
   const mean =
     yearlyChanges.reduce((sum, change) => sum + change, 0) /
     yearlyChanges.length;
