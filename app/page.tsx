@@ -1,26 +1,19 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import {
-  BudgetDistributionHistogram,
-  BudgetChangeChart,
   DepartmentHeatmap,
   DepartmentHistoryChart,
   TotalBudgetTimeline,
 } from "@/components/yearly-budget-charts";
-import { BudgetRanking } from "@/components/budget-ranking";
-import { DepartmentTable } from "@/components/department-table";
-import { AnalysisLevelSelector } from "@/components/analysis-level-selector";
-import { SchemeOverview } from "@/components/scheme-overview";
+import { BudgetCategoryChart } from "@/components/budget-category-chart";
 import {
   budgetRecords,
-  getBudgetsByYear,
   getDataStatus,
   getDepartments,
   getFinancialYears,
-  getSchemeCountsByDepartment,
-  getSchemes,
 } from "@/lib/budget-data";
 import { buildYearTotals, summarizeBudget } from "@/lib/analytics/budget";
+import { getBudgetCategorySummaries } from "@/lib/data/categories";
 import { formatCroreCompact } from "@/lib/format";
 
 type PageProps = {
@@ -53,44 +46,12 @@ async function DashboardData({ searchParams }: PageProps) {
   }
 
   const query = await searchParams;
-  const analysisLevel = query.level === "schemes" ? "schemes" : "departments";
   const years = getFinancialYears().map((entry) => entry.year);
   const selectedYear =
     query.year && years.includes(query.year)
       ? query.year
       : years.at(-1) ?? "";
   const entries = getDepartments(selectedYear);
-  const previousYear = years[years.indexOf(selectedYear) - 1] ?? "";
-  const currentSchemes = getSchemes(selectedYear);
-  const previousSchemes = previousYear ? getSchemes(previousYear) : [];
-  const departments = [
-    ...new Map(
-      budgetRecords.map((record) => [
-        record.id,
-        { id: record.id, name: record.department },
-      ]),
-    ).values(),
-  ].sort((a, b) => a.name.localeCompare(b.name));
-
-  if (analysisLevel === "schemes") {
-    return (
-      <>
-        <div className="analysis-toolbar">
-          <AnalysisLevelSelector value={analysisLevel} />
-        </div>
-        <SchemeOverview
-          entries={currentSchemes}
-          previousEntries={previousSchemes}
-          departmentEntries={entries}
-          departments={departments}
-          years={years}
-          selectedYear={selectedYear}
-        />
-      </>
-    );
-  }
-
-  const previousEntries = getBudgetsByYear(previousYear);
   const summary = summarizeBudget(entries);
   const yearTotals = buildYearTotals(budgetRecords, years);
   const initialId = [...entries].sort(
@@ -99,9 +60,6 @@ async function DashboardData({ searchParams }: PageProps) {
 
   return (
     <>
-      <div className="analysis-toolbar">
-        <AnalysisLevelSelector value={analysisLevel} />
-      </div>
       <section className="summary-grid" aria-label={`Budget summary for ${selectedYear}`}>
         <article className="summary-card">
           <span className="summary-label">Total budget</span>
@@ -137,17 +95,14 @@ async function DashboardData({ searchParams }: PageProps) {
         </article>
       </section>
 
-      <div className="dashboard-grid overview-lead-grid">
-        <BudgetRanking entries={entries} />
-        <BudgetChangeChart
-          currentEntries={entries}
-          previousEntries={previousEntries}
-          year={selectedYear}
+      <section className="panel overview-major-category-panel">
+        <BudgetCategoryChart
+          categories={getBudgetCategorySummaries(selectedYear)}
+          selectedYear={selectedYear}
         />
-      </div>
+      </section>
 
       <div className="overview-flow">
-        <BudgetDistributionHistogram entries={entries} />
         <TotalBudgetTimeline yearTotals={yearTotals} />
         <DepartmentHistoryChart
           entries={budgetRecords}
@@ -157,13 +112,6 @@ async function DashboardData({ searchParams }: PageProps) {
           selectedYear={selectedYear}
         />
         <DepartmentHeatmap records={budgetRecords} years={years} />
-        <DepartmentTable
-          entries={entries}
-          previousEntries={previousEntries}
-          allRecords={budgetRecords}
-          years={years}
-          schemeCounts={getSchemeCountsByDepartment(selectedYear)}
-        />
       </div>
     </>
   );

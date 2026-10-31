@@ -243,7 +243,11 @@ function loadFiles() {
   const errors: string[] = [];
   try {
     const filenames = readdirSync(join(process.cwd(), "data"))
-      .filter((filename) => filename.toLowerCase().endsWith(".json"))
+      .filter(
+        (filename) =>
+          filename.toLowerCase().endsWith(".json") &&
+          filename.toLowerCase() !== "budgetwatch_categories.json",
+      )
       .sort();
     if (filenames.length === 0) errors.push("No JSON budget files were found in data/.");
     for (const filename of filenames) {

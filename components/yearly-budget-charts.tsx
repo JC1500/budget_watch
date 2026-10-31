@@ -784,18 +784,18 @@ export function DepartmentHeatmap({
   }
 
   function cellStyle(value: number | null) {
-    if (value === null) return { backgroundColor: "#f0f1ee", color: "#89928c" };
+    if (value === null) return { backgroundColor: "var(--surface-muted)", color: "var(--text-muted)" };
     const max = metric === "amount" ? maxAmount : maxPercentage;
     const magnitude = Math.min(Math.abs(value) / max, 1);
     if (metric === "percentage" && value < 0) {
       return {
         backgroundColor: `rgba(174, 123, 92, ${0.12 + magnitude * 0.6})`,
-        color: magnitude > 0.55 ? "#fff" : "#503a2f",
+        color: "var(--text-primary)",
       };
     }
     return {
       backgroundColor: `rgba(63, 117, 81, ${0.1 + magnitude * 0.65})`,
-      color: magnitude > 0.55 ? "#fff" : "#20372a",
+      color: "var(--text-primary)",
     };
   }
 
