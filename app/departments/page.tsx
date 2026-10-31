@@ -1,6 +1,12 @@
 import { Suspense } from "react";
 import { DepartmentTable } from "@/components/department-table";
-import { budgetRecords, getBudgetsByYear, getDepartments, getFinancialYears } from "@/lib/budget-data";
+import {
+  budgetRecords,
+  getBudgetsByYear,
+  getDepartments,
+  getFinancialYears,
+  getSchemeCountsByDepartment,
+} from "@/lib/budget-data";
 
 type Props = { searchParams: Promise<{ year?: string }> };
 
@@ -21,6 +27,7 @@ async function DepartmentList({ searchParams }: Props) {
       previousEntries={getBudgetsByYear(previousYear)}
       allRecords={budgetRecords}
       years={years}
+      schemeCounts={getSchemeCountsByDepartment(year)}
     />
   );
 }

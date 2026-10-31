@@ -44,11 +44,22 @@ export function calculateAbsoluteChange(
   return current - previous;
 }
 
-export function calculateShare(amount: number, total: number) {
-  if (!Number.isFinite(amount) || !Number.isFinite(total) || total <= 0) {
+export function calculateBudgetShare(
+  departmentAllocation: number,
+  totalAllocation: number,
+) {
+  if (
+    !Number.isFinite(departmentAllocation) ||
+    !Number.isFinite(totalAllocation) ||
+    totalAllocation <= 0
+  ) {
     return null;
   }
-  return (amount / total) * 100;
+  return (departmentAllocation / totalAllocation) * 100;
+}
+
+export function calculateShare(amount: number, total: number) {
+  return calculateBudgetShare(amount, total);
 }
 
 export function calculateRank(amount: number, amounts: number[]) {

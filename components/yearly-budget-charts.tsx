@@ -14,6 +14,7 @@ import {
   Legend,
   Line,
   LineChart,
+  ReferenceDot,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -21,6 +22,7 @@ import {
 } from "recharts";
 import type { BudgetEntry } from "@/lib/budget-data";
 import {
+  calculateBudgetShare,
   calculateCAGR,
   calculateShare,
   calculateYoY,
@@ -62,16 +64,42 @@ function ChartTooltip({
     <div className="chart-tooltip">
       {typeof data.department === "string" && <strong>{data.department}</strong>}
       {year && <span>{year}</span>}
-      {typeof amount === "number" && <span>{formatCroreExact(amount)}</span>}
+      {typeof amount === "number" && (
+        <div className="chart-tooltip-row">
+          <span>Allocation</span>
+          <strong>{formatCroreExact(amount)}</strong>
+        </div>
+      )}
+      {share !== null && (
+        <div className="chart-tooltip-row">
+          <span>Share of total budget</span>
+          <strong>{formatShare(share)}</strong>
+        </div>
+      )}
+      {yoy !== null && (
+        <div className="chart-tooltip-row">
+          <span>YoY change</span>
+          <strong>{formatPercent(yoy)}</strong>
+        </div>
+      )}
       {absoluteChange !== null && (
-        <span>Absolute change: {formatCroreExact(absoluteChange)}</span>
+        <div className="chart-tooltip-row">
+          <span>Absolute change</span>
+          <strong>{formatCroreExact(absoluteChange)}</strong>
+        </div>
       )}
       {percentChange !== null && (
-        <span>Percentage change: {formatPercent(percentChange)}</span>
+        <div className="chart-tooltip-row">
+          <span>Percentage change</span>
+          <strong>{formatPercent(percentChange)}</strong>
+        </div>
       )}
-      {yoy !== null && <span>YoY change: {formatPercent(yoy)}</span>}
-      {share !== null && <span>Share of total: {formatShare(share)}</span>}
-      {typeof data.rank === "number" && <span>Rank: {data.rank}</span>}
+      {typeof data.rank === "number" && (
+        <div className="chart-tooltip-row">
+          <span>Rank</span>
+          <strong>#{data.rank}</strong>
+        </div>
+      )}
     </div>
   );
 }
@@ -142,39 +170,193 @@ export function TotalBudgetTimeline({
   );
 }
 
+type DepartmentChartMode = "allocation" | "share";
+
+type DepartmentHistoryPoint = {
+  financialYear: string;
+  department: string;
+  departmentAllocation: number | null;
+  totalBudget: number;
+  sharePercentage: number | null;
+  previousAllocation: number | null;
+  yoyChange: number | null;
+};
+
+function buildDepartmentHistory(
+  entries: BudgetEntry[],
+  departmentId: string,
+  financialYears: string[],
+  yearTotals: YearTotal[],
+): DepartmentHistoryPoint[] {
+  const departmentEntries = new Map<string, BudgetEntry>();
+  for (const entry of entries) {
+    if (entry.id === departmentId && !departmentEntries.has(entry.financialYear)) {
+      departmentEntries.set(entry.financialYear, entry);
+    }
+  }
+  const totalsByYear = new Map(
+    yearTotals.map(({ financialYear, total }) => [financialYear, total]),
+  );
+
+  return financialYears.map((financialYear, index) => {
+    const currentEntry = departmentEntries.get(financialYear);
+    const previousYear = index > 0 ? financialYears[index - 1] : null;
+    const previousEntry = previousYear
+      ? departmentEntries.get(previousYear)
+      : undefined;
+    const departmentAllocation =
+      currentEntry && Number.isFinite(currentEntry.amountCrore)
+        ? currentEntry.amountCrore
+        : null;
+    const previousAllocation =
+      previousEntry && Number.isFinite(previousEntry.amountCrore)
+        ? previousEntry.amountCrore
+        : null;
+    const yoyChange =
+      departmentAllocation !== null && previousAllocation !== null
+        ? calculateYoY(departmentAllocation, previousAllocation)
+        : null;
+    const totalBudget = totalsByYear.get(financialYear) ?? 0;
+
+    return {
+      financialYear,
+      department: currentEntry?.department ?? "",
+      departmentAllocation,
+      totalBudget,
+      sharePercentage:
+        departmentAllocation === null
+          ? null
+          : calculateBudgetShare(departmentAllocation, totalBudget),
+      previousAllocation,
+      yoyChange,
+    };
+  });
+}
+
+function getShareDomain(values: number[]) {
+  if (values.length === 0) return [-1, 1] as [number, number];
+  const minimum = Math.min(...values);
+  const maximum = Math.max(...values);
+  const span = maximum - minimum;
+  const padding = Math.max(span * 0.2, Math.abs(minimum) * 0.03, 0.25);
+  return [Math.max(0, minimum - padding), maximum + padding] as [number, number];
+}
+
+function formatShareAxis(value: number) {
+  return `${Number(value.toFixed(2))}%`;
+}
+
+function DepartmentHistoryTooltip({
+  active,
+  payload,
+  label,
+  mode,
+}: {
+  active?: boolean;
+  payload?: { payload?: Record<string, unknown> }[];
+  label?: string;
+  mode: DepartmentChartMode;
+}) {
+  if (!active || !payload?.length) return null;
+  const data = payload[0]?.payload;
+  if (!data) return null;
+  const department = typeof data.department === "string" ? data.department : "";
+  const financialYear =
+    typeof data.financialYear === "string" ? data.financialYear : label;
+
+  if (mode === "share") {
+    const allocation =
+      typeof data.departmentAllocation === "number"
+        ? data.departmentAllocation
+        : null;
+    const totalBudget =
+      typeof data.totalBudget === "number" ? data.totalBudget : null;
+    const sharePercentage =
+      typeof data.sharePercentage === "number"
+        ? data.sharePercentage
+        : null;
+    return (
+      <div className="chart-tooltip">
+        {department && <strong>{department}</strong>}
+        {financialYear && <span>{financialYear}</span>}
+        <div className="chart-tooltip-row">
+          <span>Department allocation</span>
+          <strong>{allocation === null ? "—" : formatCroreExact(allocation)}</strong>
+        </div>
+        <div className="chart-tooltip-row">
+          <span>Total budget</span>
+          <strong>{totalBudget === null ? "—" : formatCroreExact(totalBudget)}</strong>
+        </div>
+        <div className="chart-tooltip-row">
+          <span>Share of total budget</span>
+          <strong>{formatShare(sharePercentage)}</strong>
+        </div>
+      </div>
+    );
+  }
+
+  const allocation =
+    typeof data.departmentAllocation === "number"
+      ? data.departmentAllocation
+      : null;
+  const share =
+    typeof data.sharePercentage === "number" ? data.sharePercentage : null;
+  const percentageChange =
+    typeof data.yoyChange === "number" ? data.yoyChange : null;
+
+  return (
+    <div className="chart-tooltip">
+      {department && <strong>{department}</strong>}
+      {financialYear && <span>{financialYear}</span>}
+      <div className="chart-tooltip-row">
+        <span>Allocation</span>
+        <strong>{allocation === null ? "—" : formatCroreExact(allocation)}</strong>
+      </div>
+      <div className="chart-tooltip-row">
+        <span>Share of total budget</span>
+        <strong>{formatShare(share)}</strong>
+      </div>
+      <div className="chart-tooltip-row">
+        <span>YoY change</span>
+        <strong>{formatPercent(percentageChange)}</strong>
+      </div>
+    </div>
+  );
+}
+
 export function DepartmentHistoryChart({
   entries,
   initialId,
   financialYears,
+  yearTotals,
+  selectedYear,
+  enableViewSelector = false,
   locked = false,
 }: {
   entries: BudgetEntry[];
   initialId: string;
   financialYears: string[];
+  yearTotals: YearTotal[];
+  selectedYear?: string;
+  enableViewSelector?: boolean;
   locked?: boolean;
 }) {
   const [departmentId, setDepartmentId] = useState(initialId);
-  const byYear = useMemo(
-    () => new Map(entries.filter((entry) => entry.id === departmentId).map((entry) => [entry.financialYear, entry])),
-    [departmentId, entries],
+  const [mode, setMode] = useState<DepartmentChartMode>("allocation");
+  const history = useMemo(
+    () => buildDepartmentHistory(entries, departmentId, financialYears, yearTotals),
+    [departmentId, entries, financialYears, yearTotals],
   );
-  const name = entries.filter((entry) => entry.id === departmentId).at(-1)?.department ?? "";
-  const data = financialYears.map((year, index) => {
-    const record = byYear.get(year);
-    const previous = index > 0 ? byYear.get(financialYears[index - 1]) : undefined;
-    return {
-      financialYear: year,
-      department: name,
-      amount: record?.amountCrore ?? null,
-      yoy:
-        record && previous
-          ? calculateYoY(record.amountCrore, previous.amountCrore)
-          : null,
-    };
-  });
-  const available = data.filter(
-    (record): record is typeof record & { amount: number } =>
-      typeof record.amount === "number",
+  const available = history.filter(
+    (point): point is DepartmentHistoryPoint & { departmentAllocation: number } =>
+      point.departmentAllocation !== null,
+  );
+  const shareAvailable = history.filter(
+    (point): point is DepartmentHistoryPoint & {
+      departmentAllocation: number;
+      sharePercentage: number;
+    } =>
+      point.departmentAllocation !== null && point.sharePercentage !== null,
   );
   const first = available[0];
   const last = available.at(-1);
@@ -185,18 +367,56 @@ export function DepartmentHistoryChart({
       : 0;
   const cagr =
     first && last && yearsApart > 0
-      ? calculateCAGR(first.amount, last.amount, yearsApart)
+      ? calculateCAGR(
+          first.departmentAllocation,
+          last.departmentAllocation,
+          yearsApart,
+        )
       : null;
+  const firstShare = shareAvailable[0];
+  const lastShare = shareAvailable.at(-1);
+  const shareMovement =
+    firstShare && lastShare
+      ? lastShare.sharePercentage - firstShare.sharePercentage
+      : null;
+  const shareDomain = getShareDomain(
+    shareAvailable.map((point) => point.sharePercentage),
+  );
 
   return (
     <section className="panel" aria-labelledby="department-trend-title">
-      <div className="panel-header">
+      <div className="panel-header department-analysis-header">
         <div>
           <h2 className="panel-title" id="department-trend-title">
-            Department budget over time
+            {mode === "allocation"
+              ? "Department budget over time"
+              : "Share of total budget over time"}
           </h2>
-          <p className="panel-subtitle">Available financial years · ₹ crore</p>
+          <p className="panel-subtitle">
+            {mode === "allocation"
+              ? "Available financial years · ₹ crore"
+              : "Percentage of each financial year's total allocation assigned to this department"}
+          </p>
         </div>
+        {enableViewSelector && (
+          <label className="chart-view-picker">
+            <span>View</span>
+            <select
+              aria-label="Chart view"
+              className="chart-view-select"
+              onChange={(event) => {
+                const nextMode = event.target.value;
+                if (nextMode === "allocation" || nextMode === "share") {
+                  setMode(nextMode);
+                }
+              }}
+              value={mode}
+            >
+              <option value="allocation">Budget allocation</option>
+              <option value="share">Share of total budget</option>
+            </select>
+          </label>
+        )}
       </div>
       {!locked && (
         <div className="trend-controls">
@@ -219,43 +439,129 @@ export function DepartmentHistoryChart({
       )}
       {available.length > 0 ? (
         <>
-          <div className="chart-frame">
+          <div className="chart-frame department-analysis-chart-frame">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={data} margin={{ top: 16, right: 18, bottom: 8, left: 18 }}>
-                <CartesianGrid stroke="#e9ece7" strokeDasharray="3 4" vertical={false} />
-                <XAxis dataKey="financialYear" axisLine={false} tickLine={false} />
+              <LineChart
+                data={history}
+                margin={{ top: 16, right: 18, bottom: 8, left: 18 }}
+              >
+                <CartesianGrid
+                  stroke="var(--chart-grid)"
+                  strokeDasharray="3 4"
+                  vertical={false}
+                />
+                <XAxis
+                  dataKey="financialYear"
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fill: "var(--chart-axis)" }}
+                />
                 <YAxis
                   axisLine={false}
                   tickLine={false}
-                  tickFormatter={(value: number) => formatCroreCompact(value)}
-                  width={80}
+                  tick={{ fill: "var(--chart-axis)" }}
+                  domain={mode === "share" ? shareDomain : undefined}
+                  tickFormatter={
+                    mode === "allocation"
+                      ? (value: number) => formatCroreCompact(value)
+                      : formatShareAxis
+                  }
+                  width={mode === "allocation" ? 80 : 56}
                 />
-                <Tooltip content={<ChartTooltip />} />
+                <Tooltip
+                  cursor={false}
+                  content={<DepartmentHistoryTooltip mode={mode} />}
+                />
                 <Line
                   connectNulls={false}
-                  dataKey="amount"
-                  name="Department allocation"
-                  stroke="#245c46"
+                  dataKey={
+                    mode === "allocation"
+                      ? "departmentAllocation"
+                      : "sharePercentage"
+                  }
+                  name={
+                    mode === "allocation"
+                      ? "Department allocation"
+                      : "Share of total budget"
+                  }
+                  stroke="var(--chart-positive)"
                   strokeWidth={2.5}
-                  dot={{ fill: "#245c46", r: 3 }}
+                  dot={{ fill: "var(--chart-positive)", r: 3 }}
                   activeDot={{ r: 5 }}
                 />
+                {selectedYear &&
+                  history.some(
+                    (point) =>
+                      point.financialYear === selectedYear &&
+                      (mode === "allocation"
+                        ? point.departmentAllocation !== null
+                        : point.sharePercentage !== null),
+                  ) && (
+                    <ReferenceDot
+                      x={selectedYear}
+                      y={
+                        mode === "allocation"
+                          ? history.find(
+                              (point) => point.financialYear === selectedYear,
+                            )?.departmentAllocation ?? 0
+                          : history.find(
+                              (point) => point.financialYear === selectedYear,
+                            )?.sharePercentage ?? 0
+                      }
+                      r={6}
+                      fill="var(--chart-positive)"
+                      stroke="var(--surface)"
+                      strokeWidth={2}
+                      pointerEvents="none"
+                    />
+                  )}
               </LineChart>
             </ResponsiveContainer>
           </div>
           <div className="trend-metrics">
-            <div>
-              <span>First available allocation</span>
-              <strong>{first ? `${first.financialYear} · ${formatCroreExact(first.amount)}` : "—"}</strong>
-            </div>
-            <div>
-              <span>Latest available allocation</span>
-              <strong>{last ? `${last.financialYear} · ${formatCroreExact(last.amount)}` : "—"}</strong>
-            </div>
-            <div>
-              <span>Annualized change</span>
-              <strong>{formatPercent(cagr)}</strong>
-            </div>
+            {mode === "allocation" ? (
+              <>
+                <div>
+                  <span>First available allocation</span>
+                  <strong>{first ? `${first.financialYear} · ${formatCroreExact(first.departmentAllocation)}` : "—"}</strong>
+                </div>
+                <div>
+                  <span>Latest available allocation</span>
+                  <strong>{last ? `${last.financialYear} · ${formatCroreExact(last.departmentAllocation)}` : "—"}</strong>
+                </div>
+                <div>
+                  <span>Annualized change</span>
+                  <strong>{formatPercent(cagr)}</strong>
+                </div>
+              </>
+            ) : (
+              <>
+                <div>
+                  <span>First available share</span>
+                  <strong>
+                    {firstShare
+                      ? `${firstShare.financialYear} · ${formatShare(firstShare.sharePercentage)}`
+                      : "—"}
+                  </strong>
+                </div>
+                <div>
+                  <span>Latest available share</span>
+                  <strong>
+                    {lastShare
+                      ? `${lastShare.financialYear} · ${formatShare(lastShare.sharePercentage)}`
+                      : "—"}
+                  </strong>
+                </div>
+                <div>
+                  <span>Share movement</span>
+                  <strong>
+                    {shareMovement === null || !Number.isFinite(shareMovement)
+                      ? "—"
+                      : `${shareMovement > 0 ? "+" : ""}${shareMovement.toFixed(2)} pp`}
+                  </strong>
+                </div>
+              </>
+            )}
           </div>
         </>
       ) : (
@@ -340,7 +646,7 @@ export function BudgetChangeChart({
       </div>
       {filtered.length > 0 ? (
         <div className="change-chart">
-          <ResponsiveContainer width="100%" height={Math.max(260, filtered.length * 38)}>
+          <ResponsiveContainer width="100%" height={Math.max(260, filtered.length * 30)}>
             <BarChart
               data={filtered}
               layout="vertical"

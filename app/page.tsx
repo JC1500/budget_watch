@@ -8,20 +8,23 @@ import {
   TotalBudgetTimeline,
 } from "@/components/yearly-budget-charts";
 import { BudgetRanking } from "@/components/budget-ranking";
-import { BudgetTreemap } from "@/components/budget-treemap";
 import { DepartmentTable } from "@/components/department-table";
+import { AnalysisLevelSelector } from "@/components/analysis-level-selector";
+import { SchemeOverview } from "@/components/scheme-overview";
 import {
   budgetRecords,
   getBudgetsByYear,
   getDataStatus,
   getDepartments,
   getFinancialYears,
+  getSchemeCountsByDepartment,
+  getSchemes,
 } from "@/lib/budget-data";
 import { buildYearTotals, summarizeBudget } from "@/lib/analytics/budget";
-import { formatCroreCompact, formatPercent, formatShare } from "@/lib/format";
+import { formatCroreCompact } from "@/lib/format";
 
 type PageProps = {
-  searchParams: Promise<{ year?: string }>;
+  searchParams: Promise<{ year?: string; level?: string }>;
 };
 
 function DashboardSkeleton() {
@@ -50,14 +53,43 @@ async function DashboardData({ searchParams }: PageProps) {
   }
 
   const query = await searchParams;
+  const analysisLevel = query.level === "schemes" ? "schemes" : "departments";
   const years = getFinancialYears().map((entry) => entry.year);
   const selectedYear =
     query.year && years.includes(query.year)
       ? query.year
       : years.at(-1) ?? "";
-  const selectedIndex = years.indexOf(selectedYear);
-  const previousYear = selectedIndex > 0 ? years[selectedIndex - 1] : "";
   const entries = getDepartments(selectedYear);
+  const previousYear = years[years.indexOf(selectedYear) - 1] ?? "";
+  const currentSchemes = getSchemes(selectedYear);
+  const previousSchemes = previousYear ? getSchemes(previousYear) : [];
+  const departments = [
+    ...new Map(
+      budgetRecords.map((record) => [
+        record.id,
+        { id: record.id, name: record.department },
+      ]),
+    ).values(),
+  ].sort((a, b) => a.name.localeCompare(b.name));
+
+  if (analysisLevel === "schemes") {
+    return (
+      <>
+        <div className="analysis-toolbar">
+          <AnalysisLevelSelector value={analysisLevel} />
+        </div>
+        <SchemeOverview
+          entries={currentSchemes}
+          previousEntries={previousSchemes}
+          departmentEntries={entries}
+          departments={departments}
+          years={years}
+          selectedYear={selectedYear}
+        />
+      </>
+    );
+  }
+
   const previousEntries = getBudgetsByYear(previousYear);
   const summary = summarizeBudget(entries);
   const yearTotals = buildYearTotals(budgetRecords, years);
@@ -67,6 +99,9 @@ async function DashboardData({ searchParams }: PageProps) {
 
   return (
     <>
+      <div className="analysis-toolbar">
+        <AnalysisLevelSelector value={analysisLevel} />
+      </div>
       <section className="summary-grid" aria-label={`Budget summary for ${selectedYear}`}>
         <article className="summary-card">
           <span className="summary-label">Total budget</span>
@@ -102,91 +137,34 @@ async function DashboardData({ searchParams }: PageProps) {
         </article>
       </section>
 
-      <div className="dashboard-grid">
+      <div className="dashboard-grid overview-lead-grid">
         <BudgetRanking entries={entries} />
-        <section className="panel" aria-labelledby="year-insights-title">
-          <div className="panel-header">
-            <div>
-              <h2 className="panel-title" id="year-insights-title">
-                Snapshot insights
-              </h2>
-              <p className="panel-subtitle">Calculated from {selectedYear} source rows</p>
-            </div>
-          </div>
-          <div className="section-pad">
-            <div className="snapshot-facts">
-              <div>
-                <span>Average department allocation</span>
-                <strong>
-                  {summary.average === null
-                    ? "—"
-                    : formatCroreCompact(summary.average)}
-                </strong>
-              </div>
-              <div>
-                <span>Top 5 departments&apos; share</span>
-                <strong>{formatShare(summary.topFiveShare)}</strong>
-              </div>
-              <div>
-                <span>Top 10 departments&apos; share</span>
-                <strong>{formatShare(summary.topTenShare)}</strong>
-              </div>
-              <div>
-                <span>Smallest department allocation</span>
-                <strong>
-                  {summary.smallest
-                    ? formatCroreCompact(summary.smallest.amountCrore)
-                    : "—"}
-                </strong>
-              </div>
-              <div>
-                <span>Budget spread · standard deviation</span>
-                <strong>
-                  {summary.standardDeviation === null
-                    ? "—"
-                    : formatCroreCompact(summary.standardDeviation)}
-                </strong>
-              </div>
-              <div>
-                <span>Change in total vs {previousYear || "prior year"}</span>
-                <strong>
-                  {formatPercent(
-                    yearTotals.find((item) => item.financialYear === selectedYear)?.yoy ??
-                      null,
-                  )}
-                </strong>
-              </div>
-            </div>
-          </div>
-        </section>
-      </div>
-
-      <div className="dashboard-grid">
         <BudgetChangeChart
           currentEntries={entries}
           previousEntries={previousEntries}
           year={selectedYear}
         />
+      </div>
+
+      <div className="overview-flow">
         <BudgetDistributionHistogram entries={entries} />
-      </div>
-
-      <div className="dashboard-grid">
-        <BudgetTreemap entries={entries} />
         <TotalBudgetTimeline yearTotals={yearTotals} />
+        <DepartmentHistoryChart
+          entries={budgetRecords}
+          initialId={initialId}
+          financialYears={years}
+          yearTotals={yearTotals}
+          selectedYear={selectedYear}
+        />
+        <DepartmentHeatmap records={budgetRecords} years={years} />
+        <DepartmentTable
+          entries={entries}
+          previousEntries={previousEntries}
+          allRecords={budgetRecords}
+          years={years}
+          schemeCounts={getSchemeCountsByDepartment(selectedYear)}
+        />
       </div>
-
-      <DepartmentHistoryChart
-        entries={budgetRecords}
-        initialId={initialId}
-        financialYears={years}
-      />
-      <DepartmentHeatmap records={budgetRecords} years={years} />
-      <DepartmentTable
-        entries={entries}
-        previousEntries={previousEntries}
-        allRecords={budgetRecords}
-        years={years}
-      />
     </>
   );
 }
@@ -199,17 +177,10 @@ export default function Home(props: PageProps) {
           <p className="eyebrow">Public finance · India</p>
           <h1>Budget Watch</h1>
           <p className="intro-copy">
-            Explore how government budget allocations change across departments
-            and financial years.
+            Explore how government budgets flow from departments into schemes
+            and change across financial years.
           </p>
         </div>
-        <aside className="dataset-note" aria-label="Dataset status">
-          <span className="status-dot" aria-hidden="true" />
-          <span>
-            <strong>Local JSON datasets.</strong> Financial years and allocations
-            are read from the project&apos;s six data files.
-          </span>
-        </aside>
       </section>
       <Suspense fallback={<DashboardSkeleton />}>
         <DashboardData searchParams={props.searchParams} />

@@ -1,11 +1,19 @@
 import "server-only";
 
+import { createHash } from "node:crypto";
 import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
+import { calculateBudgetShare } from "@/lib/format";
 
 type RawDepartment = {
   department?: unknown;
   total?: unknown;
+  schemes?: unknown;
+};
+
+type RawScheme = {
+  scheme?: unknown;
+  budget?: unknown;
 };
 
 type RawMinistry = {
@@ -14,6 +22,7 @@ type RawMinistry = {
 };
 
 type RawBudgetFile = {
+  year?: unknown;
   financial_year?: unknown;
   unit?: unknown;
   ministries?: unknown;
@@ -24,6 +33,7 @@ export type FinancialYear = {
   filename: string;
   unit: string;
   recordCount: number;
+  schemeCount: number;
   availableFields: string[];
 };
 
@@ -32,6 +42,26 @@ export type BudgetEntry = {
   financialYear: string;
   ministry: string;
   department: string;
+  amountCrore: number;
+};
+
+export type BudgetEntityType = "department" | "scheme";
+
+export type BudgetEntity = {
+  id: string;
+  name: string;
+  type: BudgetEntityType;
+  departmentId?: string;
+  departmentName?: string;
+};
+
+export type SchemeBudgetEntry = {
+  id: string;
+  financialYear: string;
+  scheme: string;
+  departmentId: string;
+  department: string;
+  ministry: string;
   amountCrore: number;
 };
 
@@ -60,6 +90,30 @@ export function normalizeDepartmentName(name: string) {
     .toLocaleLowerCase("en-IN");
 }
 
+export function getSchemeShareOfDepartment(
+  schemeId: string,
+  financialYear: string,
+) {
+  const scheme = getScheme(schemeId, financialYear);
+  const departmentTotal = scheme
+    ? getDepartmentTotal(scheme.departmentId, financialYear)
+    : null;
+  return scheme && departmentTotal !== null
+    ? calculateBudgetShare(scheme.amountCrore, departmentTotal)
+    : null;
+}
+
+export function getSchemeShareOfTotal(
+  schemeId: string,
+  financialYear: string,
+) {
+  const allocation = getSchemeAllocation(schemeId, financialYear);
+  const total = getTotalBudget(financialYear);
+  return allocation === null || total <= 0
+    ? null
+    : calculateBudgetShare(allocation, total);
+}
+
 function departmentIdentity(name: string) {
   const normalized = normalizeDepartmentName(name);
   return departmentAliases[normalized] ?? normalized;
@@ -82,6 +136,16 @@ function readAmount(value: unknown): number | null {
   return Number.isFinite(parsed) ? parsed : null;
 }
 
+function normalizeSchemeName(name: string) {
+  return name.trim().replace(/\s+/g, " ").toLocaleLowerCase("en-IN");
+}
+
+function schemeIdentity(departmentId: string, name: string) {
+  const identity = `${departmentId}\u0000${normalizeSchemeName(name)}`;
+  const hash = createHash("sha256").update(identity).digest("hex").slice(0, 24);
+  return `scheme-${hash}`;
+}
+
 function objectRecords(value: unknown): Record<string, unknown>[] {
   return Array.isArray(value)
     ? value.filter(
@@ -93,12 +157,15 @@ function objectRecords(value: unknown): Record<string, unknown>[] {
 
 function normalizeFile(filename: string, rawFile: RawBudgetFile) {
   const year =
-    typeof rawFile.financial_year === "string"
-      ? rawFile.financial_year.trim()
-      : "";
+    typeof rawFile.year === "string"
+      ? rawFile.year.trim()
+      : typeof rawFile.financial_year === "string"
+        ? rawFile.financial_year.trim()
+        : "";
   const unit =
     typeof rawFile.unit === "string" ? rawFile.unit.trim() : "₹ crore";
   const records: BudgetEntry[] = [];
+  const schemes: SchemeBudgetEntry[] = [];
   let invalidRecords = 0;
 
   for (const rawMinistry of objectRecords(rawFile.ministries) as RawMinistry[]) {
@@ -115,21 +182,60 @@ function normalizeFile(filename: string, rawFile: RawBudgetFile) {
       }
       const department = rawDepartment.department.trim().replace(/\s+/g, " ");
       const amountCrore = readAmount(rawDepartment.total);
-      if (!department || amountCrore === null || !year || !ministry) {
+      if (!department || !year || !ministry) {
         invalidRecords += 1;
         continue;
       }
-      records.push({
-        id: slugify(department),
-        financialYear: year,
-        ministry,
-        department,
-        amountCrore,
-      });
+      const departmentId = slugify(department);
+      if (amountCrore === null) {
+        invalidRecords += 1;
+      } else {
+        records.push({
+          id: departmentId,
+          financialYear: year,
+          ministry,
+          department,
+          amountCrore,
+        });
+      }
+
+      const schemeAmounts = new Map<string, {
+        id: string;
+        scheme: string;
+        amountCrore: number;
+      }>();
+      for (const rawScheme of objectRecords(rawDepartment.schemes) as RawScheme[]) {
+        if (typeof rawScheme.scheme !== "string") {
+          invalidRecords += 1;
+          continue;
+        }
+        const scheme = rawScheme.scheme.trim().replace(/\s+/g, " ");
+        const schemeAmount = readAmount(rawScheme.budget);
+        if (!scheme || schemeAmount === null) {
+          invalidRecords += 1;
+          continue;
+        }
+        const id = schemeIdentity(departmentId, scheme);
+        const existing = schemeAmounts.get(id);
+        if (existing) {
+          existing.amountCrore += schemeAmount;
+        } else {
+          schemeAmounts.set(id, { id, scheme, amountCrore: schemeAmount });
+        }
+      }
+      for (const scheme of schemeAmounts.values()) {
+        schemes.push({
+          ...scheme,
+          financialYear: year,
+          departmentId,
+          department,
+          ministry,
+        });
+      }
     }
   }
 
-  return { filename, year, unit, records, invalidRecords };
+  return { filename, year, unit, records, schemes, invalidRecords };
 }
 
 function loadFiles() {
@@ -147,7 +253,8 @@ function loadFiles() {
         if (
           typeof parsed !== "object" ||
           parsed === null ||
-          typeof parsed.financial_year !== "string" ||
+          (typeof parsed.year !== "string" &&
+            typeof parsed.financial_year !== "string") ||
           !Array.isArray(parsed.ministries)
         ) {
           errors.push(`${filename}: required budget data fields are missing.`);
@@ -171,6 +278,7 @@ function loadFiles() {
 
 const loaded = loadFiles();
 export const budgetRecords = loaded.files.flatMap((file) => file.records);
+export const schemeRecords = loaded.files.flatMap((file) => file.schemes);
 
 const displayNames = new Map<string, string>();
 for (const record of budgetRecords) {
@@ -183,12 +291,116 @@ export function getFinancialYears(): FinancialYear[] {
     filename: file.filename,
     unit: file.unit,
     recordCount: file.records.length,
-    availableFields: ["ministry", "department", "total"],
+    schemeCount: file.schemes.length,
+    availableFields: ["ministry", "department", "total", "schemes"],
   }));
 }
 
 export function getBudgetsByYear(year: string): BudgetEntry[] {
   return budgetRecords.filter((record) => record.financialYear === year);
+}
+
+export function getSchemesByYear(year: string): SchemeBudgetEntry[] {
+  return schemeRecords.filter((record) => record.financialYear === year);
+}
+
+export function getSchemes(year = getFinancialYears().at(-1)?.year ?? "") {
+  return getSchemesByYear(year);
+}
+
+export function getSchemesByDepartment(
+  departmentId: string,
+  year?: string,
+): SchemeBudgetEntry[] {
+  return schemeRecords.filter(
+    (record) =>
+      record.departmentId === departmentId &&
+      (year === undefined || record.financialYear === year),
+  );
+}
+
+export function getSchemeHistory(id: string): SchemeBudgetEntry[] {
+  return schemeRecords
+    .filter((record) => record.id === id)
+    .sort((a, b) => a.financialYear.localeCompare(b.financialYear));
+}
+
+export function getBudgetEntities(): BudgetEntity[] {
+  const departments = [
+    ...new Map(
+      budgetRecords.map((record) => [
+        record.id,
+        { id: record.id, name: record.department, type: "department" as const },
+      ]),
+    ).values(),
+  ];
+  const schemes = [
+    ...new Map(
+      schemeRecords.map((record) => [
+        record.id,
+        {
+          id: record.id,
+          name: record.scheme,
+          type: "scheme" as const,
+          departmentId: record.departmentId,
+          departmentName: record.department,
+        },
+      ]),
+    ).values(),
+  ];
+  return [...departments, ...schemes].sort((a, b) =>
+    a.name.localeCompare(b.name),
+  );
+}
+
+export function getScheme(id: string, year?: string) {
+  const history = getSchemeHistory(id);
+  return year
+    ? history.find((record) => record.financialYear === year)
+    : history.at(-1);
+}
+
+export function getDepartmentSchemeBreakdown(
+  departmentId: string,
+  financialYear: string,
+) {
+  return getSchemesByDepartment(departmentId, financialYear).sort(
+    (a, b) => b.amountCrore - a.amountCrore,
+  );
+}
+
+export function getSchemeCountsByDepartment(financialYear: string) {
+  const counts: Record<string, number> = Object.fromEntries(
+    getDepartments(financialYear).map((entry) => [entry.id, 0]),
+  );
+  for (const scheme of getSchemesByYear(financialYear)) {
+    counts[scheme.departmentId] = (counts[scheme.departmentId] ?? 0) + 1;
+  }
+  return counts;
+}
+
+export function getDepartmentTotal(
+  departmentId: string,
+  financialYear: string,
+) {
+  return budgetRecords.find(
+    (record) =>
+      record.id === departmentId && record.financialYear === financialYear,
+  )?.amountCrore ?? null;
+}
+
+export function getTotalBudget(financialYear: string) {
+  return getDepartments(financialYear).reduce(
+    (total, entry) =>
+      Number.isFinite(entry.amountCrore) && entry.amountCrore >= 0
+        ? total + entry.amountCrore
+        : total,
+    0,
+  );
+}
+
+export function getSchemeAllocation(id: string, financialYear: string) {
+  return getScheme(id, financialYear)?.amountCrore ?? null;
 }
 
 export function getDepartments(year = getFinancialYears().at(-1)?.year ?? "") {

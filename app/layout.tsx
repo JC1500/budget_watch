@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import type { ReactNode } from "react";
 import { SiteHeader } from "@/components/site-header";
-import { getFinancialYears } from "@/lib/budget-data";
+import { getBudgetEntities, getFinancialYears } from "@/lib/budget-data";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -18,7 +18,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Budget Watch | Public finance, made legible",
   description:
-    "Explore department-level Government of India budget allocations in a clear public-data dashboard.",
+    "Explore Government of India department and scheme budget allocations across financial years.",
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
@@ -28,7 +28,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        <SiteHeader years={getFinancialYears()} />
+        <SiteHeader years={getFinancialYears()} entities={getBudgetEntities()} />
         {children}
         <footer className="site-footer">
           <div className="footer-inner">

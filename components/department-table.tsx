@@ -43,6 +43,7 @@ type Props = {
   allRecords?: BudgetEntry[];
   years?: string[];
   explorer?: boolean;
+  schemeCounts?: Record<string, number>;
 };
 
 function csvCell(value: string | number) {
@@ -55,6 +56,7 @@ export function DepartmentTable({
   allRecords = entries,
   years = [],
   explorer = false,
+  schemeCounts = {},
 }: Props) {
   const [query, setQuery] = useState("");
   const [sortKey, setSortKey] = useState<SortKey>("budget-desc");
@@ -348,7 +350,14 @@ export function DepartmentTable({
               return (
                 <tr key={entry.id}>
                   {isVisible("rank") && <td>{rankById.get(entry.id) ?? "—"}</td>}
-                  <td><Link className="department-link" href={`/departments/${entry.id}${yearQuery}`}>{entry.department}</Link></td>
+                  <td>
+                    <Link className="department-link" href={`/departments/${entry.id}${yearQuery}`}>{entry.department}</Link>
+                    {schemeCounts[entry.id] !== undefined && (
+                      <span className="department-scheme-count">
+                        {schemeCounts[entry.id]} schemes
+                      </span>
+                    )}
+                  </td>
                   {isVisible("ministry") && <td><span className="ministry-cell" title={entry.ministry}>{entry.ministry}</span></td>}
                   {isVisible("budget") && <td className="numeric">{formatCroreExact(entry.amountCrore)}</td>}
                   {isVisible("previous") && <td className="numeric">{old ? formatCroreExact(old.amountCrore) : "—"}</td>}

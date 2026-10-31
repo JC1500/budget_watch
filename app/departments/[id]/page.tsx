@@ -1,25 +1,25 @@
-import Link from "next/link";
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
-import {
-  DepartmentHistoryChart,
-  DepartmentIndexedGrowthChart,
-} from "@/components/yearly-budget-charts";
+import { DepartmentDetailHeader } from "@/components/department-detail-header";
+import { DepartmentSchemeBreakdown } from "@/components/department-scheme-breakdown";
+import { DepartmentHistoryChart } from "@/components/yearly-budget-charts";
 import {
   budgetRecords,
-  getBudgetsByYear,
   getDepartment,
   getDepartmentHistory,
   getFinancialYears,
   getDepartments,
+  getDepartmentSchemeBreakdown,
+  getSchemesByYear,
 } from "@/lib/budget-data";
 import {
-  getDepartmentCagr,
+  buildYearTotals,
   getDepartmentRank,
   getDepartmentVolatility,
   summarizeBudget,
 } from "@/lib/analytics/budget";
 import {
+  calculateBudgetShare,
   calculateShare,
   calculateYoY,
   formatCroreExact,
@@ -54,80 +54,64 @@ async function DepartmentDetail({ params, searchParams }: Props) {
   const previous = history.find((entry) => entry.financialYear === previousYear);
   const yearEntries = getDepartments(year);
   const summary = summarizeBudget(yearEntries);
+  const departmentSchemes = getDepartmentSchemeBreakdown(id, year);
+  const previousSchemes = previousYear ? getSchemesByYear(previousYear) : [];
+  const yearTotals = buildYearTotals(budgetRecords, years);
   const rank = current ? getDepartmentRank(current, yearEntries) : null;
   const share =
     current && summary.total > 0
-      ? calculateShare(current.amountCrore, summary.total)
+      ? calculateBudgetShare(current.amountCrore, summary.total)
       : null;
-  const cagr = getDepartmentCagr(history, years);
   const volatility = getDepartmentVolatility(history, years);
-  const allYearTotals = new Map(
-    years.map((financialYear) => {
-      const entries = getBudgetsByYear(financialYear);
-      return [
-        financialYear,
-        entries.reduce((sum, entry) => sum + entry.amountCrore, 0),
-      ];
-    }),
-  );
-  const indexedRows = history.flatMap((entry) => {
-    const first = history[0];
-    const firstTotal = allYearTotals.get(first.financialYear) ?? 0;
-    const yearTotal = allYearTotals.get(entry.financialYear) ?? 0;
-    if (first.amountCrore <= 0 || firstTotal <= 0) return [];
-    return [{
-      year: entry.financialYear,
-      departmentIndex: (entry.amountCrore / first.amountCrore) * 100,
-      overallIndex: (yearTotal / firstTotal) * 100,
-    }];
-  });
+  const yoy = current && previous ? calculateYoY(current.amountCrore, previous.amountCrore) : null;
+  const departmentOptions = [...new Map(
+    budgetRecords.map((record) => [record.id, { id: record.id, name: record.department }]),
+  ).values()].sort((a, b) => a.name.localeCompare(b.name));
 
   return (
     <main className="page-shell">
-      <section className="page-intro">
-        <div>
-          <p className="eyebrow">
-            <Link className="text-link" href={`/departments?year=${encodeURIComponent(year)}`}>Departments</Link>
-            {" / "}Department detail
-          </p>
-          <h1>{latest.department}</h1>
-          <p className="intro-copy">{current?.ministry ?? latest.ministry}</p>
-        </div>
-      </section>
+      <DepartmentDetailHeader
+        departments={departmentOptions}
+        selectedDepartmentId={id}
+        selectedYear={year}
+        years={years}
+      />
 
-      <section className="summary-grid" aria-label="Department summary">
-        <article className="summary-card">
-          <span className="summary-label">Budget · {year}</span>
-          <strong className="summary-value">
+      <section className="detail-summary-strip" aria-label="Department summary">
+        <div className="detail-metric">
+          <span className="detail-metric-label">Allocation</span>
+          <strong className="detail-metric-value">
             {current ? formatCroreExact(current.amountCrore) : "—"}
           </strong>
-          <span className="summary-sub">
-            {current ? "Listed allocation" : "No allocation row in this year"}
-          </span>
-        </article>
-        <article className="summary-card">
-          <span className="summary-label">Rank · {year}</span>
-          <strong className="summary-value">{rank === null ? "—" : `#${rank}`}</strong>
-          <span className="summary-sub">Among departments in selected year</span>
-        </article>
-        <article className="summary-card">
-          <span className="summary-label">Share of selected total</span>
-          <strong className="summary-value">{formatShare(share)}</strong>
-          <span className="summary-sub">Share of department allocations</span>
-        </article>
-        <article className="summary-card">
-          <span className="summary-label">CAGR · available history</span>
-          <strong className="summary-value">{formatPercent(cagr)}</strong>
-          <span className="summary-sub">Annualized change between endpoints</span>
-        </article>
+          <small className="detail-metric-note">{year}</small>
+        </div>
+        <div className="detail-metric">
+          <span className="detail-metric-label">Share of total budget</span>
+          <strong className="detail-metric-value">{formatShare(share)}</strong>
+          <small className="detail-metric-note">Selected year total</small>
+        </div>
+        <div className="detail-metric">
+          <span className="detail-metric-label">YoY change</span>
+          <strong className="detail-metric-value">{formatPercent(yoy)}</strong>
+          <small className="detail-metric-note">vs {previousYear || "prior year"}</small>
+        </div>
+        <div className="detail-metric">
+          <span className="detail-metric-label">Budget rank</span>
+          <strong className="detail-metric-value">{rank === null ? "—" : `#${rank}`}</strong>
+          <small className="detail-metric-note">{year}</small>
+        </div>
       </section>
 
       <div className="detail-grid">
         <div className="detail-main">
           <DepartmentHistoryChart
+            key={id}
             entries={budgetRecords}
             initialId={id}
             financialYears={years}
+            yearTotals={yearTotals}
+            selectedYear={year}
+            enableViewSelector
             locked
           />
           <section className="panel" aria-labelledby="annual-growth-title">
@@ -183,43 +167,6 @@ async function DepartmentDetail({ params, searchParams }: Props) {
               </table>
             </div>
           </section>
-          <section className="panel" aria-labelledby="indexed-growth-title">
-            <div className="panel-header">
-              <div>
-                <h2 className="panel-title" id="indexed-growth-title">
-                  Indexed growth vs overall budget
-                </h2>
-                <p className="panel-subtitle">
-                  First available common year = 100 · index, not ₹ crore
-                </p>
-              </div>
-            </div>
-            <DepartmentIndexedGrowthChart rows={indexedRows} />
-            {indexedRows.length > 1 ? (
-              <div className="table-wrap">
-                <table className="data-table">
-                  <thead>
-                    <tr>
-                      <th scope="col">Financial year</th>
-                      <th className="numeric" scope="col">Department index</th>
-                      <th className="numeric" scope="col">Overall index</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {indexedRows.map((row) => (
-                      <tr key={row.year}>
-                        <td>{row.year}</td>
-                        <td className="numeric">{row.departmentIndex.toFixed(1)}</td>
-                        <td className="numeric">{row.overallIndex.toFixed(1)}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            ) : (
-              <div className="empty-chart">Indexed growth requires at least two comparable years.</div>
-            )}
-          </section>
         </div>
 
         <aside className="detail-aside" aria-label="Department data notes">
@@ -246,12 +193,16 @@ async function DepartmentDetail({ params, searchParams }: Props) {
               Standard deviation of available annual percentage changes
             </span>
           </article>
-          <div className="dataset-note">
-            <span className="status-dot" aria-hidden="true" />
-            <span>Historical names are matched conservatively; uncertain label changes remain separate.</span>
-          </div>
         </aside>
       </div>
+
+      <DepartmentSchemeBreakdown
+        entries={departmentSchemes}
+        previousEntries={previousSchemes}
+        year={year}
+        departmentTotal={current?.amountCrore ?? null}
+        totalBudget={summary.total}
+      />
     </main>
   );
 }
