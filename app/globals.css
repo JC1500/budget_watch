@@ -982,6 +982,58 @@ h1 {
   padding-top: 24px;
 }
 
+.inflation-detail-page {
+  display: grid;
+  align-content: start;
+  gap: 16px;
+  padding-top: 24px;
+}
+
+.inflation-summary {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.inflation-history-charts {
+  display: grid;
+  gap: 16px;
+}
+
+.inflation-chart-panel {
+  min-width: 0;
+}
+
+.inflation-about {
+  padding: 16px;
+}
+
+.inflation-about p {
+  margin: 0;
+  color: var(--text-secondary);
+}
+
+.inflation-overview-link {
+  display: block;
+  border-radius: 12px;
+  color: inherit;
+}
+
+.inflation-overview-panel {
+  transition: border-color 150ms ease, background-color 150ms ease;
+}
+
+.inflation-overview-link:hover .inflation-overview-panel {
+  border-color: var(--accent);
+}
+
+.inflation-chart-link-label {
+  display: block;
+  padding: 0 16px 12px;
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 650;
+  text-align: right;
+}
+
 .gdp-breadcrumb {
   display: flex;
   flex-wrap: wrap;

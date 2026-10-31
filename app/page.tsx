@@ -5,6 +5,7 @@ import {
   DepartmentHistoryChart,
   TotalBudgetTimeline,
 } from "@/components/yearly-budget-charts";
+import { InflationOverviewChart } from "@/components/inflation-charts";
 import { BudgetCategoryChart } from "@/components/budget-category-chart";
 import { GDPOverview } from "@/components/gdp-overview";
 import {
@@ -16,6 +17,7 @@ import {
 import { buildYearTotals, summarizeBudget } from "@/lib/analytics/budget";
 import { getBudgetCategorySummaries } from "@/lib/data/categories";
 import { getGDPOverviewData } from "@/lib/data/gdp";
+import { getHeadlineInflationRecords } from "@/lib/data/inflation";
 import { formatCroreCompact } from "@/lib/format";
 
 type PageProps = {
@@ -109,6 +111,7 @@ async function DashboardData({ searchParams }: PageProps) {
       </div>
 
       <div className="overview-flow">
+        <InflationOverviewChart records={getHeadlineInflationRecords()} />
         <TotalBudgetTimeline yearTotals={yearTotals} />
         <DepartmentHistoryChart
           entries={budgetRecords}
