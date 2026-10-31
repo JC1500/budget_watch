@@ -16,6 +16,11 @@ export function formatCroreCompact(amount: number) {
       maximumFractionDigits: 2,
     })}L Cr`;
   }
+  if (absoluteAmount >= 1_000) {
+    return `${sign}₹${(absoluteAmount / 1_000).toLocaleString("en-IN", {
+      maximumFractionDigits: 2,
+    })}K Cr`;
+  }
 
   return `${sign}₹${absoluteAmount.toLocaleString("en-IN", {
     maximumFractionDigits: 2,

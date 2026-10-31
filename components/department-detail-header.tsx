@@ -12,11 +12,13 @@ export type DepartmentPickerOption = {
 export function DepartmentDetailHeader({
   departments,
   selectedDepartmentId,
+  selectedSchemeId,
   selectedYear,
   years,
 }: {
   departments: DepartmentPickerOption[];
   selectedDepartmentId: string;
+  selectedSchemeId: string;
   selectedYear: string;
   years: string[];
 }) {
@@ -56,6 +58,7 @@ export function DepartmentDetailHeader({
   function handleYearChange(nextYear: string) {
     const params = new URLSearchParams();
     if (nextYear) params.set("year", nextYear);
+    if (selectedSchemeId) params.set("scheme", selectedSchemeId);
     const suffix = params.size > 0 ? `?${params.toString()}` : "";
     router.push(`/departments/${selectedDepartmentId}${suffix}`, { scroll: false });
   }

@@ -1533,22 +1533,182 @@ h1 {
   font-style: normal;
 }
 
-.detail-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 300px;
-  gap: 16px;
-}
-
 .detail-main {
   display: grid;
   gap: 16px;
   align-content: start;
 }
 
-.detail-aside {
+.department-schemes {
+  min-width: 0;
+  margin-top: 6px;
+  border-top: 1px solid var(--line);
+}
+
+.department-schemes-header {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 17px 0 12px;
+}
+
+.department-schemes-header h2 {
+  margin: 0;
+  color: var(--ink);
+  font-size: 15px;
+  font-weight: 670;
+  letter-spacing: -0.025em;
+}
+
+.department-schemes-header p {
+  margin: 3px 0 0;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.department-schemes-year {
+  flex: 0 0 auto;
+  color: var(--muted);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+.department-scheme-columns,
+.department-scheme-row {
   display: grid;
+  grid-template-columns: minmax(0, 1fr) 155px 160px 110px;
+  align-items: center;
+  gap: 16px;
+}
+
+.department-scheme-columns {
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--line-strong);
+  color: var(--muted);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.department-scheme-columns span:not(:first-child) {
+  text-align: right;
+}
+
+.department-scheme-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.department-scheme-list-item {
+  border-bottom: 1px solid var(--line);
+}
+
+.department-scheme-row {
+  min-height: 58px;
+  padding: 9px 12px;
+  color: var(--ink-soft);
+  transition: background-color 120ms ease;
+}
+
+.department-scheme-row:hover,
+.department-scheme-row.is-selected {
+  background: var(--surface-strong);
+}
+
+.department-scheme-row.is-selected {
+  box-shadow: inset 2px 0 0 var(--chart-selected);
+}
+
+.department-scheme-name {
+  min-width: 0;
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 620;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.department-scheme-allocation,
+.department-scheme-share {
+  color: var(--ink-soft);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.department-scheme-allocation {
+  display: grid;
+  gap: 2px;
+}
+
+.department-scheme-allocation strong {
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.department-scheme-allocation small {
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.department-scheme-action {
+  color: var(--green);
+  font-size: 10px;
+  font-weight: 650;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.department-schemes-empty {
+  margin: 0;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.scheme-selected-summary {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 1.2fr);
+  align-items: center;
+  gap: 16px;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--line);
+  background: var(--surface-strong);
+}
+
+.scheme-selected-identity,
+.scheme-selected-metrics,
+.scheme-selected-metrics > div {
+  display: grid;
+  gap: 4px;
+}
+
+.scheme-selected-identity strong {
+  color: var(--ink);
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.scheme-selected-identity span,
+.scheme-selected-metrics span {
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.scheme-selected-metrics {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
-  align-content: start;
+}
+
+.scheme-selected-metrics strong {
+  color: var(--ink);
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
 }
 
 .detail-stat {
@@ -1835,10 +1995,6 @@ h1 {
     justify-content: stretch;
   }
 
-  .detail-grid {
-    grid-template-columns: minmax(0, 1fr) 250px;
-  }
-
   .detail-summary-strip {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -2034,12 +2190,72 @@ h1 {
     border-top: 0;
   }
 
-  .detail-grid {
+  .scheme-selected-summary {
     grid-template-columns: 1fr;
+    padding: 13px;
   }
 
-  .detail-aside {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  .scheme-selected-metrics {
+    gap: 8px;
+  }
+
+  .department-schemes-header {
+    align-items: flex-start;
+  }
+
+  .department-scheme-columns {
+    display: none;
+  }
+
+  .department-scheme-row {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 7px 12px;
+    padding: 11px 9px;
+  }
+
+  .department-scheme-name {
+    grid-column: 1;
+    grid-row: 1;
+    font-size: 12px;
+  }
+
+  .department-scheme-allocation {
+    grid-column: 1;
+    grid-row: 2;
+    justify-items: start;
+    text-align: left;
+  }
+
+  .department-scheme-allocation::before,
+  .department-scheme-share::before {
+    color: var(--muted);
+    font-size: 9px;
+    font-variant-numeric: normal;
+    font-weight: 600;
+    text-align: left;
+  }
+
+  .department-scheme-allocation::before {
+    content: "Allocation";
+  }
+
+  .department-scheme-share {
+    display: grid;
+    grid-column: 1;
+    grid-row: 3;
+    gap: 2px;
+    text-align: left;
+  }
+
+  .department-scheme-share::before {
+    content: "Share of department";
+  }
+
+  .department-scheme-action {
+    grid-column: 2;
+    grid-row: 1 / span 3;
+    align-self: center;
+    text-align: right;
   }
 
   .compare-controls,

@@ -360,15 +360,6 @@ export function getScheme(id: string, year?: string) {
     : history.at(-1);
 }
 
-export function getDepartmentSchemeBreakdown(
-  departmentId: string,
-  financialYear: string,
-) {
-  return getSchemesByDepartment(departmentId, financialYear).sort(
-    (a, b) => b.amountCrore - a.amountCrore,
-  );
-}
-
 export function getSchemeCountsByDepartment(financialYear: string) {
   const counts: Record<string, number> = Object.fromEntries(
     getDepartments(financialYear).map((entry) => [entry.id, 0]),

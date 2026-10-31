@@ -173,6 +173,45 @@ export function summarizeSchemes(entries: SchemeBudgetEntry[]) {
   };
 }
 
+export function getDepartmentSchemeRows(
+  schemes: SchemeBudgetEntry[],
+  financialYear: string,
+  departmentAllocation: number | null,
+) {
+  const rowsById = new Map<
+    string,
+    {
+      id: string;
+      name: string;
+      allocation: number | null;
+      shareOfDepartment: number | null;
+    }
+  >();
+
+  for (const scheme of schemes) {
+    const row = rowsById.get(scheme.id) ?? {
+      id: scheme.id,
+      name: scheme.scheme,
+      allocation: null,
+      shareOfDepartment: null,
+    };
+    if (scheme.financialYear === financialYear) {
+      row.allocation = scheme.amountCrore;
+      row.shareOfDepartment =
+        departmentAllocation === null || departmentAllocation <= 0
+          ? null
+          : calculateShare(scheme.amountCrore, departmentAllocation);
+    }
+    rowsById.set(scheme.id, row);
+  }
+
+  return [...rowsById.values()].sort((a, b) => {
+    if (a.allocation === null) return b.allocation === null ? 0 : 1;
+    if (b.allocation === null) return -1;
+    return b.allocation - a.allocation;
+  });
+}
+
 export function getSchemeRank(
   entry: SchemeBudgetEntry,
   entries: SchemeBudgetEntry[],

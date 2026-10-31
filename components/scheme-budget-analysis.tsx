@@ -78,12 +78,21 @@ export function SchemeBudgetAnalysis({
   selectedYear,
   departmentHistory,
   yearTotals,
+  showDepartmentShare = true,
+  selectedYearSummary,
 }: {
   history: SchemeBudgetEntry[];
   years: string[];
   selectedYear: string;
   departmentHistory: BudgetEntry[];
   yearTotals: { financialYear: string; total: number }[];
+  showDepartmentShare?: boolean;
+  selectedYearSummary?: {
+    schemeName: string;
+    departmentName: string;
+    allocation: number | null;
+    shareOfTotal: number | null;
+  };
 }) {
   const [mode, setMode] = useState<SchemeChartMode>("allocation");
   const points = useMemo(() => {
@@ -96,16 +105,17 @@ export function SchemeBudgetAnalysis({
     const totalByYear = new Map(
       yearTotals.map((entry) => [entry.financialYear, entry.total]),
     );
-    return years.map((financialYear) => {
+    return years.flatMap((financialYear) => {
       const scheme = schemeByYear.get(financialYear);
+      if (!scheme) return [];
       const departmentAllocation =
         departmentByYear.get(financialYear)?.amountCrore ?? null;
       const totalBudget = totalByYear.get(financialYear) ?? null;
-      const allocation = scheme?.amountCrore ?? null;
-      return {
+      const allocation = scheme.amountCrore;
+      return [{
         financialYear,
-        scheme: scheme?.scheme ?? history[0]?.scheme ?? "",
-        department: scheme?.department ?? history[0]?.department ?? "",
+        scheme: scheme.scheme,
+        department: scheme.department,
         allocation,
         departmentAllocation,
         totalBudget,
@@ -117,7 +127,7 @@ export function SchemeBudgetAnalysis({
           allocation === null || totalBudget === null
             ? null
             : calculateShare(allocation, totalBudget),
-      };
+      }];
     });
   }, [departmentHistory, history, yearTotals, years]);
   const selectedPoint = points.find((point) => point.financialYear === selectedYear);
@@ -151,17 +161,42 @@ export function SchemeBudgetAnalysis({
             onChange={(event) => {
               const next = event.target.value;
               if (next === "allocation" || next === "department-share" || next === "total-share") {
+                if (!showDepartmentShare && next === "department-share") return;
                 setMode(next);
               }
             }}
             value={mode}
           >
             <option value="allocation">Budget allocation</option>
-            <option value="department-share">Share of department budget</option>
+            {showDepartmentShare && (
+              <option value="department-share">Share of department budget</option>
+            )}
             <option value="total-share">Share of total budget</option>
           </select>
         </label>
       </div>
+      {selectedYearSummary && (
+        <div className="scheme-selected-summary">
+          <div className="scheme-selected-identity">
+            <strong>{selectedYearSummary.schemeName}</strong>
+            <span>{selectedYearSummary.departmentName}</span>
+          </div>
+          <div className="scheme-selected-metrics">
+            <div>
+              <span>Allocation · {selectedYear}</span>
+              <strong>
+                {selectedYearSummary.allocation === null
+                  ? "—"
+                  : formatCroreExact(selectedYearSummary.allocation)}
+              </strong>
+            </div>
+            <div>
+              <span>Share of total budget</span>
+              <strong>{formatShare(selectedYearSummary.shareOfTotal)}</strong>
+            </div>
+          </div>
+        </div>
+      )}
       {history.length > 0 ? (
         <div className="chart-frame department-analysis-chart-frame">
           <ResponsiveContainer width="100%" height="100%">
