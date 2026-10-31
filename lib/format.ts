@@ -3,6 +3,15 @@ const inr = new Intl.NumberFormat("en-IN", {
   maximumFractionDigits: 2,
 });
 
+const gdpInr = new Intl.NumberFormat("en-IN", {
+  maximumFractionDigits: 2,
+});
+
+export function formatGDPExact(amount: number) {
+  if (!Number.isFinite(amount)) return "—";
+  return `₹${gdpInr.format(amount)} Cr`;
+}
+
 export function formatCroreExact(amount: number) {
   const sign = amount < 0 ? "−" : "";
   return `${sign}₹${inr.format(Math.abs(amount))} Cr`;

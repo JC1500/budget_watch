@@ -6,6 +6,7 @@ import {
   TotalBudgetTimeline,
 } from "@/components/yearly-budget-charts";
 import { BudgetCategoryChart } from "@/components/budget-category-chart";
+import { GDPOverview } from "@/components/gdp-overview";
 import {
   budgetRecords,
   getDataStatus,
@@ -14,6 +15,7 @@ import {
 } from "@/lib/budget-data";
 import { buildYearTotals, summarizeBudget } from "@/lib/analytics/budget";
 import { getBudgetCategorySummaries } from "@/lib/data/categories";
+import { getGDPOverviewData } from "@/lib/data/gdp";
 import { formatCroreCompact } from "@/lib/format";
 
 type PageProps = {
@@ -57,6 +59,7 @@ async function DashboardData({ searchParams }: PageProps) {
   const initialId = [...entries].sort(
     (a, b) => b.amountCrore - a.amountCrore,
   )[0]?.id ?? "";
+  const gdpData = getGDPOverviewData();
 
   return (
     <>
@@ -95,12 +98,15 @@ async function DashboardData({ searchParams }: PageProps) {
         </article>
       </section>
 
-      <section className="panel overview-major-category-panel">
-        <BudgetCategoryChart
-          categories={getBudgetCategorySummaries(selectedYear)}
-          selectedYear={selectedYear}
-        />
-      </section>
+      <div className="overview-analysis-row">
+        <section className="panel overview-major-category-panel">
+          <BudgetCategoryChart
+            categories={getBudgetCategorySummaries(selectedYear)}
+            selectedYear={selectedYear}
+          />
+        </section>
+        <GDPOverview data={gdpData} />
+      </div>
 
       <div className="overview-flow">
         <TotalBudgetTimeline yearTotals={yearTotals} />

@@ -179,6 +179,7 @@ export function BudgetCategoryChart({
               <Bar
                 dataKey="value"
                 barSize={28}
+                isAnimationActive={false}
                 radius={[0, 6, 6, 0]}
                 fill="#245c46"
                 label={({ x, y, width, value }) => {

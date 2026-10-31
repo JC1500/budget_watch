@@ -747,6 +747,14 @@ h1 {
   margin-top: 0;
 }
 
+.overview-analysis-row {
+  display: grid;
+  grid-template-columns: minmax(0, 2.1fr) minmax(340px, 0.9fr);
+  align-items: start;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
 .panel {
   min-width: 0;
   overflow: hidden;
@@ -869,6 +877,419 @@ h1 {
 
 .category-chart-frame .recharts-wrapper {
   overflow: visible;
+}
+
+.gdp-overview-panel {
+  min-width: 0;
+  overflow: hidden;
+}
+
+.gdp-overview-panel .panel-header {
+  align-items: flex-start;
+  min-height: 66px;
+  padding: 14px;
+}
+
+.gdp-heading {
+  min-width: 0;
+}
+
+.gdp-latest-summary {
+  display: grid;
+  gap: 8px;
+  padding: 11px 14px 10px;
+  border-bottom: 1px solid var(--border);
+}
+
+.gdp-latest-value {
+  display: grid;
+  gap: 1px;
+}
+
+.gdp-latest-value > span {
+  color: var(--text-muted);
+  font-size: 10px;
+  font-weight: 550;
+}
+
+.gdp-latest-value > strong {
+  color: var(--text-primary);
+  font-size: 20px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.035em;
+  line-height: 1.2;
+}
+
+.gdp-source-metadata {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px 9px;
+  color: var(--text-muted);
+  font-size: 9px;
+  line-height: 1.4;
+}
+
+.gdp-chart-frame {
+  min-width: 0;
+  padding: 8px 7px 0 0;
+}
+
+.gdp-chart-unit {
+  margin: 0 0 -3px 12px;
+  color: var(--text-muted);
+  font-size: 9px;
+}
+
+.gdp-chart-frame .recharts-wrapper {
+  font-family: var(--font-geist-sans), sans-serif;
+}
+
+.gdp-chart-frame .recharts-cartesian-axis-tick text {
+  font-variant-numeric: tabular-nums;
+}
+
+.gdp-chart-frame .recharts-bar-rectangle {
+  cursor: pointer;
+  transition: filter 120ms ease;
+}
+
+.gdp-chart-frame .recharts-bar-rectangle:hover .recharts-inactive-bar,
+.gdp-chart-frame .recharts-bar-rectangle .recharts-inactive-bar path:focus-visible {
+  filter: brightness(1.12);
+}
+
+.gdp-chart-frame .recharts-bar-rectangle .recharts-inactive-bar path:focus-visible {
+  stroke: var(--chart-selected);
+  stroke-width: 2px;
+}
+
+.gdp-chart-tooltip {
+  max-width: 270px;
+}
+
+.gdp-tooltip-action {
+  padding-top: 4px;
+  border-top: 1px solid var(--border);
+  color: var(--text-muted);
+  font-size: 10px;
+  font-weight: 650;
+}
+
+.gdp-detail-page {
+  display: grid;
+  align-content: start;
+  gap: 16px;
+  padding-top: 24px;
+}
+
+.gdp-breadcrumb {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-muted);
+  font-size: 11px;
+}
+
+.gdp-breadcrumb a,
+.gdp-back-link {
+  color: var(--accent);
+  font-weight: 650;
+}
+
+.gdp-breadcrumb a:hover,
+.gdp-back-link:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.gdp-detail-intro {
+  display: grid;
+  justify-items: start;
+  gap: 8px;
+  padding: 4px 0 3px;
+}
+
+.gdp-back-link {
+  margin-bottom: 5px;
+  font-size: 11px;
+}
+
+.gdp-detail-intro .eyebrow {
+  margin-bottom: 0;
+}
+
+.gdp-detail-intro h1 {
+  margin: 0;
+}
+
+.gdp-detail-summary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+}
+
+.gdp-summary-metric {
+  display: grid;
+  align-content: start;
+  gap: 5px;
+  min-width: 0;
+  padding: 16px;
+}
+
+.gdp-summary-metric + .gdp-summary-metric {
+  border-left: 1px solid var(--border);
+}
+
+.gdp-summary-metric > span,
+.gdp-summary-metric > small {
+  color: var(--text-muted);
+  font-size: 10px;
+}
+
+.gdp-summary-metric > strong {
+  color: var(--text-primary);
+  font-size: clamp(14px, 1.5vw, 19px);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+
+.gdp-summary-metric > small {
+  line-height: 1.4;
+}
+
+.gdp-detail-analysis-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  align-items: start;
+  gap: 16px;
+}
+
+.gdp-detail-section {
+  min-width: 0;
+}
+
+.gdp-comparison-chart,
+.gdp-history-chart {
+  min-width: 0;
+  padding: 12px 12px 8px 4px;
+}
+
+.gdp-history-header {
+  align-items: flex-start;
+}
+
+.gdp-history-picker {
+  display: grid;
+  flex: 0 0 170px;
+  gap: 4px;
+  color: var(--text-muted);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.gdp-history-picker .chart-view-select {
+  min-height: 34px;
+}
+
+.gdp-detail-empty {
+  margin: 0;
+  padding: 20px;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.gdp-comparison-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.gdp-comparison-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+}
+
+.gdp-comparison-table th,
+.gdp-comparison-table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.gdp-comparison-table thead th {
+  color: var(--text-muted);
+  font-size: 10px;
+  font-weight: 650;
+}
+
+.gdp-comparison-table th:first-child,
+.gdp-comparison-table tbody th {
+  color: var(--text-primary);
+  text-align: left;
+}
+
+.gdp-comparison-table tbody tr:last-child th,
+.gdp-comparison-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.gdp-understanding-content {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+  padding: 18px;
+}
+
+.gdp-understanding-content article {
+  display: grid;
+  align-content: start;
+  gap: 7px;
+  min-width: 0;
+}
+
+.gdp-understanding-content article:last-child {
+  grid-column: 1 / -1;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+
+.gdp-understanding-content h3 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 13px;
+}
+
+.gdp-understanding-content p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 11px;
+  line-height: 1.55;
+}
+
+.gdp-calculation-list,
+.gdp-source-table {
+  display: grid;
+  gap: 8px;
+  margin: 4px 0 0;
+}
+
+.gdp-calculation-list > div,
+.gdp-source-table > div {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr);
+  gap: 12px;
+  min-width: 0;
+}
+
+.gdp-calculation-list dt,
+.gdp-source-table dt {
+  color: var(--text-muted);
+  font-size: 10px;
+}
+
+.gdp-calculation-list dd,
+.gdp-source-table dd {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.gdp-calculation-list dd {
+  text-align: right;
+}
+
+.gdp-source-table {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 24px;
+  padding: 16px 18px;
+}
+
+.gdp-source-table > div {
+  padding: 9px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.gdp-technical-details {
+  margin: 0 18px 16px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+
+.gdp-technical-details summary {
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 650;
+}
+
+.gdp-technical-details > div {
+  display: grid;
+  gap: 3px;
+  padding-top: 10px;
+}
+
+.gdp-technical-details p {
+  margin: 7px 0 0;
+  color: var(--text-muted);
+  font-size: 10px;
+}
+
+.gdp-technical-details code {
+  display: block;
+  color: var(--text-secondary);
+  font-size: 10px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.gdp-technical-details {
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+}
+
+.gdp-technical-details summary {
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 10px;
+  font-weight: 650;
+}
+
+.gdp-technical-details p {
+  margin: 8px 0 4px;
+  color: var(--text-muted);
+  font-size: 9px;
+}
+
+.gdp-technical-details code {
+  display: block;
+  color: var(--text-secondary);
+  font-size: 9px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.gdp-unavailable {
+  padding: 22px 14px;
+}
+
+.gdp-observation-note {
+  margin: 0;
+  padding: 0 14px 11px;
+  color: var(--text-muted);
+  font-size: 9px;
 }
 
 .ranking-list {
@@ -2033,6 +2454,12 @@ h1 {
   clip-path: inset(50%);
 }
 
+@media (max-width: 1100px) {
+  .overview-analysis-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
 @media (max-width: 900px) {
   .header-inner {
     flex-wrap: wrap;
@@ -2097,6 +2524,10 @@ h1 {
   .summary-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
+  .gdp-detail-analysis-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
 @media (max-width: 620px) {
@@ -2141,6 +2572,53 @@ h1 {
     padding-block: 25px 38px;
   }
 
+  .gdp-detail-page {
+    gap: 12px;
+  }
+
+  .gdp-detail-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .gdp-summary-metric {
+    padding: 12px;
+  }
+
+  .gdp-summary-metric:nth-child(odd) {
+    border-left: 0;
+  }
+
+  .gdp-summary-metric:nth-child(n + 3) {
+    border-top: 1px solid var(--border);
+  }
+
+  .gdp-history-header {
+    display: grid;
+  }
+
+  .gdp-history-picker {
+    width: min(100%, 240px);
+    flex-basis: auto;
+  }
+
+  .gdp-understanding-content,
+  .gdp-source-table {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .gdp-understanding-content article:last-child {
+    grid-column: auto;
+  }
+
+  .gdp-comparison-table {
+    min-width: 600px;
+  }
+
+  .gdp-comparison-chart,
+  .gdp-history-chart {
+    padding-inline: 0;
+  }
+
   .page-intro {
     display: grid;
     gap: 14px;
@@ -2173,6 +2651,10 @@ h1 {
   .panel-header {
     align-items: flex-start;
     padding: 13px;
+  }
+
+  .gdp-overview-panel .panel-header {
+    display: grid;
   }
 
   .department-analysis-header {
