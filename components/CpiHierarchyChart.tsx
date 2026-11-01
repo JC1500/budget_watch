@@ -12,6 +12,7 @@ import {
 } from "recharts";
 
 import { getInflationData } from "@/lib/api/inflation";
+import { useLanguage } from "@/lib/i18n/provider";
 import type { InflationRecord } from "@/lib/types/inflation";
 import type { InflationApiParams } from "@/lib/types/inflation";
 import cpiMetadata from "@/data/cpi_metadata.json";
@@ -103,16 +104,17 @@ function getByCode<T extends CpiItem>(
 }
 
 export default function CpiHierarchyChart() {
+
   const [divisionCode, setDivisionCode] = useState(ALL);
   const [groupCode, setGroupCode] = useState(ALL);
   const [classCode, setClassCode] = useState(ALL);
   const [subClassCode, setSubClassCode] = useState(ALL);
   const [itemCode, setItemCode] = useState(ALL);
-
-  const [metric, setMetric] = useState<Metric>("index");
+  const { t } = useLanguage();
   const [records, setRecords] = useState<InflationRecord[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [metric, setMetric] = useState<Metric>("index");
 
   // Resolve selected hierarchy entries from the by24 metadata.
   const selectedDivision = useMemo(
@@ -309,16 +311,34 @@ export default function CpiHierarchyChart() {
     setSubClassCode(code);
     setItemCode(ALL);
   }
+  
+  if (loading) {
+    return (
+      <div className="rounded-xl border border-gray-200 p-6 text-sm text-gray-500">
+        {t("Loading CPI data...")}
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="rounded-xl border border-red-200 bg-red-50 p-6 text-sm text-red-700">
+        {t(error)}
+      </div>
+    );
+  }
 
   return (
     <section className="w-full rounded-2xl border border-gray-200 bg-white p-4 shadow-sm sm:p-6">
       <header className="mb-5">
         <h2 className="text-xl font-semibold text-gray-900">
-          CPI Explorer
+          {t("CPI Explorer")}
         </h2>
 
         <p className="mt-1 text-sm text-gray-500">
-          Explore CPI index and inflation trends by classification.
+
+          {t("Explore consumer price data by category and view its monthly trend.")}
+
         </p>
       </header>
 
@@ -332,7 +352,7 @@ export default function CpiHierarchyChart() {
               : "bg-gray-100 text-gray-700 hover:bg-gray-200"
           }`}
         >
-          CPI Index
+          {t("CPI Index")}
         </button>
 
         <button
@@ -344,20 +364,21 @@ export default function CpiHierarchyChart() {
               : "bg-gray-100 text-gray-700 hover:bg-gray-200"
           }`}
         >
-          Inflation Rate
+          {t("Inflation Rate")}
         </button>
       </div>
 
       <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <div>
-          <label className={labelClass}>Division</label>
+          <label className={labelClass}>{t("Division")}</label>
 
           <select
             className={selectClass}
             value={divisionCode}
             onChange={(e) => resetFromDivision(e.target.value)}
           >
-            <option value={ALL}>Select division</option>
+
+            <option value={ALL}>{t("Select division")}</option>
 
             {divisions.map((option) => (
               <option
@@ -365,13 +386,14 @@ export default function CpiHierarchyChart() {
                 value={String(option.code)}
               >
                 {option.code} — {option.name}
+
               </option>
             ))}
           </select>
         </div>
 
         <div>
-          <label className={labelClass}>Group</label>
+          <label className={labelClass}>{t("Group")}</label>
 
           <select
             className={selectClass}
@@ -379,7 +401,7 @@ export default function CpiHierarchyChart() {
             disabled={!divisionCode || groups.length === 0}
             onChange={(e) => resetFromGroup(e.target.value)}
           >
-            <option value={ALL}>Select group</option>
+            <option value={ALL}>{t("Select group")}</option>
 
             {groups.map((option) => (
               <option
@@ -387,13 +409,14 @@ export default function CpiHierarchyChart() {
                 value={String(option.code)}
               >
                 {option.code} — {option.name}
+
               </option>
             ))}
           </select>
         </div>
 
         <div>
-          <label className={labelClass}>Class</label>
+          <label className={labelClass}>{t("Class")}</label>
 
           <select
             className={selectClass}
@@ -401,7 +424,7 @@ export default function CpiHierarchyChart() {
             disabled={!groupCode || classes.length === 0}
             onChange={(e) => resetFromClass(e.target.value)}
           >
-            <option value={ALL}>Select class</option>
+            <option value={ALL}>{t("Select class")}</option>
 
             {classes.map((option) => (
               <option
@@ -409,13 +432,14 @@ export default function CpiHierarchyChart() {
                 value={String(option.code)}
               >
                 {option.code} — {option.name}
+
               </option>
             ))}
           </select>
         </div>
 
         <div>
-          <label className={labelClass}>Sub class</label>
+          <label className={labelClass}>{t("Sub class")}</label>
 
           <select
             className={selectClass}
@@ -423,7 +447,7 @@ export default function CpiHierarchyChart() {
             disabled={!classCode || subClasses.length === 0}
             onChange={(e) => resetFromSubClass(e.target.value)}
           >
-            <option value={ALL}>Select sub class</option>
+            <option value={ALL}>{t("Select sub class")}</option>
 
             {subClasses.map((option) => (
               <option
@@ -431,13 +455,14 @@ export default function CpiHierarchyChart() {
                 value={String(option.code)}
               >
                 {option.code} — {option.name}
+
               </option>
             ))}
           </select>
         </div>
 
         <div>
-          <label className={labelClass}>Item</label>
+          <label className={labelClass}>{t("Item")}</label>
 
           <select
             className={selectClass}
@@ -445,7 +470,7 @@ export default function CpiHierarchyChart() {
             disabled={!subClassCode || items.length === 0}
             onChange={(e) => setItemCode(e.target.value)}
           >
-            <option value={ALL}>Select item</option>
+            <option value={ALL}>{t("Select item")}</option>
 
             {items.map((option) => (
               <option
@@ -453,6 +478,7 @@ export default function CpiHierarchyChart() {
                 value={String(option.code)}
               >
                 {option.code} — {option.name}
+
               </option>
             ))}
           </select>
@@ -462,14 +488,14 @@ export default function CpiHierarchyChart() {
       <div className="mb-3">
         <h3 className="text-base font-semibold text-gray-800">
           {metric === "index"
-            ? "CPI Index Trend"
-            : "Inflation Rate Trend"}
+            ? t("CPI Index Trend")
+            : t("Inflation Rate Trend")}
         </h3>
 
         <p className="mt-1 text-xs text-gray-500">
-          {records.length} records returned by the API
-          {" · "}
-          {chartData.length} months plotted
+
+          {records.length}  {t("matching records")}
+
         </p>
       </div>
 
@@ -479,11 +505,13 @@ export default function CpiHierarchyChart() {
         </div>
       ) : loading ? (
         <div className="flex h-72 items-center justify-center rounded-xl bg-gray-50 text-sm text-gray-500">
-          Loading CPI data...
+
+          {t("Loading CPI data...")}
         </div>
       ) : chartData.length === 0 ? (
         <div className="flex h-72 items-center justify-center rounded-xl bg-gray-50 text-sm text-gray-500">
-          No chart data found for All India + Combined for this selection.
+          {t("No chart data found for this selection.")}
+
         </div>
       ) : (
         <div className="h-72 w-full">
@@ -514,8 +542,8 @@ export default function CpiHierarchyChart() {
                 formatter={(value) => [
                   Number(value).toFixed(2),
                   metric === "index"
-                    ? "CPI Index"
-                    : "Inflation Rate",
+                    ? t("CPI Index")
+                    : t("Inflation Rate"),
                 ]}
               />
 

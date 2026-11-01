@@ -12,6 +12,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import { useLanguage } from "@/lib/i18n/provider";
 
 import { getPLFSData } from "@/lib/api/plfs";
 import type { PLFSApiParams, PLFSRecord } from "@/lib/types/plfs";
@@ -76,11 +77,7 @@ function usePLFSRequest(params: PLFSApiParams): ChartState {
         if (!cancelled) {
           console.error("PLFS API error:", cause);
           setRecords([]);
-          setError(
-            cause instanceof Error
-              ? cause.message
-              : "Unable to load PLFS data.",
-          );
+          setError("Unable to load PLFS data.");
           setCompletedKey(requestKey);
         }
       });
@@ -104,17 +101,18 @@ function ChartMessage({
   state: ChartState;
   empty: boolean;
 }) {
+  const { t } = useLanguage();
   if (state.loading) {
-    return <div className="empty-chart">Loading PLFS data...</div>;
+    return <div className="empty-chart">{t("Loading PLFS data...")}</div>;
   }
   if (state.error) {
     return (
       <div className="empty-chart" role="alert">
-        {state.error}
+        {t(state.error)}
       </div>
     );
   }
-  if (empty) return <div className="empty-chart">No PLFS data available.</div>;
+  if (empty) return <div className="empty-chart">{t("No PLFS data available.")}</div>;
   return null;
 }
 
@@ -144,6 +142,7 @@ function filterRecords(
 }
 
 export default function PLFSCharts() {
+  const { t } = useLanguage();
   const [stateYear, setStateYear] = useState("2023-24");
   const [stateGender, setStateGender] = useState("person");
   const [stateSector, setStateSector] = useState("rural + urban");
@@ -220,11 +219,11 @@ export default function PLFSCharts() {
 
   return (
     <div className="inflation-history-charts">
-      <section className="panel" aria-label="Unemployment Rate vs Years">
+      <section className="panel" aria-label={t("Unemployment Rate vs Years")}>
         <div className="panel-header">
           <div>
-            <h2 className="panel-title">Unemployment Rate vs Years</h2>
-            <p className="panel-subtitle">Annual PLFS unemployment rate</p>
+            <h2 className="panel-title">{t("Unemployment Rate vs Years")}</h2>
+            <p className="panel-subtitle">{t("Annual PLFS unemployment rate")}</p>
           </div>
         </div>
         <ChartMessage state={unemployment} empty={unemploymentData.length === 0} />
@@ -235,7 +234,7 @@ export default function PLFSCharts() {
                 <CartesianGrid stroke="var(--chart-grid)" strokeDasharray="3 4" vertical={false} />
                 <XAxis dataKey="year" />
                 <PercentageYAxis />
-                <Tooltip formatter={(value) => [`${Number(value).toFixed(2)}%`, "Unemployment Rate"]} />
+                <Tooltip formatter={(value) => [`${Number(value).toFixed(2)}%`, t("Unemployment Rate")]} />
                 <Bar dataKey="value" fill="var(--accent)" isAnimationActive={false} />
               </BarChart>
             </ResponsiveContainer>
@@ -243,25 +242,25 @@ export default function PLFSCharts() {
         )}
       </section>
 
-      <section className="panel" aria-label="State-wise Employment Percentage">
+      <section className="panel" aria-label={t("State-wise Employment Percentage")}>
         <div className="panel-header">
           <div>
-            <h2 className="panel-title">State-wise Employment Percentage</h2>
-            <p className="panel-subtitle">Worker Population Ratio (WPR)</p>
+            <h2 className="panel-title">{t("State-wise Employment Percentage")}</h2>
+            <p className="panel-subtitle">{t("Worker Population Ratio (WPR)")}</p>
           </div>
           <div className="chart-controls">
-            <select aria-label="Employment year" value={stateYear} onChange={(event) => setStateYear(event.target.value)}>
+            <select aria-label={t("Employment year")} value={stateYear} onChange={(event) => setStateYear(event.target.value)}>
               {PLFS_YEARS.slice().reverse().map((year) => <option key={year}>{year}</option>)}
             </select>
-            <select aria-label="Employment gender" value={stateGender} onChange={(event) => setStateGender(event.target.value)}>
-              <option value="person">Person</option>
-              <option value="male">Male</option>
-              <option value="female">Female</option>
+            <select aria-label={t("Employment gender")} value={stateGender} onChange={(event) => setStateGender(event.target.value)}>
+              <option value="person">{t("Person")}</option>
+              <option value="male">{t("Male")}</option>
+              <option value="female">{t("Female")}</option>
             </select>
-            <select aria-label="Employment sector" value={stateSector} onChange={(event) => setStateSector(event.target.value)}>
-              <option value="rural + urban">Rural + Urban</option>
-              <option value="rural">Rural</option>
-              <option value="urban">Urban</option>
+            <select aria-label={t("Employment sector")} value={stateSector} onChange={(event) => setStateSector(event.target.value)}>
+              <option value="rural + urban">{t("Rural + Urban")}</option>
+              <option value="rural">{t("Rural")}</option>
+              <option value="urban">{t("Urban")}</option>
             </select>
           </div>
         </div>
@@ -281,11 +280,11 @@ export default function PLFSCharts() {
         )}
       </section>
 
-      <section className="panel" aria-label="Labour Force Participation Rate">
+      <section className="panel" aria-label={t("Labour Force Participation Rate")}>
         <div className="panel-header">
           <div>
-            <h2 className="panel-title">Labour Force Participation Rate</h2>
-            <p className="panel-subtitle">Male vs Female · Annual PLFS</p>
+            <h2 className="panel-title">{t("Labour Force Participation Rate")}</h2>
+            <p className="panel-subtitle">{t("Male vs Female · Annual PLFS")}</p>
           </div>
         </div>
         <ChartMessage state={lfpr} empty={lfprData.length === 0} />
@@ -296,9 +295,9 @@ export default function PLFSCharts() {
                 <CartesianGrid stroke="var(--chart-grid)" strokeDasharray="3 4" vertical={false} />
                 <XAxis dataKey="year" />
                 <PercentageYAxis />
-                <Tooltip formatter={(value, name) => [`${Number(value).toFixed(2)}%`, name === "male" ? "Male" : "Female"]} />
-                <Line dataKey="male" name="Male" stroke="var(--accent)" strokeWidth={2.5} dot={{ r: 4 }} connectNulls />
-                <Line dataKey="female" name="Female" stroke="var(--warning)" strokeWidth={2.5} dot={{ r: 4 }} connectNulls />
+                <Tooltip formatter={(value, name) => [`${Number(value).toFixed(2)}%`, t(name === "male" ? "Male" : "Female")]} />
+                <Line dataKey="male" name={t("Male")} stroke="var(--accent)" strokeWidth={2.5} dot={{ r: 4 }} connectNulls />
+                <Line dataKey="female" name={t("Female")} stroke="var(--warning)" strokeWidth={2.5} dot={{ r: 4 }} connectNulls />
               </LineChart>
             </ResponsiveContainer>
           </div>

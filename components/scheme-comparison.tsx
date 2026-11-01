@@ -13,6 +13,7 @@ import {
 } from "recharts";
 import type { BudgetEntry, SchemeBudgetEntry } from "@/lib/budget-data";
 import { getSchemeCagr } from "@/lib/analytics/budget";
+import { useLanguage } from "@/lib/i18n/provider";
 import {
   calculateShare,
   calculateYoY,
@@ -43,6 +44,7 @@ export function SchemeComparison({
       .sort((a, b) => a.scheme.localeCompare(b.scheme)),
     [records],
   );
+  const { t } = useLanguage();
   const [selectedIds, setSelectedIds] = useState(
     [...new Set(schemes.slice(0, 2).map((entry) => entry.id))],
   );
@@ -107,7 +109,7 @@ export function SchemeComparison({
   }
 
   return (
-    <section className="panel" aria-label="Choose schemes to compare">
+    <section className="panel" aria-label={t("Choose schemes to compare")}>
       <div className="compare-controls compare-controls-multi">
         {selectedIds.map((id, index) => {
           const search = searches[index] ?? "";
@@ -120,7 +122,7 @@ export function SchemeComparison({
           return (
             <div className="compare-select-group" key={index}>
               <label className="field-label" htmlFor={`scheme-compare-search-${index}`}>
-                Search scheme {String.fromCharCode(65 + index)}
+                {t("Search scheme")} {String.fromCharCode(65 + index)}
                 <input
                   className="search-field"
                   id={`scheme-compare-search-${index}`}
@@ -129,12 +131,12 @@ export function SchemeComparison({
                     next[index] = event.target.value;
                     setSearches(next);
                   }}
-                  placeholder="Type scheme or department"
+                  placeholder={t("Type scheme or department")}
                   type="search"
                   value={search}
                 />
               </label>
-              <label className="sr-only" htmlFor={`scheme-compare-${index}`}>Scheme {String.fromCharCode(65 + index)}</label>
+              <label className="sr-only" htmlFor={`scheme-compare-${index}`}>{t("Scheme")} {String.fromCharCode(65 + index)}</label>
               <select
                 className="select-field"
                 id={`scheme-compare-${index}`}
@@ -142,7 +144,7 @@ export function SchemeComparison({
                 value={id}
               >
                 {choices.map((entry) => (
-                  <option disabled={selectedIds.includes(entry.id) && entry.id !== id} key={entry.id} value={entry.id}>
+                  <option data-i18n-skip="true" disabled={selectedIds.includes(entry.id) && entry.id !== id} key={entry.id} value={entry.id}>
                     {entry.scheme} · {entry.department}
                   </option>
                 ))}
@@ -159,11 +161,11 @@ export function SchemeComparison({
             }}
             type="button"
           >
-            + Add scheme
+            + {t("Add scheme")}
           </button>
         ) : (
           <button className="secondary-button compare-add" onClick={() => setSelectedIds((ids) => ids.slice(0, 2))} type="button">
-            Remove Scheme C
+            {t("Remove Scheme C")}
           </button>
         )}
       </div>
@@ -180,16 +182,16 @@ export function SchemeComparison({
                 : null;
               return (
                 <article className="compare-result" key={scheme.id}>
-                  <span className="compare-result-label">Scheme {String.fromCharCode(65 + index)} · {scheme.scheme}</span>
+                  <span className="compare-result-label">{t("Scheme")} {String.fromCharCode(65 + index)} · <span data-i18n-skip="true">{scheme.scheme}</span></span>
                   <strong className="compare-result-value">{current ? formatCroreExact(current.amountCrore) : "—"}</strong>
-                  <span className="summary-sub">{scheme.department}</span>
+                  <span className="summary-sub" data-i18n-skip="true">{scheme.department}</span>
                   <span className="summary-sub">
-                    YoY {formatPercent(current && previous ? calculateYoY(current.amountCrore, previous.amountCrore) : null)}
-                    {" · "}CAGR {formatPercent(getSchemeCagr(scheme.history, years))}
+                    {t("YoY")} {formatPercent(current && previous ? calculateYoY(current.amountCrore, previous.amountCrore) : null)}
+                    {" · "}{t("CAGR")} {formatPercent(getSchemeCagr(scheme.history, years))}
                   </span>
                   <span className="summary-sub">
-                    {formatShare(current && departmentTotal !== null ? calculateShare(current.amountCrore, departmentTotal) : null)} of department
-                    {" · "}{formatShare(current ? calculateShare(current.amountCrore, totalByYear.get(selectedYear) ?? 0) : null)} of total
+                    {formatShare(current && departmentTotal !== null ? calculateShare(current.amountCrore, departmentTotal) : null)} {t("of department")}
+                    {" · "}{formatShare(current ? calculateShare(current.amountCrore, totalByYear.get(selectedYear) ?? 0) : null)} {t("of total")}
                   </span>
                 </article>
               );
@@ -197,14 +199,14 @@ export function SchemeComparison({
           </div>
           <div className="compare-view-picker">
             <label className="chart-view-picker">
-              <span>View</span>
-              <select aria-label="Scheme comparison view" className="chart-view-select" onChange={(event) => {
+              <span>{t("View")}</span>
+              <select aria-label={t("Scheme comparison view")} className="chart-view-select" onChange={(event) => {
                 const next = event.target.value;
                 if (next === "allocation" || next === "department-share" || next === "total-share") setMode(next);
               }} value={mode}>
-                <option value="allocation">Budget allocation</option>
-                <option value="department-share">Share of department budget</option>
-                <option value="total-share">Share of total budget</option>
+                <option value="allocation">{t("Budget allocation")}</option>
+                <option value="department-share">{t("Share of department budget")}</option>
+                <option value="total-share">{t("Share of total budget")}</option>
               </select>
             </label>
           </div>
@@ -226,9 +228,9 @@ export function SchemeComparison({
             <table className="data-table">
               <thead>
                 <tr>
-                  <th scope="col">Financial year</th>
-                  {histories.slice(0, 2).map((scheme, index) => <th className="numeric" key={scheme.id} scope="col">{String.fromCharCode(65 + index)} · {scheme.scheme}</th>)}
-                  <th className="numeric" scope="col">Difference (B − A)</th>
+                  <th scope="col">{t("Financial year")}</th>
+                  {histories.slice(0, 2).map((scheme, index) => <th className="numeric" key={scheme.id} scope="col">{String.fromCharCode(65 + index)} · <span data-i18n-skip="true">{scheme.scheme}</span></th>)}
+                  <th className="numeric" scope="col">{t("Difference (B − A)")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -251,9 +253,9 @@ export function SchemeComparison({
           </div>
         </>
       ) : (
-        <div className="empty-state">At least two schemes with source data are needed for comparison.</div>
+        <div className="empty-state">{t("At least two schemes with source data are needed for comparison.")}</div>
       )}
-      <p className="ranking-caption">Selected-year scheme allocation total: {formatCroreExact(selectedCurrentTotal)}. This scheme-level sum is distinct from government-wide department totals.</p>
+      <p className="ranking-caption">{t("Selected-year scheme allocation total:")} {formatCroreExact(selectedCurrentTotal)}. {t("This scheme-level sum is distinct from government-wide department totals.")}</p>
     </section>
   );
 }

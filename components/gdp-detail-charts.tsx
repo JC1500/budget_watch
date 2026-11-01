@@ -12,6 +12,7 @@ import {
 } from "recharts";
 
 import { getGDPData } from "@/lib/api/gdp";
+import { useLanguage } from "@/lib/i18n/provider";
 import type { GDPRecord } from "@/lib/types/gdp";
 
 type Price = "current_price" | "constant_price";
@@ -66,11 +67,7 @@ function useGDPRequest(
         if (cancelled) return;
         console.error("GDP API error:", cause);
         setResult([]);
-        setError(
-          cause instanceof Error
-            ? cause.message
-            : "Unable to load GDP data.",
-        );
+        setError("Unable to load GDP data.");
         setCompletedKey(requestKey);
       });
 
@@ -95,15 +92,16 @@ function ChartMessage({
   error: string | null;
   empty: boolean;
 }) {
-  if (loading) return <div className="empty-chart">Loading GDP data...</div>;
+  const { t } = useLanguage();
+  if (loading) return <div className="empty-chart">{t("Loading GDP data...")}</div>;
   if (error) {
     return (
       <div className="empty-chart" role="alert">
-        {error}
+        {t(error)}
       </div>
     );
   }
-  if (empty) return <div className="empty-chart">No GDP data available.</div>;
+  if (empty) return <div className="empty-chart">{t("No GDP data available.")}</div>;
   return null;
 }
 
@@ -176,6 +174,7 @@ function GDPBarChart({
 }
 
 export function GDPDetailCharts() {
+  const { t } = useLanguage();
   const [selectedState, setSelectedState] = useState("");
   const [selectedStateYear, setSelectedStateYear] = useState("");
   const [statePrice, setStatePrice] =
@@ -313,49 +312,49 @@ export function GDPDetailCharts() {
       <section className="panel">
         <div className="panel-header">
           <div>
-            <h2 className="panel-title">State-wise GSDP</h2>
+            <h2 className="panel-title">{t("State-wise GSDP")}</h2>
             <p className="panel-subtitle">
-              Gross State Domestic Product at current prices
+              {t("Gross State Domestic Product at current prices")}
             </p>
           </div>
         </div>
         <div className="gdp-chart-filters">
           <label>
-            State
+            {t("State")}
             <select
               value={selectedState}
               onChange={(event) => setSelectedState(event.target.value)}
             >
-              <option value="">All states</option>
+              <option value="">{t("All states")}</option>
               {states.map((state) => (
-                <option key={state} value={state}>{state}</option>
+                <option data-i18n-skip="true" key={state} value={state}>{state}</option>
               ))}
             </select>
           </label>
           <label>
-            Financial year
+            {t("Financial year")}
             <select
               value={selectedStateYear}
               onChange={(event) =>
                 setSelectedStateYear(event.target.value)
               }
             >
-              <option value="">All years</option>
+              <option value="">{t("All years")}</option>
               {stateYears.map((year) => (
                 <option key={year} value={year}>{year}</option>
               ))}
             </select>
           </label>
           <label>
-            Price
+            {t("Price")}
             <select
               value={statePrice}
               onChange={(event) =>
                 setStatePrice(event.target.value as Price)
               }
             >
-              <option value="current_price">Current Price</option>
-              <option value="constant_price">Constant Price</option>
+              <option value="current_price">{t("Current Price")}</option>
+              <option value="constant_price">{t("Constant Price")}</option>
             </select>
           </label>
         </div>
@@ -371,8 +370,8 @@ export function GDPDetailCharts() {
               data={stateChartData}
               valueLabel={
                 statePrice === "current_price"
-                  ? "Current Price"
-                  : "Constant Price"
+                  ? t("Current Price")
+                  : t("Constant Price")
               }
             />
           )}
@@ -381,19 +380,19 @@ export function GDPDetailCharts() {
       <section className="panel">
         <div className="panel-header">
           <div>
-            <h2 className="panel-title">GDP Growth Rate</h2>
+            <h2 className="panel-title">{t("GDP Growth Rate")}</h2>
             <p className="panel-subtitle">
-              Quarterly real GDP growth rate
+              {t("Quarterly real GDP growth rate")}
             </p>
           </div>
         </div>
         <label>
-          Financial year
+          {t("Financial year")}
           <select
             value={growthYear}
             onChange={(event) => setGrowthYear(event.target.value)}
           >
-            <option value="">All years</option>
+            <option value="">{t("All years")}</option>
             {growthYears.map((year) => (
               <option key={year} value={year}>{year}</option>
             ))}
@@ -409,7 +408,7 @@ export function GDPDetailCharts() {
           growthChartData.length > 0 && (
             <GDPBarChart
               data={growthChartData}
-              valueLabel="Growth rate"
+              valueLabel={t("Growth rate")}
               percentage
             />
           )}
@@ -418,47 +417,47 @@ export function GDPDetailCharts() {
       <section className="panel">
         <div className="panel-header">
           <div>
-            <h2 className="panel-title">National GDP</h2>
+            <h2 className="panel-title">{t("National GDP")}</h2>
             <p className="panel-subtitle">
-              Annual or quarterly GDP values
+              {t("Annual or quarterly GDP values")}
             </p>
           </div>
         </div>
         <div className="gdp-chart-filters">
           <label>
-            Frequency
+            {t("Frequency")}
             <select
               value={frequency}
               onChange={(event) =>
                 setFrequency(event.target.value as Frequency)
               }
             >
-              <option value="annual">Annual</option>
-              <option value="quarterly">Quarterly</option>
+              <option value="annual">{t("Annual")}</option>
+              <option value="quarterly">{t("Quarterly")}</option>
             </select>
           </label>
           <label>
-            Financial year
+            {t("Financial year")}
             <select
               value={nationalYear}
               onChange={(event) => setNationalYear(event.target.value)}
             >
-              <option value="">All years</option>
+              <option value="">{t("All years")}</option>
               {nationalYears.map((year) => (
                 <option key={year} value={year}>{year}</option>
               ))}
             </select>
           </label>
           <label>
-            Price
+            {t("Price")}
             <select
               value={price}
               onChange={(event) =>
                 setPrice(event.target.value as Price)
               }
             >
-              <option value="current_price">Current Price</option>
-              <option value="constant_price">Constant Price</option>
+              <option value="current_price">{t("Current Price")}</option>
+              <option value="constant_price">{t("Constant Price")}</option>
             </select>
           </label>
         </div>
@@ -474,8 +473,8 @@ export function GDPDetailCharts() {
               data={nationalChartData}
               valueLabel={
                 price === "current_price"
-                  ? "Current Price"
-                  : "Constant Price"
+                  ? t("Current Price")
+                  : t("Constant Price")
               }
             />
           )}

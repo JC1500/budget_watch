@@ -11,6 +11,7 @@ import {
   formatPercent,
   formatShare,
 } from "@/lib/format";
+import { useLanguage } from "@/lib/i18n/provider";
 
 const pageSize = 20;
 
@@ -51,6 +52,7 @@ export function SchemeTable({
   explorer = false,
   departmentId,
 }: Props) {
+  const { t } = useLanguage();
   const [query, setQuery] = useState("");
   const [departmentFilter, setDepartmentFilter] = useState(departmentId ?? "");
   const [sortKey, setSortKey] = useState("allocation");
@@ -246,21 +248,21 @@ export function SchemeTable({
       <div className="panel-header">
         <div>
           <h2 className="panel-title" id="scheme-table-title">
-            {explorer ? "Explore scheme data" : "Scheme budgets"}
+            {t(explorer ? "Explore scheme data" : "Scheme budgets")}
           </h2>
           <p className="panel-subtitle">
-            {filtered.length} schemes · {selectedYear} · Scheme-level allocations only
+            {filtered.length} {t("schemes")} · {selectedYear} · {t("Scheme-level allocations only")}
           </p>
         </div>
         {explorer && (
           <button className="secondary-button" onClick={exportCsv} type="button">
-            Export filtered CSV
+            {t("Export filtered CSV")}
           </button>
         )}
       </div>
       <div className="table-filters scheme-filters">
         <label className="sr-only" htmlFor={`scheme-search-${explorer ? "explorer" : "list"}`}>
-          Search schemes or departments
+          {t("Search schemes or departments")}
         </label>
         <input
           className="search-field"
@@ -269,12 +271,12 @@ export function SchemeTable({
             setQuery(event.target.value);
             resetPage();
           }}
-          placeholder="Search schemes or departments"
+          placeholder={t("Search schemes or departments")}
           type="search"
           value={query}
         />
         <label className="sr-only" htmlFor={`scheme-department-${explorer ? "explorer" : "list"}`}>
-          Filter by department
+          {t("Filter by department")}
         </label>
         <select
           className="select-field table-select"
@@ -285,15 +287,15 @@ export function SchemeTable({
           }}
           value={departmentFilter}
         >
-          <option value="">All departments</option>
+          <option value="">{t("All departments")}</option>
           {departments.map((department) => (
-            <option key={department.id} value={department.id}>
+            <option data-i18n-skip="true" key={department.id} value={department.id}>
               {department.name}
             </option>
           ))}
         </select>
         <label className="sr-only" htmlFor={`scheme-year-${explorer ? "explorer" : "list"}`}>
-          Financial year
+          {t("Financial year")}
         </label>
         <select
           className="select-field table-select"
@@ -304,7 +306,7 @@ export function SchemeTable({
           {years.map((year) => <option key={year} value={year}>{year}</option>)}
         </select>
         <label className="sr-only" htmlFor={`scheme-sort-${explorer ? "explorer" : "list"}`}>
-          Sort schemes
+          {t("Sort schemes")}
         </label>
         <select
           className="select-field table-select"
@@ -315,23 +317,23 @@ export function SchemeTable({
           }}
           value={sortKey}
         >
-          <option value="allocation">Highest allocation</option>
-          <option value="allocation-asc">Lowest allocation</option>
-          <option value="share-department">Share of department</option>
-          <option value="share-total">Share of total budget</option>
-          <option value="yoy">YoY change</option>
-          <option value="rank">Overall scheme rank</option>
-          <option value="name">Scheme name</option>
-          <option value="department">Department</option>
+          <option value="allocation">{t("Highest allocation")}</option>
+          <option value="allocation-asc">{t("Lowest allocation")}</option>
+          <option value="share-department">{t("Share of department")}</option>
+          <option value="share-total">{t("Share of total budget")}</option>
+          <option value="yoy">{t("YoY change")}</option>
+          <option value="rank">{t("Overall scheme rank")}</option>
+          <option value="name">{t("Scheme name")}</option>
+          <option value="department">{t("Department")}</option>
         </select>
         {explorer && (
           <>
-            <input aria-label="Minimum allocation in crore" className="search-field range-field" onChange={(event) => { setMinAllocation(event.target.value); resetPage(); }} placeholder="Min ₹ crore" type="number" value={minAllocation} />
-            <input aria-label="Maximum allocation in crore" className="search-field range-field" onChange={(event) => { setMaxAllocation(event.target.value); resetPage(); }} placeholder="Max ₹ crore" type="number" value={maxAllocation} />
-            <input aria-label="Minimum share of department" className="search-field range-field" onChange={(event) => { setMinDepartmentShare(event.target.value); resetPage(); }} placeholder="Min dept %" type="number" value={minDepartmentShare} />
-            <input aria-label="Maximum share of department" className="search-field range-field" onChange={(event) => { setMaxDepartmentShare(event.target.value); resetPage(); }} placeholder="Max dept %" type="number" value={maxDepartmentShare} />
-            <input aria-label="Minimum share of total budget" className="search-field range-field" onChange={(event) => { setMinTotalShare(event.target.value); resetPage(); }} placeholder="Min total %" type="number" value={minTotalShare} />
-            <input aria-label="Maximum share of total budget" className="search-field range-field" onChange={(event) => { setMaxTotalShare(event.target.value); resetPage(); }} placeholder="Max total %" type="number" value={maxTotalShare} />
+            <input aria-label={t("Minimum allocation in crore")} className="search-field range-field" onChange={(event) => { setMinAllocation(event.target.value); resetPage(); }} placeholder={t("Min ₹ crore")} type="number" value={minAllocation} />
+            <input aria-label={t("Maximum allocation in crore")} className="search-field range-field" onChange={(event) => { setMaxAllocation(event.target.value); resetPage(); }} placeholder={t("Max ₹ crore")} type="number" value={maxAllocation} />
+            <input aria-label={t("Minimum share of department")} className="search-field range-field" onChange={(event) => { setMinDepartmentShare(event.target.value); resetPage(); }} placeholder={t("Min dept %")} type="number" value={minDepartmentShare} />
+            <input aria-label={t("Maximum share of department")} className="search-field range-field" onChange={(event) => { setMaxDepartmentShare(event.target.value); resetPage(); }} placeholder={t("Max dept %")} type="number" value={maxDepartmentShare} />
+            <input aria-label={t("Minimum share of total budget")} className="search-field range-field" onChange={(event) => { setMinTotalShare(event.target.value); resetPage(); }} placeholder={t("Min total %")} type="number" value={minTotalShare} />
+            <input aria-label={t("Maximum share of total budget")} className="search-field range-field" onChange={(event) => { setMaxTotalShare(event.target.value); resetPage(); }} placeholder={t("Max total %")} type="number" value={maxTotalShare} />
           </>
         )}
       </div>
@@ -339,14 +341,14 @@ export function SchemeTable({
         <table className="data-table sticky-table scheme-data-table">
           <thead>
             <tr>
-              <th scope="col">Scheme</th>
-              <th scope="col">Department</th>
-              <th className="numeric" scope="col">Allocation</th>
-              <th className="numeric" scope="col">Share of department</th>
-              <th className="numeric" scope="col">Share of total budget</th>
-              <th className="numeric" scope="col">Previous year</th>
-              <th className="numeric" scope="col">YoY %</th>
-              <th className="numeric" scope="col">Overall rank</th>
+              <th scope="col">{t("Scheme")}</th>
+              <th scope="col">{t("Department")}</th>
+              <th className="numeric" scope="col">{t("Allocation")}</th>
+              <th className="numeric" scope="col">{t("Share of department")}</th>
+              <th className="numeric" scope="col">{t("Share of total budget")}</th>
+              <th className="numeric" scope="col">{t("Previous year")}</th>
+              <th className="numeric" scope="col">{t("YoY %")}</th>
+              <th className="numeric" scope="col">{t("Overall rank")}</th>
             </tr>
           </thead>
           <tbody>
@@ -355,12 +357,12 @@ export function SchemeTable({
               return (
                 <tr key={entry.id}>
                   <td>
-                    <Link className="department-link" href={`/schemes/${encodeURIComponent(entry.id)}?year=${encodeURIComponent(selectedYear)}`}>
+                    <Link className="department-link" data-i18n-skip="true" href={`/schemes/${encodeURIComponent(entry.id)}?year=${encodeURIComponent(selectedYear)}`}>
                       {entry.scheme}
                     </Link>
                   </td>
                   <td>
-                    <Link href={`/departments/${entry.departmentId}?year=${encodeURIComponent(selectedYear)}`}>
+                    <Link data-i18n-skip="true" href={`/departments/${entry.departmentId}?year=${encodeURIComponent(selectedYear)}`}>
                       {entry.department}
                     </Link>
                   </td>
@@ -374,19 +376,19 @@ export function SchemeTable({
               );
             })}
             {visibleEntries.length === 0 && (
-              <tr><td className="empty-table-cell" colSpan={8}>No matching schemes have allocation data for {selectedYear}.</td></tr>
+              <tr><td className="empty-table-cell" colSpan={8}>{t("No matching schemes have allocation data for")} {selectedYear}.</td></tr>
             )}
           </tbody>
         </table>
       </div>
       {pageCount > 1 && (
-        <div className="table-pagination" aria-label="Scheme table pages">
-          <span>Page {currentPage + 1} of {pageCount}</span>
-          <button className="secondary-button" disabled={currentPage === 0} onClick={() => setPage(currentPage - 1)} type="button">Previous</button>
-          <button className="secondary-button" disabled={currentPage >= pageCount - 1} onClick={() => setPage(currentPage + 1)} type="button">Next</button>
+        <div className="table-pagination" aria-label={t("Scheme table pages")}>
+          <span>{t("Page")} {currentPage + 1} {t("of")} {pageCount}</span>
+          <button className="secondary-button" disabled={currentPage === 0} onClick={() => setPage(currentPage - 1)} type="button">{t("Previous")}</button>
+          <button className="secondary-button" disabled={currentPage >= pageCount - 1} onClick={() => setPage(currentPage + 1)} type="button">{t("Next")}</button>
         </div>
       )}
-      <p className="ranking-caption">Share calculations use the same financial year. Scheme allocations are not added to department totals.</p>
+      <p className="ranking-caption">{t("Share calculations use the same financial year. Scheme allocations are not added to department totals.")}</p>
     </section>
   );
 }

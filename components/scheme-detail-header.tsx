@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useLanguage } from "@/lib/i18n/provider";
 
 export type SchemePickerOption = {
   id: string;
@@ -22,6 +23,7 @@ export function SchemeDetailHeader({
   selectedYear: string;
   years: string[];
 }) {
+  const { t } = useLanguage();
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -46,27 +48,29 @@ export function SchemeDetailHeader({
   return (
     <section className="department-header scheme-header">
       <div className="department-header-topline">
-        <nav className="department-breadcrumb" aria-label="Breadcrumb">
-          <Link className="crumb-link" href={`/schemes?year=${encodeURIComponent(selectedYear)}`}>Schemes</Link>
+        <nav className="department-breadcrumb" aria-label={t("Breadcrumb")}>
+          <Link className="crumb-link" href={`/schemes?year=${encodeURIComponent(selectedYear)}`}>{t("Schemes")}</Link>
           <span aria-hidden="true">/</span>
           <span>{active?.name ?? "Scheme"}</span>
         </nav>
         <div className="department-selector-group">
           <label className="field-stack">
-            <span>Scheme</span>
+            <span>{t("Scheme")}</span>
             <div className="combo-field" aria-expanded={open}>
               <button className="combo-trigger" onClick={() => setOpen((value) => !value)} type="button">
-                <span>{active?.name ?? "Select scheme"}</span>
+                <span data-i18n-skip={active?.name ? "true" : undefined}>
+                  {active?.name ?? t("Select scheme")}
+                </span>
                 <span aria-hidden="true">▾</span>
               </button>
               {open && (
-                <div className="combo-panel" role="listbox" aria-label="Scheme selector">
+                <div className="combo-panel" role="listbox" aria-label={t("Scheme selector")}>
                   <div className="combo-search-wrap">
                     <input
                       autoFocus
                       className="combo-search"
                       onChange={(event) => setQuery(event.target.value)}
-                      placeholder="Search schemes or departments..."
+                      placeholder={t("Search schemes or departments...")}
                       type="search"
                       value={query}
                     />
@@ -80,18 +84,19 @@ export function SchemeDetailHeader({
                         onClick={() => navigate(scheme.id)}
                         role="option"
                         type="button"
+                        data-i18n-skip="true"
                       >
-                        <span>{scheme.name}</span>
-                        <small>{scheme.department}</small>
+                        <span data-i18n-skip="true">{scheme.name}</span>
+                        <small data-i18n-skip="true">{scheme.department}</small>
                       </button>
-                    )) : <div className="combo-empty">No matching schemes.</div>}
+                    )                    ) : <div className="combo-empty">{t("No matching schemes.")}</div>}
                   </div>
                 </div>
               )}
             </div>
           </label>
           <label className="field-stack">
-            <span>Financial year</span>
+            <span>{t("Financial year")}</span>
             <select
               className="select-field compact-select"
               onChange={(event) => navigate(selectedSchemeId, event.target.value)}
@@ -104,8 +109,8 @@ export function SchemeDetailHeader({
       </div>
       <div className="department-header-main">
         <div className="department-header-title">
-          <h1>{active?.name ?? "Scheme"}</h1>
-          {active && <Link className="scheme-parent-link" href={`/departments/${active.departmentId}?year=${encodeURIComponent(selectedYear)}`}>Department: {active.department}</Link>}
+          <h1 data-i18n-skip={active ? "true" : undefined}>{active?.name ?? t("Scheme")}</h1>
+          {active && <Link className="scheme-parent-link" href={`/departments/${active.departmentId}?year=${encodeURIComponent(selectedYear)}`}>{t("Department")}: <span data-i18n-skip="true">{active.department}</span></Link>}
         </div>
       </div>
     </section>

@@ -12,6 +12,7 @@ import {
   YAxis,
 } from "recharts";
 import type { BudgetEntry, SchemeBudgetEntry } from "@/lib/budget-data";
+import { useLanguage } from "@/lib/i18n/provider";
 import {
   calculateShare,
   formatCroreCompact,
@@ -41,31 +42,32 @@ function SchemeTooltip({
   payload?: { payload?: Point }[];
   label?: string;
 }) {
+  const { t } = useLanguage();
   const point = payload?.[0]?.payload;
   if (!active || !point) return null;
   return (
     <div className="chart-tooltip">
-      <strong>{point.scheme}</strong>
-      <span>{point.department}</span>
+      <strong data-i18n-skip="true">{point.scheme}</strong>
+      <span data-i18n-skip="true">{point.department}</span>
       <span>{label ?? point.financialYear}</span>
       <div className="chart-tooltip-row">
-        <span>Allocation</span>
+        <span>{t("Allocation")}</span>
         <strong>{point.allocation === null ? "—" : formatCroreExact(point.allocation)}</strong>
       </div>
       <div className="chart-tooltip-row">
-        <span>Department allocation</span>
+        <span>{t("Department allocation")}</span>
         <strong>{point.departmentAllocation === null ? "—" : formatCroreExact(point.departmentAllocation)}</strong>
       </div>
       <div className="chart-tooltip-row">
-        <span>Share of department</span>
+        <span>{t("Share of department")}</span>
         <strong>{formatShare(point.departmentShare)}</strong>
       </div>
       <div className="chart-tooltip-row">
-        <span>Total government budget</span>
+        <span>{t("Total government budget")}</span>
         <strong>{point.totalBudget === null ? "—" : formatCroreExact(point.totalBudget)}</strong>
       </div>
       <div className="chart-tooltip-row">
-        <span>Share of total budget</span>
+        <span>{t("Share of total budget")}</span>
         <strong>{formatShare(point.totalShare)}</strong>
       </div>
     </div>
@@ -94,6 +96,7 @@ export function SchemeBudgetAnalysis({
     shareOfTotal: number | null;
   };
 }) {
+  const { t } = useLanguage();
   const [mode, setMode] = useState<SchemeChartMode>("allocation");
   const points = useMemo(() => {
     const schemeByYear = new Map(
@@ -150,13 +153,13 @@ export function SchemeBudgetAnalysis({
     <section className="panel" aria-labelledby="scheme-analysis-title">
       <div className="panel-header department-analysis-header">
         <div>
-          <h2 className="panel-title" id="scheme-analysis-title">Scheme budget over time</h2>
-          <p className="panel-subtitle">Unavailable years remain blank rather than being treated as zero.</p>
+          <h2 className="panel-title" id="scheme-analysis-title">{t("Scheme budget over time")}</h2>
+          <p className="panel-subtitle">{t("Unavailable years remain blank rather than being treated as zero.")}</p>
         </div>
         <label className="chart-view-picker">
-          <span>View</span>
+          <span>{t("View")}</span>
           <select
-            aria-label="Scheme chart view"
+            aria-label={t("Scheme chart view")}
             className="chart-view-select"
             onChange={(event) => {
               const next = event.target.value;
@@ -167,23 +170,23 @@ export function SchemeBudgetAnalysis({
             }}
             value={mode}
           >
-            <option value="allocation">Budget allocation</option>
+            <option value="allocation">{t("Budget allocation")}</option>
             {showDepartmentShare && (
-              <option value="department-share">Share of department budget</option>
+              <option value="department-share">{t("Share of department budget")}</option>
             )}
-            <option value="total-share">Share of total budget</option>
+            <option value="total-share">{t("Share of total budget")}</option>
           </select>
         </label>
       </div>
       {selectedYearSummary && (
         <div className="scheme-selected-summary">
           <div className="scheme-selected-identity">
-            <strong>{selectedYearSummary.schemeName}</strong>
-            <span>{selectedYearSummary.departmentName}</span>
+            <strong data-i18n-skip="true">{selectedYearSummary.schemeName}</strong>
+            <span data-i18n-skip="true">{selectedYearSummary.departmentName}</span>
           </div>
           <div className="scheme-selected-metrics">
             <div>
-              <span>Allocation · {selectedYear}</span>
+              <span>{t("Allocation ·")} {selectedYear}</span>
               <strong>
                 {selectedYearSummary.allocation === null
                   ? "—"
@@ -191,7 +194,7 @@ export function SchemeBudgetAnalysis({
               </strong>
             </div>
             <div>
-              <span>Share of total budget</span>
+              <span>{t("Share of total budget")}</span>
               <strong>{formatShare(selectedYearSummary.shareOfTotal)}</strong>
             </div>
           </div>
@@ -215,7 +218,7 @@ export function SchemeBudgetAnalysis({
               <Line
                 connectNulls={false}
                 dataKey={valueKey}
-                name={mode === "allocation" ? "Allocation" : mode === "department-share" ? "Share of department" : "Share of total budget"}
+                name={t(mode === "allocation" ? "Allocation" : mode === "department-share" ? "Share of department" : "Share of total budget")}
                 stroke="var(--chart-positive)"
                 strokeWidth={2.5}
                 dot={{ fill: "var(--chart-positive)", r: 3 }}
@@ -234,7 +237,7 @@ export function SchemeBudgetAnalysis({
           </ResponsiveContainer>
         </div>
       ) : (
-        <div className="empty-chart">No historical scheme allocation is available.</div>
+        <div className="empty-chart">{t("No historical scheme allocation is available.")}</div>
       )}
     </section>
   );

@@ -1,5 +1,7 @@
 "use client";
 
+import { useLanguage } from "@/lib/i18n/provider";
+
 export type AnalysisLevel = "departments" | "schemes";
 
 export function AnalysisLevelSelector({
@@ -11,11 +13,13 @@ export function AnalysisLevelSelector({
   parameter?: "level" | "entity" | "type";
   label?: string;
 }) {
+  const { t } = useLanguage();
+
   return (
     <label className="analysis-level-picker">
-      <span>{label}</span>
+      <span>{t(label)}</span>
       <select
-        aria-label={label}
+        aria-label={t(label)}
         className="select-field compact-select"
         onChange={(event) => {
           const next = event.target.value;
@@ -27,8 +31,8 @@ export function AnalysisLevelSelector({
         }}
         value={value}
       >
-        <option value="departments">Departments</option>
-        <option value="schemes">Schemes</option>
+        <option value="departments">{t("Departments")}</option>
+        <option value="schemes">{t("Schemes")}</option>
       </select>
     </label>
   );

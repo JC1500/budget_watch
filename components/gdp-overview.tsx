@@ -12,6 +12,7 @@ import {
 } from "recharts";
 
 import { getGDPData } from "@/lib/api/gdp";
+import { useLanguage } from "@/lib/i18n/provider";
 import type { GDPRecord } from "@/lib/types/gdp";
 
 function parseValue(value: GDPRecord["current_price"]) {
@@ -24,6 +25,7 @@ function parseValue(value: GDPRecord["current_price"]) {
 }
 
 export default function GDPOverviewChart() {
+  const { t } = useLanguage();
   const [records, setRecords] = useState<GDPRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -46,11 +48,7 @@ export default function GDPOverviewChart() {
       .catch((cause: unknown) => {
         if (cancelled) return;
         console.error("GDP API error:", cause);
-        setError(
-          cause instanceof Error
-            ? cause.message
-            : "Unable to load GDP data.",
-        );
+        setError("Unable to load GDP data.");
       })
       .finally(() => {
         if (!cancelled) {
@@ -81,21 +79,21 @@ export default function GDPOverviewChart() {
     <section className="panel gdp-overview-panel">
       <div className="panel-header">
         <div>
-          <h2 className="panel-title">National GDP</h2>
+          <h2 className="panel-title">{t("National GDP")}</h2>
           <p className="panel-subtitle">
-            Annual GDP at current prices
+            {t("Annual GDP at current prices")}
           </p>
         </div>
       </div>
 
       {loading ? (
-        <div className="empty-chart">Loading GDP data...</div>
+        <div className="empty-chart">{t("Loading GDP data...")}</div>
       ) : error ? (
         <div className="empty-chart" role="alert">
-          {error}
+          {t(error)}
         </div>
       ) : chartData.length === 0 ? (
-        <div className="empty-chart">No GDP data available.</div>
+        <div className="empty-chart">{t("No GDP data available.")}</div>
       ) : (
         <div className="chart-frame">
           <ResponsiveContainer width="100%" height={300}>
@@ -114,12 +112,12 @@ export default function GDPOverviewChart() {
               <Tooltip
                 formatter={(value, _name, item) => [
                   Number(value).toLocaleString("en-IN"),
-                  `GDP (${item.payload.unit})`,
+                  `${t("GDP")} (${item.payload.unit})`,
                 ]}
               />
               <Bar
                 dataKey="value"
-                name="GDP"
+                name={t("GDP")}
                 fill="var(--accent)"
                 radius={[5, 5, 0, 0]}
                 isAnimationActive={false}

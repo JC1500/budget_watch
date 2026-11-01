@@ -13,6 +13,7 @@ import {
   YAxis,
 } from "recharts";
 
+import { useLanguage } from "@/lib/i18n/provider";
 import {
   budgetAnalysisData,
   monthlyBudgetData,
@@ -20,9 +21,9 @@ import {
 } from "@/lib/data/budget-analysis";
 import type { BudgetMetric } from "@/lib/types/budget-analysis";
 
-function money(value: number | null) {
+function money(value: number | null, t: (key: string) => string) {
   return value === null
-    ? "Not available"
+    ? t("Not available")
     : `₹${value.toLocaleString("en-IN")} crore`;
 }
 
@@ -33,6 +34,7 @@ function MetricBars({
   metrics: BudgetMetric[];
   percentage?: boolean;
 }) {
+  const { t } = useLanguage();
   const data = metrics.map((metric) => ({
     name: metric.name,
     be: metric.budget_estimates,
@@ -64,14 +66,14 @@ function MetricBars({
           formatter={(value, key) => [
             percentage
               ? `${Number(value).toFixed(1)}%`
-              : money(value === null ? null : Number(value)),
-            key === "be" ? "Budget Estimate" : "Actuals",
+              : money(value === null ? null : Number(value), t),
+              t(key === "be" ? "Budget Estimate" : "Actuals"),
           ]}
         />
         {percentage ? (
           <Bar
             dataKey="utilization"
-            name="Actuals as % of BE"
+            name={t("Actuals as % of BE")}
             fill="var(--accent)"
             radius={[5, 5, 0, 0]}
             isAnimationActive={false}
@@ -80,14 +82,14 @@ function MetricBars({
           <>
             <Bar
               dataKey="be"
-              name="Budget Estimate"
+              name={t("Budget Estimate")}
               fill="var(--chart-selected)"
               radius={[5, 5, 0, 0]}
               isAnimationActive={false}
             />
             <Bar
               dataKey="actuals"
-              name="Actuals"
+              name={t("Actuals")}
               fill="var(--accent)"
               radius={[5, 5, 0, 0]}
               isAnimationActive={false}
@@ -122,6 +124,7 @@ function Panel({
 }
 
 export function BudgetOverviewChart() {
+  const { t } = useLanguage();
   const metrics = usableMetrics(
     budgetAnalysisData.sections.account_summary.metrics,
   ).filter((metric) =>
@@ -136,8 +139,8 @@ export function BudgetOverviewChart() {
 
   return (
     <Panel
-      title="Where Does Government Money Go?"
-      description={`Budget Estimates vs actuals · ${budgetAnalysisData.metadata.unit}`}
+      title={t("Where Does Government Money Go?")}
+      description={`${t("Budget Estimates vs actuals")} · ${t(budgetAnalysisData.metadata.unit)}`}
     >
       <MetricBars metrics={metrics} />
     </Panel>
@@ -145,6 +148,7 @@ export function BudgetOverviewChart() {
 }
 
 export default function BudgetAnalysisCharts() {
+  const { t } = useLanguage();
   const accountMetrics = usableMetrics(
     budgetAnalysisData.sections.account_summary.metrics,
   );
@@ -191,8 +195,8 @@ export default function BudgetAnalysisCharts() {
   return (
     <div className="inflation-history-charts">
       <Panel
-        title="Budget Estimates vs Actuals"
-        description="Major receipts and expenditure recorded against the plan"
+        title={t("Budget Estimates vs Actuals")}
+        description={t("Major receipts and expenditure recorded against the plan")}
       >
         <MetricBars metrics={accountMetrics.filter((metric) =>
           [
@@ -206,39 +210,39 @@ export default function BudgetAnalysisCharts() {
         )} />
       </Panel>
       <Panel
-        title="Tax Revenue Breakdown"
-        description="Net tax revenue is the tax category available in the source"
+        title={t("Tax Revenue Breakdown")}
+        description={t("Net tax revenue is the tax category available in the source")}
       >
         <MetricBars metrics={accountMetrics.filter((metric) => metric.id === "tax_revenue_net")} />
       </Panel>
       <Panel
-        title="Revenue Receipts Breakdown"
-        description="Components shown separately; total receipts are excluded"
+        title={t("Revenue Receipts Breakdown")}
+        description={t("Components shown separately; total receipts are excluded")}
       >
         <MetricBars metrics={receiptMetrics} />
       </Panel>
       <Panel
-        title="Major Subsidies"
-        description="Budget Estimates vs actuals · individual categories only"
+        title={t("Major Subsidies")}
+        description={t("Budget Estimates vs actuals · individual categories only")}
       >
         <MetricBars metrics={subsidyMetrics} />
       </Panel>
       <Panel
-        title="Monthly Revenue and Financing Trend"
-        description={`Monthly values · ${monthlyBudgetData.metadata.unit}`}
+        title={t("Monthly Revenue and Financing Trend")}
+        description={`${t("Monthly values")} · ${t(monthlyBudgetData.metadata.unit)}`}
       >
         <div className="chart-controls">
           <select
-            aria-label="Monthly budget category"
+            aria-label={t("Monthly budget category")}
             value={monthlyCategory}
             onChange={(event) => setMonthlyCategory(event.target.value)}
           >
             {monthlyBudgetData.categories.map((entry) => (
-              <option key={entry.id} value={entry.id}>{entry.name}</option>
+              <option data-i18n-skip="true" key={entry.id} value={entry.id}>{entry.name}</option>
             ))}
           </select>
           <select
-            aria-label="Monthly financial year"
+            aria-label={t("Monthly financial year")}
             value={monthlyYear}
             onChange={(event) => setMonthlyYear(event.target.value)}
           >
@@ -252,20 +256,20 @@ export default function BudgetAnalysisCharts() {
             <CartesianGrid stroke="var(--chart-grid)" strokeDasharray="3 4" vertical={false} />
             <XAxis dataKey="month" />
             <YAxis tickFormatter={(value: number) => value.toLocaleString("en-IN")} />
-            <Tooltip formatter={(value) => [money(Number(value)), "Monthly value"]} />
-            <Line dataKey="value" name="Monthly value" stroke="var(--accent)" strokeWidth={2.5} dot={{ r: 4 }} connectNulls={false} />
+            <Tooltip formatter={(value) => [money(Number(value), t), t("Monthly value")]} />
+            <Line dataKey="value" name={t("Monthly value")} stroke="var(--accent)" strokeWidth={2.5} dot={{ r: 4 }} connectNulls={false} />
           </LineChart>
         </ResponsiveContainer>
       </Panel>
       <Panel
-        title="Budget Utilization"
-        description="Actuals as a percentage of Budget Estimates"
+        title={t("Budget Utilization")}
+        description={t("Actuals as a percentage of Budget Estimates")}
       >
         <MetricBars metrics={utilizationMetrics} percentage />
       </Panel>
       <Panel
-        title="Deficit Analysis"
-        description="Reported deficit measures, without recalculating from other metrics"
+        title={t("Deficit Analysis")}
+        description={t("Reported deficit measures, without recalculating from other metrics")}
       >
         <MetricBars metrics={deficitMetrics} />
       </Panel>

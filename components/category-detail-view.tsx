@@ -16,6 +16,7 @@ import type {
   BudgetCategory,
   BudgetCategorySummary,
 } from "@/lib/data/categories";
+import { useLanguage } from "@/lib/i18n/provider";
 import { formatCroreCompact, formatCroreExact, formatPercent, formatShare } from "@/lib/format";
 
 type CategoryDetailViewProps = {
@@ -51,6 +52,7 @@ export function CategoryDetailView({
   yoy,
   absoluteChange,
 }: CategoryDetailViewProps) {
+  const { t } = useLanguage();
   const historyChartData = history.map((entry) => ({
     ...entry,
     previous:
@@ -69,36 +71,36 @@ export function CategoryDetailView({
     <main className="page-shell">
       <div className="department-header">
         <div className="department-header-title">
-          <p className="eyebrow">Category</p>
-          <h1>{category.name}</h1>
+          <p className="eyebrow">{t("Category")}</p>
+          <h1 data-i18n-skip="true">{category.name}</h1>
         </div>
         <div className="department-header-actions">
           <Link className="text-link" href={`/?year=${encodeURIComponent(year)}`}>
-            Back to overview
+            {t("Back to overview")}
           </Link>
         </div>
       </div>
 
-      <section className="detail-summary-strip" aria-label={`${category.name} summary`}>
+      <section className="detail-summary-strip" aria-label={t("Category summary")}>
         <div className="detail-metric">
-          <span className="detail-metric-label">Allocation</span>
+          <span className="detail-metric-label">{t("Allocation")}</span>
           <strong className="detail-metric-value">
             {summary ? formatCroreExact(summary.total) : "—"}
           </strong>
           <small className="detail-metric-note">{year}</small>
         </div>
         <div className="detail-metric">
-          <span className="detail-metric-label">Share of total budget</span>
+          <span className="detail-metric-label">{t("Share of total budget")}</span>
           <strong className="detail-metric-value">{formatShare(summary?.shareOfTotal ?? null)}</strong>
-          <small className="detail-metric-note">Selected year</small>
+          <small className="detail-metric-note">{t("Selected year")}</small>
         </div>
         <div className="detail-metric">
-          <span className="detail-metric-label">YoY change</span>
+          <span className="detail-metric-label">{t("YoY change")}</span>
           <strong className="detail-metric-value">{formatPercent(yoy)}</strong>
           <small className="detail-metric-note">vs {previousYear || "prior year"}</small>
         </div>
         <div className="detail-metric">
-          <span className="detail-metric-label">Departments mapped</span>
+          <span className="detail-metric-label">{t("Departments mapped")}</span>
           <strong className="detail-metric-value">{summary?.departmentCount ?? 0}</strong>
           <small className="detail-metric-note">{year}</small>
         </div>
@@ -109,9 +111,9 @@ export function CategoryDetailView({
           <div className="panel-header">
             <div>
               <h2 className="panel-title" id="category-history-chart-title">
-                Category budget over time
+                {t("Category budget over time")}
               </h2>
-              <p className="panel-subtitle">Aggregate allocation across all mapped departments</p>
+              <p className="panel-subtitle">{t("Aggregate allocation across all mapped departments")}</p>
             </div>
           </div>
           <div className="chart-frame">
@@ -130,7 +132,7 @@ export function CategoryDetailView({
                     const numeric = Array.isArray(value)
                       ? Number(value[0] ?? 0)
                       : Number(value ?? 0);
-                    return [formatCroreCompact(numeric), "Allocation"];
+                    return [formatCroreCompact(numeric), t("Allocation")];
                   }}
                   labelFormatter={(label) => `${category.name} · ${label}`}
                 />
@@ -151,9 +153,9 @@ export function CategoryDetailView({
           <div className="panel-header">
             <div>
               <h2 className="panel-title" id="department-allocation-chart-title">
-                Departments in {category.name}
+                {t("Departments in")} <span data-i18n-skip="true">{category.name}</span>
               </h2>
-              <p className="panel-subtitle">Allocation by department · {year}</p>
+              <p className="panel-subtitle">{t("Allocation by department")} · {year}</p>
             </div>
           </div>
           <div className="chart-frame">
@@ -182,7 +184,7 @@ export function CategoryDetailView({
                     const numeric = Array.isArray(value)
                       ? Number(value[0] ?? 0)
                       : Number(value ?? 0);
-                    return [formatCroreCompact(numeric), "Allocation"];
+                    return [formatCroreCompact(numeric), t("Allocation")];
                   }}
                   labelFormatter={(label) => String(label)}
                 />
@@ -197,20 +199,20 @@ export function CategoryDetailView({
         <div className="panel-header">
           <div>
             <h2 className="panel-title" id="category-breakdown-title">
-              Department breakdown
+              {t("Department breakdown")}
             </h2>
-            <p className="panel-subtitle">Actual department totals within this category</p>
+            <p className="panel-subtitle">{t("Actual department totals within this category")}</p>
           </div>
         </div>
         <div className="table-wrap">
           <table className="data-table">
             <thead>
               <tr>
-                <th scope="col">Department</th>
-                <th scope="col">Ministry</th>
-                <th className="numeric" scope="col">Allocation</th>
-                <th className="numeric" scope="col">Share of category</th>
-                <th className="numeric" scope="col">Share of total</th>
+                <th scope="col">{t("Department")}</th>
+                <th scope="col">{t("Ministry")}</th>
+                <th className="numeric" scope="col">{t("Allocation")}</th>
+                <th className="numeric" scope="col">{t("Share of category")}</th>
+                <th className="numeric" scope="col">{t("Share of total")}</th>
               </tr>
             </thead>
             <tbody>
@@ -236,20 +238,20 @@ export function CategoryDetailView({
         <div className="panel-header">
           <div>
             <h2 className="panel-title" id="category-history-title">
-              Category trend
+              {t("Category trend")}
             </h2>
-            <p className="panel-subtitle">Allocation across years</p>
+            <p className="panel-subtitle">{t("Allocation across years")}</p>
           </div>
         </div>
         <div className="table-wrap">
           <table className="data-table">
             <thead>
               <tr>
-                <th scope="col">Financial year</th>
-                <th className="numeric" scope="col">Allocation</th>
-                <th className="numeric" scope="col">Share of total</th>
-                <th className="numeric" scope="col">Change</th>
-                <th className="numeric" scope="col">YoY %</th>
+                <th scope="col">{t("Financial year")}</th>
+                <th className="numeric" scope="col">{t("Allocation")}</th>
+                <th className="numeric" scope="col">{t("Share of total")}</th>
+                <th className="numeric" scope="col">{t("Change")}</th>
+                <th className="numeric" scope="col">{t("YoY %")}</th>
               </tr>
             </thead>
             <tbody>
@@ -277,24 +279,24 @@ export function CategoryDetailView({
         <div className="panel-header">
           <div>
             <h2 className="panel-title" id="category-mapping-title">
-              Mapped departments
+              {t("Mapped departments")}
             </h2>
-            <p className="panel-subtitle">Canonical department names included in this category</p>
+            <p className="panel-subtitle">{t("Canonical department names included in this category")}</p>
           </div>
         </div>
         <div className="table-wrap">
           <table className="data-table compact-table">
             <thead>
               <tr>
-                <th scope="col">Department</th>
-                <th scope="col">Ministry</th>
+                <th scope="col">{t("Department")}</th>
+                <th scope="col">{t("Ministry")}</th>
               </tr>
             </thead>
             <tbody>
               {category.departments.map((entry) => (
                 <tr key={`${entry.ministry}:${entry.department}`}>
-                  <td>{entry.displayName}</td>
-                  <td>{entry.ministry}</td>
+                  <td data-i18n-skip="true">{entry.displayName}</td>
+                  <td data-i18n-skip="true">{entry.ministry}</td>
                 </tr>
               ))}
             </tbody>

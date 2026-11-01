@@ -49,7 +49,7 @@ function TrendList({
       <ol className="insight-list">
         {entries.slice(0, 10).map((entry) => (
           <li key={entry.id}>
-            <Link href={entry.href ?? `/departments/${entry.id}`}>{entry.department}</Link>
+            <Link data-i18n-skip="true" href={entry.href ?? `/departments/${entry.id}`}>{entry.department}</Link>
             <strong>{entry.displayValue}</strong>
           </li>
         ))}

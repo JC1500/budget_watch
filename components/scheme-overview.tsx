@@ -116,8 +116,9 @@ export function SchemeOverview({
                   className="ranking-name"
                   href={`/schemes/${encodeURIComponent(entry.id)}?year=${encodeURIComponent(selectedYear)}`}
                   title={`${entry.scheme} · ${entry.department}`}
+                  data-i18n-skip="true"
                 >
-                  {entry.scheme}
+                  <span data-i18n-skip="true">{entry.scheme}</span>
                 </Link>
                 <div className="ranking-track" role="img" aria-label={`${entry.scheme}: ${formatCroreExact(entry.amountCrore)}`}>
                   <div
