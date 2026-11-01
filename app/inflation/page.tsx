@@ -1,27 +1,27 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { InflationHistoryCharts } from "@/components/inflation-charts";
-import {
-  getHeadlineInflationRecords,
-  getLatestCPIIndexRecord,
-  getLatestInflationRecord,
-} from "@/lib/data/inflation";
+
+import InflationChart from "@/components/inflation-charts";
 
 export const metadata: Metadata = {
   title: "CPI Inflation | Budget Watch",
   description:
-    "Explore monthly CPI inflation and CPI Index observations for All India, Combined, CPI (General).",
+    "Explore monthly CPI inflation and CPI Index observations across Indian states.",
 };
 
-function formatMonthYear(record: { month: string; year: string } | null) {
-  return record ? `${record.month} ${record.year}` : "Not available";
-}
+const states = [
+  { name: "Uttarakhand", code: "1" },
+  { name: "Himachal Pradesh", code: "2" },
+  { name: "Punjab", code: "3" },
+  { name: "Chandigarh", code: "4" },
+];
+
+const sectors = [
+   { name: "Rural", code: "1" },
+  { name: "Urban", code: "2" },
+];
 
 export default function InflationPage() {
-  const records = getHeadlineInflationRecords();
-  const latestInflation = getLatestInflationRecord();
-  const latestIndex = getLatestCPIIndexRecord();
-
   return (
     <main className="page-shell inflation-detail-page">
       <nav className="gdp-breadcrumb" aria-label="Breadcrumb">
@@ -34,55 +34,61 @@ export default function InflationPage() {
         <Link className="gdp-back-link" href="/">
           <span aria-hidden="true">←</span> Back to Overview
         </Link>
+
         <p className="eyebrow">Consumer Price Index</p>
+
         <h1>CPI Inflation</h1>
+
         <p className="intro-copy">
-          Monthly CPI observations · All India · Combined · CPI (General)
+          Monthly CPI observations across Indian states
         </p>
       </header>
 
-      <section
-        className="gdp-detail-summary inflation-summary"
-        aria-label="Latest CPI observations"
-      >
-        <article className="gdp-summary-metric">
-          <span>Latest inflation</span>
-          <strong>
-            {latestInflation?.inflation === null ||
-            latestInflation?.inflation === undefined
-              ? "Not available"
-              : `${latestInflation.inflation.toFixed(2)}%`}
-          </strong>
-          <small>{formatMonthYear(latestInflation)}</small>
-        </article>
-        <article className="gdp-summary-metric">
-          <span>Latest CPI Index</span>
-          <strong>
-            {latestIndex?.index === null || latestIndex?.index === undefined
-              ? "Not available"
-              : latestIndex.index.toFixed(2)}
-          </strong>
-          <small>{formatMonthYear(latestIndex)}</small>
-        </article>
+      <section className="inflation-chart-section">
+        <h2>All-India Inflation</h2>
+
+        <InflationChart
+          variant="All-India"
+          params={{
+            year: "2026",
+            sector_code: "3",
+            division_code: "0",
+            limit: 100,
+            page: 1,
+          }}
+        />
       </section>
 
-      <InflationHistoryCharts records={records} />
+      <section className="inflation-chart-section">
+        <h2>State-wise Inflation</h2>
 
-      <section className="panel inflation-about" aria-labelledby="inflation-about-title">
-        <div className="panel-header">
-          <div>
-            <h2 className="panel-title" id="inflation-about-title">
-              About the data
-            </h2>
-          </div>
-        </div>
-        <p>
-          The <code>inflation</code> field is used for the monthly CPI inflation
-          rate, while <code>index</code> is shown separately as the CPI Index.
-          Both charts use only the headline series filtered to All India,
-          Combined, and CPI (General). Values come from the CPI records stored
-          locally in this project.
-        </p>
+        <InflationChart
+          variant="State-wise"
+          states={states}
+          params={{
+            year: "2026",
+            sector_code: "3",
+            division_code: "0",
+            limit: 100,
+            page: 1,
+          }}
+        />
+      </section>
+
+      <section className="inflation-chart-section">
+        <h2>Sector-wise Inflation</h2>
+
+        <InflationChart
+          variant="Sector-wise"
+          sectors={sectors}
+          params={{
+            year: "2026",
+            state_code: "1",
+            division_code: "0",
+            limit: 100,
+            page: 1,
+          }}
+        />
       </section>
     </main>
   );

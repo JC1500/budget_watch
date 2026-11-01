@@ -1,13 +1,9 @@
 import { Suspense } from "react";
 import Link from "next/link";
-import {
-  DepartmentHeatmap,
-  DepartmentHistoryChart,
-  TotalBudgetTimeline,
-} from "@/components/yearly-budget-charts";
-import { InflationOverviewChart } from "@/components/inflation-charts";
+import { TotalBudgetTimeline } from "@/components/yearly-budget-charts";
+import InflationChart from "@/components/inflation-charts";
 import { BudgetCategoryChart } from "@/components/budget-category-chart";
-import { GDPOverview } from "@/components/gdp-overview";
+import GDPChart from "@/components/gdp-overview";
 import {
   budgetRecords,
   getDataStatus,
@@ -16,8 +12,6 @@ import {
 } from "@/lib/budget-data";
 import { buildYearTotals, summarizeBudget } from "@/lib/analytics/budget";
 import { getBudgetCategorySummaries } from "@/lib/data/categories";
-import { getGDPOverviewData } from "@/lib/data/gdp";
-import { getHeadlineInflationRecords } from "@/lib/data/inflation";
 import { formatCroreCompact } from "@/lib/format";
 
 type PageProps = {
@@ -36,6 +30,7 @@ function DashboardSkeleton() {
 
 async function DashboardData({ searchParams }: PageProps) {
   const dataStatus = getDataStatus();
+
   if (dataStatus.errors.length > 0 || dataStatus.isEmpty) {
     return (
       <section className="panel error-state" role="alert">
@@ -61,7 +56,6 @@ async function DashboardData({ searchParams }: PageProps) {
   const initialId = [...entries].sort(
     (a, b) => b.amountCrore - a.amountCrore,
   )[0]?.id ?? "";
-  const gdpData = getGDPOverviewData();
 
   return (
     <>
@@ -107,20 +101,25 @@ async function DashboardData({ searchParams }: PageProps) {
             selectedYear={selectedYear}
           />
         </section>
-        <GDPOverview data={gdpData} />
+        <Link href="/gdp">
+          <GDPChart />
+        </Link>
       </div>
 
       <div className="overview-flow">
-        <InflationOverviewChart records={getHeadlineInflationRecords()} />
+        <Link href="/inflation">
+          <InflationChart
+            variant="All-India"
+            params={{
+              year: "2025",
+              sector_code: "3",
+              division_code: "0",
+              limit: 100,
+              page: 1,
+            }}
+          />
+        </Link>
         <TotalBudgetTimeline yearTotals={yearTotals} />
-        <DepartmentHistoryChart
-          entries={budgetRecords}
-          initialId={initialId}
-          financialYears={years}
-          yearTotals={yearTotals}
-          selectedYear={selectedYear}
-        />
-        <DepartmentHeatmap records={budgetRecords} years={years} />
       </div>
     </>
   );

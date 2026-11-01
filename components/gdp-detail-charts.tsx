@@ -1,0 +1,485 @@
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
+
+import { getGDPData } from "@/lib/api/gdp";
+import type { GDPRecord } from "@/lib/types/gdp";
+
+type Price = "current_price" | "constant_price";
+type Frequency = "annual" | "quarterly";
+
+const BASE_PARAMS = {
+  base_year: "2011-12",
+  series: "Current",
+  account_code: "1",
+} as const;
+
+function numericValue(value: string | number | null | undefined) {
+  if (value === null || value === undefined || value === "") {
+    return null;
+  }
+
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function yearStart(year: string) {
+  return Number(year.slice(0, 4)) || 0;
+}
+
+function quarterOrder(quarter: string | null | undefined) {
+  return Number(quarter?.replace("Q", "")) || 0;
+}
+
+function useGDPRequest(
+  params: Record<string, string>,
+) {
+  const requestKey = JSON.stringify(params);
+  const [result, setResult] = useState<GDPRecord[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const [completedKey, setCompletedKey] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    const requestParams = JSON.parse(requestKey) as Record<
+      string,
+      string
+    >;
+
+    getGDPData(requestParams)
+      .then((records) => {
+        if (cancelled) return;
+        setResult(records);
+        setError(null);
+        setCompletedKey(requestKey);
+      })
+      .catch((cause: unknown) => {
+        if (cancelled) return;
+        console.error("GDP API error:", cause);
+        setResult([]);
+        setError(
+          cause instanceof Error
+            ? cause.message
+            : "Unable to load GDP data.",
+        );
+        setCompletedKey(requestKey);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [requestKey]);
+
+  return {
+    records: result,
+    loading: completedKey !== requestKey,
+    error: completedKey === requestKey ? error : null,
+  };
+}
+
+function ChartMessage({
+  loading,
+  error,
+  empty,
+}: {
+  loading: boolean;
+  error: string | null;
+  empty: boolean;
+}) {
+  if (loading) return <div className="empty-chart">Loading GDP data...</div>;
+  if (error) {
+    return (
+      <div className="empty-chart" role="alert">
+        {error}
+      </div>
+    );
+  }
+  if (empty) return <div className="empty-chart">No GDP data available.</div>;
+  return null;
+}
+
+function GDPBarChart({
+  data,
+  valueLabel,
+  percentage = false,
+}: {
+  data: Array<{
+    label: string;
+    value: number;
+    state?: string;
+    year?: string;
+    quarter?: string | null;
+    unit?: string;
+  }>;
+  valueLabel: string;
+  percentage?: boolean;
+}) {
+  return (
+    <ResponsiveContainer width="100%" height={350}>
+      <BarChart data={data} margin={{ top: 16, right: 20, bottom: 8, left: 18 }}>
+        <CartesianGrid
+          stroke="var(--chart-grid)"
+          strokeDasharray="3 4"
+          vertical={false}
+        />
+        <XAxis dataKey="label" interval={0} />
+        <YAxis
+          tickFormatter={(value: number) =>
+            percentage
+              ? `${value}%`
+              : value.toLocaleString("en-IN")
+          }
+        />
+        <Tooltip
+          formatter={(value) => [
+            percentage
+              ? `${Number(value).toFixed(2)}%`
+              : Number(value).toLocaleString("en-IN"),
+            valueLabel,
+          ]}
+          labelFormatter={(_label, payload) => {
+            const point = payload?.[0]?.payload as
+              | {
+                  state?: string;
+                  year?: string;
+                  quarter?: string | null;
+                  unit?: string;
+                }
+              | undefined;
+            if (!point) return "";
+            const period = point.quarter
+              ? `${point.year} ${point.quarter}`
+              : point.year;
+            return point.state
+              ? `${point.state} · ${period} · ${point.unit ?? ""}`
+              : `${period} · ${point.unit ?? ""}`;
+          }}
+        />
+        <Bar
+          dataKey="value"
+          fill="var(--accent)"
+          radius={[5, 5, 0, 0]}
+          isAnimationActive={false}
+        />
+      </BarChart>
+    </ResponsiveContainer>
+  );
+}
+
+export function GDPDetailCharts() {
+  const [selectedState, setSelectedState] = useState("");
+  const [selectedStateYear, setSelectedStateYear] = useState("");
+  const [statePrice, setStatePrice] =
+    useState<Price>("current_price");
+  const [growthYear, setGrowthYear] = useState("");
+  const [frequency, setFrequency] = useState<Frequency>("annual");
+  const [nationalYear, setNationalYear] = useState("");
+  const [price, setPrice] = useState<Price>("current_price");
+
+  const stateRequest = useGDPRequest({
+    ...BASE_PARAMS,
+    frequency_code: "1",
+    indicator_code: "23",
+  });
+  const growthRequest = useGDPRequest({
+    ...BASE_PARAMS,
+    frequency_code: "2",
+    indicator_code: "22",
+  });
+  const nationalRequest = useGDPRequest({
+    base_year: frequency === "annual" ? "2022-23" : "2011-12",
+    series: "Current",
+    frequency_code: frequency === "annual" ? "1" : "2",
+    indicator_code: "5",
+  });
+
+  const states = useMemo(
+    () =>
+      [...new Set(
+        stateRequest.records
+          .map((record) => record.state)
+          .filter((state): state is string => Boolean(state)),
+      )].sort(),
+    [stateRequest.records],
+  );
+  const stateYears = useMemo(
+    () =>
+      [...new Set(stateRequest.records.map((record) => record.year))]
+        .sort((first, second) => yearStart(first) - yearStart(second)),
+    [stateRequest.records],
+  );
+  const growthYears = useMemo(
+    () =>
+      [...new Set(growthRequest.records.map((record) => record.year))]
+        .sort((first, second) => yearStart(first) - yearStart(second)),
+    [growthRequest.records],
+  );
+  const nationalYears = useMemo(
+    () =>
+      [...new Set(nationalRequest.records.map((record) => record.year))]
+        .sort((first, second) => yearStart(first) - yearStart(second)),
+    [nationalRequest.records],
+  );
+
+  const stateChartData = useMemo(() => {
+    const records = stateRequest.records
+      .filter(
+        (record) =>
+          (!selectedStateYear || record.year === selectedStateYear) &&
+          (!selectedState || record.state === selectedState),
+      )
+      .map((record) => ({
+        label: record.state ?? "Unknown state",
+        state: record.state ?? "Unknown state",
+        year: record.year,
+        value: numericValue(record[statePrice]),
+        unit: record.unit,
+      }))
+      .filter(
+        (record): record is typeof record & { value: number } =>
+          record.value !== null,
+      )
+      .sort((first, second) => first.label.localeCompare(second.label));
+    return records;
+  }, [
+    selectedState,
+    selectedStateYear,
+    statePrice,
+    stateRequest.records,
+  ]);
+
+  const growthChartData = useMemo(
+    () =>
+      growthRequest.records
+        .filter((record) => !growthYear || record.year === growthYear)
+        .map((record) => ({
+          label: record.quarter
+            ? `${record.year} ${record.quarter}`
+            : record.year,
+          year: record.year,
+          quarter: record.quarter,
+          value: numericValue(record.constant_price) ??
+            numericValue(record.current_price),
+          unit: record.unit,
+        }))
+        .filter(
+          (record): record is typeof record & { value: number } =>
+            record.value !== null,
+        )
+        .sort(
+          (first, second) =>
+            yearStart(first.year) - yearStart(second.year) ||
+            quarterOrder(first.quarter) - quarterOrder(second.quarter),
+        ),
+    [growthRequest.records, growthYear],
+  );
+
+  const nationalChartData = useMemo(
+    () =>
+      nationalRequest.records
+        .filter((record) => !nationalYear || record.year === nationalYear)
+        .map((record) => ({
+          label: record.quarter
+            ? `${record.year} ${record.quarter}`
+            : record.year,
+          year: record.year,
+          quarter: record.quarter,
+          value: numericValue(record[price]),
+          unit: record.unit,
+        }))
+        .filter(
+          (record): record is typeof record & { value: number } =>
+            record.value !== null,
+        )
+        .sort(
+          (first, second) =>
+            yearStart(first.year) - yearStart(second.year) ||
+            quarterOrder(first.quarter) - quarterOrder(second.quarter),
+        ),
+    [nationalRequest.records, nationalYear, price],
+  );
+
+  return (
+    <div className="inflation-history-charts">
+      <section className="panel">
+        <div className="panel-header">
+          <div>
+            <h2 className="panel-title">State-wise GSDP</h2>
+            <p className="panel-subtitle">
+              Gross State Domestic Product at current prices
+            </p>
+          </div>
+        </div>
+        <div className="gdp-chart-filters">
+          <label>
+            State
+            <select
+              value={selectedState}
+              onChange={(event) => setSelectedState(event.target.value)}
+            >
+              <option value="">All states</option>
+              {states.map((state) => (
+                <option key={state} value={state}>{state}</option>
+              ))}
+            </select>
+          </label>
+          <label>
+            Financial year
+            <select
+              value={selectedStateYear}
+              onChange={(event) =>
+                setSelectedStateYear(event.target.value)
+              }
+            >
+              <option value="">All years</option>
+              {stateYears.map((year) => (
+                <option key={year} value={year}>{year}</option>
+              ))}
+            </select>
+          </label>
+          <label>
+            Price
+            <select
+              value={statePrice}
+              onChange={(event) =>
+                setStatePrice(event.target.value as Price)
+              }
+            >
+              <option value="current_price">Current Price</option>
+              <option value="constant_price">Constant Price</option>
+            </select>
+          </label>
+        </div>
+        <ChartMessage
+          loading={stateRequest.loading}
+          error={stateRequest.error}
+          empty={stateChartData.length === 0}
+        />
+        {!stateRequest.loading &&
+          !stateRequest.error &&
+          stateChartData.length > 0 && (
+            <GDPBarChart
+              data={stateChartData}
+              valueLabel={
+                statePrice === "current_price"
+                  ? "Current Price"
+                  : "Constant Price"
+              }
+            />
+          )}
+      </section>
+
+      <section className="panel">
+        <div className="panel-header">
+          <div>
+            <h2 className="panel-title">GDP Growth Rate</h2>
+            <p className="panel-subtitle">
+              Quarterly real GDP growth rate
+            </p>
+          </div>
+        </div>
+        <label>
+          Financial year
+          <select
+            value={growthYear}
+            onChange={(event) => setGrowthYear(event.target.value)}
+          >
+            <option value="">All years</option>
+            {growthYears.map((year) => (
+              <option key={year} value={year}>{year}</option>
+            ))}
+          </select>
+        </label>
+        <ChartMessage
+          loading={growthRequest.loading}
+          error={growthRequest.error}
+          empty={growthChartData.length === 0}
+        />
+        {!growthRequest.loading &&
+          !growthRequest.error &&
+          growthChartData.length > 0 && (
+            <GDPBarChart
+              data={growthChartData}
+              valueLabel="Growth rate"
+              percentage
+            />
+          )}
+      </section>
+
+      <section className="panel">
+        <div className="panel-header">
+          <div>
+            <h2 className="panel-title">National GDP</h2>
+            <p className="panel-subtitle">
+              Annual or quarterly GDP values
+            </p>
+          </div>
+        </div>
+        <div className="gdp-chart-filters">
+          <label>
+            Frequency
+            <select
+              value={frequency}
+              onChange={(event) =>
+                setFrequency(event.target.value as Frequency)
+              }
+            >
+              <option value="annual">Annual</option>
+              <option value="quarterly">Quarterly</option>
+            </select>
+          </label>
+          <label>
+            Financial year
+            <select
+              value={nationalYear}
+              onChange={(event) => setNationalYear(event.target.value)}
+            >
+              <option value="">All years</option>
+              {nationalYears.map((year) => (
+                <option key={year} value={year}>{year}</option>
+              ))}
+            </select>
+          </label>
+          <label>
+            Price
+            <select
+              value={price}
+              onChange={(event) =>
+                setPrice(event.target.value as Price)
+              }
+            >
+              <option value="current_price">Current Price</option>
+              <option value="constant_price">Constant Price</option>
+            </select>
+          </label>
+        </div>
+        <ChartMessage
+          loading={nationalRequest.loading}
+          error={nationalRequest.error}
+          empty={nationalChartData.length === 0}
+        />
+        {!nationalRequest.loading &&
+          !nationalRequest.error &&
+          nationalChartData.length > 0 && (
+            <GDPBarChart
+              data={nationalChartData}
+              valueLabel={
+                price === "current_price"
+                  ? "Current Price"
+                  : "Constant Price"
+              }
+            />
+          )}
+      </section>
+    </div>
+  );
+}

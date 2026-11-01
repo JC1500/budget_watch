@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
 import {
   CartesianGrid,
   Line,
@@ -10,238 +10,273 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import type { InflationRecord } from "@/lib/data/inflation";
 
-type InflationMetric = "inflation" | "index";
+import { getInflationData } from "@/lib/api/inflation";
+import {
+  CPI_BASE_YEAR,
+  MONTHS,
+  type InflationApiParams,
+  type InflationRecord,
+} from "@/lib/types/inflation";
 
-type ChartPoint = InflationRecord & {
-  monthYear: string;
-  value: number;
+type Variant = "All-India" | "State-wise" | "Sector-wise";
+
+type StateOption = {
+  name: string;
+  code: string;
 };
 
-function getChartPoints(
-  records: InflationRecord[],
-  metric: InflationMetric,
-): ChartPoint[] {
-  const points: ChartPoint[] = [];
+type InflationChartProps = {
+  variant: Variant;
+  states?: StateOption[];
+  sectors?: { name: string; code: string }[];
+  params?: InflationApiParams;
+};
 
-  for (const record of records) {
-    const value = record[metric];
-    if (value === null || !Number.isFinite(value)) continue;
+const MONTH_ORDER = new Map<string, number>(
+  MONTHS.map((month, index) => [month, index + 1]),
+);
 
-    points.push({
-      ...record,
-      monthYear: `${record.month.slice(0, 3)} ${record.year}`,
-      value,
-    });
+function numericValue(value: InflationRecord["inflation"]) {
+  if (value === null || value === undefined || value === "") {
+    return null;
   }
 
-  return points;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
 }
 
-function MetricTooltip({
-  active,
-  payload,
-  metric,
-}: {
-  active?: boolean;
-  payload?: Array<{ payload?: ChartPoint }>;
-  metric: InflationMetric;
-}) {
-  const point = payload?.[0]?.payload;
-  if (!active || !point || point[metric] === null) return null;
-
-  return (
-    <div className="chart-tooltip">
-      <strong>{point.month} {point.year}</strong>
-      <div className="chart-tooltip-row">
-        <span>{metric === "inflation" ? "Inflation" : "CPI Index"}</span>
-        <strong>
-          {metric === "inflation"
-            ? `${point.value.toFixed(2)}%`
-            : point.value.toFixed(2)}
-        </strong>
-      </div>
-      {metric === "inflation" && point.index !== null && (
-        <div className="chart-tooltip-row">
-          <span>CPI Index</span>
-          <strong>{point.index.toFixed(2)}</strong>
-        </div>
-      )}
-    </div>
+export default function InflationChart({
+  variant,
+  states = [],
+  sectors = [],
+  params,
+}: InflationChartProps) {
+  const [records, setRecords] = useState<InflationRecord[]>([]);
+  const [selectedState, setSelectedState] = useState(
+    states[0]?.name ?? "",
   );
-}
+  const [selectedSector, setSelectedSector] = useState(
+    sectors[0]?.code ?? "3",
+  );
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-function InflationLineChart({
-  records,
-  metric,
-  title,
-}: {
-  records: InflationRecord[];
-  metric: InflationMetric;
-  title: string;
-}) {
-  const data = getChartPoints(records, metric);
-  const values = data.map((record) => record.value);
-  const minimum = values.length > 0 ? Math.min(...values) : 0;
-  const maximum = values.length > 0 ? Math.max(...values) : 0;
-  const padding = Math.max((maximum - minimum) * 0.15, Math.abs(maximum) * 0.01, 0.1);
-  const unit = metric === "inflation" ? "%" : "";
+  // Extract individual values to avoid depending on the params object.
+  const year = params?.year;
+  const monthCode = params?.month_code;
+  const stateCode = params?.state_code;
+  const sectorCode = params?.sector_code;
+  const divisionCode = params?.division_code;
+  const groupCode = params?.group_code;
+  const classCode = params?.class_code;
+  const subClassCode = params?.sub_class_code;
+  const itemCode = params?.item_code;
+  const limit = params?.limit;
+  const page = params?.page;
+  const stateOptions = useMemo(() => {
+    const options = new Map(
+      states.map((state) => [state.name, state]),
+    );
+
+    for (const record of records) {
+      if (record.state && !options.has(record.state)) {
+        options.set(record.state, {
+          name: record.state,
+          code: record.state,
+        });
+      }
+    }
+
+    return [...options.values()];
+  }, [records, states]);
+  const activeState =
+    stateOptions.some((state) => state.name === selectedState)
+      ? selectedState
+      : stateOptions[0]?.name ?? "";
+
+  const selectedRecords = records.filter((record) =>
+    variant === "All-India"
+      ? record.state === "All India"
+      : variant === "State-wise"
+        ? record.state === activeState
+        : true,
+  );
+
+  const validRecords = selectedRecords.flatMap((record) => {
+    const inflation = numericValue(record.inflation);
+    return inflation === null ? [] : [{ record, inflation }];
+  });
+
+  const latestYear = validRecords.reduce(
+    (latest, { record }) => Math.max(latest, Number(record.year)),
+    0,
+  );
+
+  const chartData = validRecords
+    .filter(({ record }) => Number(record.year) === latestYear)
+    .map(({ record, inflation }) => ({
+      month: record.month,
+      monthNumber: MONTH_ORDER.get(record.month) ?? 0,
+      inflation,
+    }))
+    .sort((a, b) => a.monthNumber - b.monthNumber);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadData() {
+      setLoading(true);
+      setError("");
+
+      try {
+        const apiParams: InflationApiParams = {
+          base_year: CPI_BASE_YEAR,
+          year,
+          month_code: monthCode,
+          state_code: variant === "Sector-wise" ? stateCode : undefined,
+          sector_code:
+            variant === "Sector-wise"
+              ? selectedSector
+              : sectorCode,
+          division_code: divisionCode,
+          group_code: groupCode,
+          class_code: classCode,
+          sub_class_code: subClassCode,
+          item_code: itemCode,
+          limit,
+          page,
+        };
+
+        const response = await getInflationData(apiParams);
+
+        if (!cancelled) {
+          setRecords(response);
+        }
+      } catch (cause: unknown) {
+        if (!cancelled) {
+          setRecords([]);
+          setError("Unable to load CPI data.");
+          console.error("CPI API error:", cause);
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    }
+
+    loadData();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    variant,
+    selectedSector,
+    year,
+    monthCode,
+    stateCode,
+    sectorCode,
+    divisionCode,
+    groupCode,
+    classCode,
+    subClassCode,
+    itemCode,
+    limit,
+    page,
+  ]);
 
   return (
-    <section className="panel inflation-chart-panel" aria-label={title}>
+    <section className="panel">
       <div className="panel-header">
         <div>
-          <h2 className="panel-title">{title}</h2>
-          <p className="panel-subtitle">All India · Combined · CPI (General)</p>
+          <h2 className="panel-title">CPI Inflation Trend</h2>
+          <p className="text-sm text-muted">Base Year: 2024</p>
         </div>
+
+        {variant === "State-wise" && (
+          <select
+            value={activeState}
+            onChange={(event) => setSelectedState(event.target.value)}
+            className="chart-select"
+          >
+            {stateOptions.map((state) => (
+              <option key={state.name} value={state.name}>
+                {state.name}
+              </option>
+            ))}
+          </select>
+        )}
+
+        {variant === "Sector-wise" && (
+          <select
+            value={selectedSector}
+            onChange={(event) => setSelectedSector(event.target.value)}
+            className="chart-select"
+          >
+            {sectors.map((sector) => (
+              <option key={sector.code} value={sector.code}>
+                {sector.name}
+              </option>
+            ))}
+          </select>
+        )}
       </div>
-      {data.length > 0 ? (
-        <div className="chart-frame">
-          <ResponsiveContainer width="100%" height="100%">
+
+      <div className="chart-container">
+        {loading ? (
+          <p className="chart-message">Loading CPI data...</p>
+        ) : error ? (
+          <p className="chart-message">{error}</p>
+        ) : chartData.length === 0 ? (
+          <p className="chart-message">No CPI data available.</p>
+        ) : (
+          <ResponsiveContainer width="100%" height={350}>
             <LineChart
-              accessibilityLayer
-              aria-label={`${title} by month`}
-              data={data}
-              margin={{ top: 16, right: 20, bottom: 8, left: 18 }}
+              data={chartData}
+              margin={{
+                top: 20,
+                right: 20,
+                left: 10,
+                bottom: 10,
+              }}
             >
               <CartesianGrid
-                stroke="var(--chart-grid)"
-                strokeDasharray="3 4"
+                strokeDasharray="3 3"
                 vertical={false}
               />
+
               <XAxis
-                dataKey="monthYear"
-                axisLine={false}
-                tick={{ fill: "var(--chart-axis)", fontSize: 11 }}
-                tickLine={false}
-                minTickGap={18}
+                dataKey="month"
+                tickFormatter={(month) => month.slice(0, 3)}
               />
+
               <YAxis
-                axisLine={false}
-                domain={[
-                  minimum - padding,
-                  maximum + padding,
-                ]}
-                tick={{ fill: "var(--chart-axis)", fontSize: 11 }}
-                tickFormatter={(value: number) => `${value.toFixed(1)}${unit}`}
-                tickLine={false}
-                width={70}
+                tickFormatter={(value) => `${value}%`}
+                domain={["auto", "auto"]}
               />
-              <Tooltip content={<MetricTooltip metric={metric} />} />
+
+              <Tooltip
+                formatter={(value) => [
+                  `${Number(value).toFixed(2)}%`,
+                  "Inflation",
+                ]}
+              />
+
               <Line
-                dataKey="value"
-                name={metric === "inflation" ? "Inflation" : "CPI Index"}
-                stroke="var(--accent)"
-                strokeWidth={2.5}
-                dot={{ fill: "var(--accent)", r: 4 }}
-                activeDot={{ r: 6 }}
                 type="monotone"
+                dataKey="inflation"
+                stroke="#17634d"
+                strokeWidth={3}
+                dot={{ r: 5 }}
+                activeDot={{ r: 7 }}
+                connectNulls
               />
             </LineChart>
           </ResponsiveContainer>
-        </div>
-      ) : (
-        <div className="empty-chart">
-          {metric === "inflation"
-            ? "CPI inflation data unavailable."
-            : "CPI Index data unavailable."}
-        </div>
-      )}
-    </section>
-  );
-}
-
-export function InflationOverviewChart({
-  records,
-}: {
-  records: InflationRecord[];
-}) {
-  const data = getChartPoints(records, "inflation");
-
-  return (
-    <Link
-      className="inflation-overview-link"
-      href="/inflation"
-      aria-label="Open the CPI Inflation detail page"
-    >
-      <section className="panel inflation-overview-panel" aria-labelledby="inflation-trend-title">
-        <div className="panel-header">
-          <div>
-            <h2 className="panel-title" id="inflation-trend-title">
-              CPI inflation trend
-            </h2>
-            <p className="panel-subtitle">All India · Combined · CPI (General)</p>
-          </div>
-        </div>
-        {data.length > 0 ? (
-          <div className="chart-frame">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart
-                accessibilityLayer
-                aria-label="CPI inflation percentage by month"
-                data={data}
-                margin={{ top: 16, right: 20, bottom: 8, left: 18 }}
-              >
-                <CartesianGrid
-                  stroke="var(--chart-grid)"
-                  strokeDasharray="3 4"
-                  vertical={false}
-                />
-                <XAxis
-                  dataKey="monthYear"
-                  axisLine={false}
-                  tick={{ fill: "var(--chart-axis)", fontSize: 11 }}
-                  tickLine={false}
-                  minTickGap={18}
-                />
-                <YAxis
-                  axisLine={false}
-                  domain={["auto", "auto"]}
-                  tick={{ fill: "var(--chart-axis)", fontSize: 11 }}
-                  tickFormatter={(value: number) => `${value.toFixed(1)}%`}
-                  tickLine={false}
-                  width={70}
-                />
-                <Tooltip content={<MetricTooltip metric="inflation" />} />
-                <Line
-                  dataKey="value"
-                  name="Inflation"
-                  stroke="var(--accent)"
-                  strokeWidth={2.5}
-                  dot={{ fill: "var(--accent)", r: 4 }}
-                  activeDot={{ r: 6 }}
-                  type="monotone"
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        ) : (
-          <div className="empty-chart">CPI inflation data unavailable.</div>
         )}
-        <span className="inflation-chart-link-label">View CPI details →</span>
-      </section>
-    </Link>
-  );
-}
-
-export function InflationHistoryCharts({
-  records,
-}: {
-  records: InflationRecord[];
-}) {
-  return (
-    <div className="inflation-history-charts">
-      <InflationLineChart
-        records={records}
-        metric="inflation"
-        title="Inflation history"
-      />
-      <InflationLineChart
-        records={records}
-        metric="index"
-        title="CPI Index history"
-      />
-    </div>
+      </div>
+    </section>
   );
 }
