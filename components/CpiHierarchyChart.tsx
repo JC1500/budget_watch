@@ -13,208 +13,250 @@ import {
 
 import { getInflationData } from "@/lib/api/inflation";
 import type { InflationRecord } from "@/lib/types/inflation";
+import type { InflationApiParams } from "@/lib/types/inflation";
+import cpiMetadata from "@/data/cpi_metadata.json";
 
 type Metric = "index" | "inflation";
+const ALL = "";
 
-const ALL = "All";
+type CpiItem = {
+  name: string;
+  code: number;
+};
 
-function uniqueValues(
-  records: InflationRecord[],
-  getValue: (record: InflationRecord) => string | null | undefined
-) {
-  return [
-    ...new Set(
-      records
-        .map(getValue)
-        .filter((value): value is string => Boolean(value))
-    ),
-  ].sort();
-}
+type CpiSubClass = CpiItem & {
+  items: CpiItem[];
+};
 
-// Updated: accepts string, number, null, or undefined.
+type CpiClass = CpiItem & {
+  subClasses: CpiSubClass[];
+};
+
+type CpiGroup = CpiItem & {
+  classes: CpiClass[];
+};
+
+type CpiDivision = CpiItem & {
+  groups: CpiGroup[];
+};
+
+const divisions = cpiMetadata.division as CpiDivision[];
+
+const MONTHS = [
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
+];
+
 function toNumber(
   value: string | number | null | undefined
 ): number | null {
   if (value == null || value === "") return null;
 
-  const number = Number(value);
-  return Number.isFinite(number) ? number : null;
+  const parsed = Number(value);
+
+  return Number.isFinite(parsed) ? parsed : null;
 }
 
-function monthLabel(year: string, month: string) {
-  const monthNumber = Number(month);
+function getMonthNumber(month: string): number {
+  const numericMonth = Number(month);
 
-  if (monthNumber >= 1 && monthNumber <= 12) {
-    const monthName = new Date(
-      2000,
-      monthNumber - 1,
-      1
-    ).toLocaleString("en-IN", {
-      month: "short",
-    });
-
-    return `${monthName} ${year}`;
+  if (
+    Number.isInteger(numericMonth) &&
+    numericMonth >= 1 &&
+    numericMonth <= 12
+  ) {
+    return numericMonth;
   }
 
-  return `${year}-${month}`;
+  const monthIndex = MONTHS.findIndex(
+    (name) => name.toLowerCase() === month.toLowerCase()
+  );
+
+  return monthIndex >= 0 ? monthIndex + 1 : 0;
+}
+
+function monthLabel(year: string, month: string): string {
+  const monthNumber = getMonthNumber(month);
+
+  if (monthNumber >= 1 && monthNumber <= 12) {
+    return `${MONTHS[monthNumber - 1].slice(0, 3)} ${year}`;
+  }
+
+  return `${month} ${year}`;
+}
+
+function getByCode<T extends CpiItem>(
+  items: T[],
+  code: string
+): T | undefined {
+  return items.find((entry) => String(entry.code) === code);
 }
 
 export default function CpiHierarchyChart() {
-  const [records, setRecords] = useState<InflationRecord[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-
-  const [division, setDivision] = useState(ALL);
-  const [group, setGroup] = useState(ALL);
-  const [classValue, setClassValue] = useState(ALL);
-  const [subClass, setSubClass] = useState(ALL);
-  const [item, setItem] = useState(ALL);
+  const [divisionCode, setDivisionCode] = useState(ALL);
+  const [groupCode, setGroupCode] = useState(ALL);
+  const [classCode, setClassCode] = useState(ALL);
+  const [subClassCode, setSubClassCode] = useState(ALL);
+  const [itemCode, setItemCode] = useState(ALL);
 
   const [metric, setMetric] = useState<Metric>("index");
+  const [records, setRecords] = useState<InflationRecord[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  // Fetch CPI data using the existing API function.
+  // Resolve selected hierarchy entries from the by24 metadata.
+  const selectedDivision = useMemo(
+    () => getByCode(divisions, divisionCode),
+    [divisionCode]
+  );
+
+  const groups = selectedDivision?.groups ?? [];
+
+  const selectedGroup = useMemo(
+    () => getByCode(groups, groupCode),
+    [groups, groupCode]
+  );
+
+  const classes = selectedGroup?.classes ?? [];
+
+  const selectedClass = useMemo(
+    () => getByCode(classes, classCode),
+    [classes, classCode]
+  );
+
+  const subClasses = selectedClass?.subClasses ?? [];
+
+  const selectedSubClass = useMemo(
+    () => getByCode(subClasses, subClassCode),
+    [subClasses, subClassCode]
+  );
+
+  const items = selectedSubClass?.items ?? [];
+
+  // Fetch CPI data when the selected hierarchy changes.
   useEffect(() => {
     let cancelled = false;
 
     async function loadData() {
-  try {
-    setLoading(true);
-    setError("");
+      try {
+        setLoading(true);
+        setError("");
 
-    const response = await getInflationData({
-      base_year: "2024",
-      limit: 1000,
-      page: 1,
-    });
+        const params: InflationApiParams = {
+          base_year: "2024",
+          limit: 100,
+          year: "2026",
+          state_code: "1",
+          sector_code: "3",
+          page: 1,
+        };
 
-    if (!cancelled) {
-      // getInflationData returns InflationRecord[] directly
-      setRecords(response ?? []);
-    }
-  } catch (err) {
-    console.error("Unable to load CPI data:", err);
+        if (divisionCode) {
+          params.division_code = divisionCode;
+        }
 
-    if (!cancelled) {
-      setError("Unable to load CPI data. Please try again.");
+        if (groupCode) {
+          params.group_code = groupCode;
+        }
+
+        if (classCode) {
+          params.class_code = classCode;
+        }
+
+        if (subClassCode) {
+          params.sub_class_code = subClassCode;
+        }
+
+        if (itemCode) {
+          params.item_code = itemCode;
+        }
+
+        const response = await getInflationData(params);
+
+        if (!cancelled) {
+          // The helper normally returns an array directly.
+          // This also supports a response shaped like { data: [...] }.
+          const responseData = response as
+            | InflationRecord[]
+            | { data?: InflationRecord[] }
+            | null
+            | undefined;
+
+          const resultRecords = Array.isArray(responseData)
+            ? responseData
+            : responseData?.data ?? [];
+
+          setRecords(resultRecords);
+        }
+      } catch (err) {
+        console.error("Unable to load CPI data:", err);
+
+        if (!cancelled) {
+          setRecords([]);
+          setError("Unable to load CPI data. Please try again.");
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
     }
-  } finally {
-    if (!cancelled) {
-      setLoading(false);
-    }
-  }
-}
 
     loadData();
 
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [
+    divisionCode,
+    groupCode,
+    classCode,
+    subClassCode,
+    itemCode,
+  ]);
 
-  // Division options.
-  const divisions = useMemo(
-    () => uniqueValues(records, (record) => record.division),
-    [records]
-  );
-
-  // Records filtered by division.
-  const divisionRecords = useMemo(
-    () =>
-      records.filter(
-        (record) =>
-          division === ALL || record.division === division
-      ),
-    [records, division]
-  );
-
-  // Group options.
-  const groups = useMemo(
-    () => uniqueValues(divisionRecords, (record) => record.group),
-    [divisionRecords]
-  );
-
-  const groupRecords = useMemo(
-    () =>
-      divisionRecords.filter(
-        (record) => group === ALL || record.group === group
-      ),
-    [divisionRecords, group]
-  );
-
-  // Class options.
-  const classes = useMemo(
-    () => uniqueValues(groupRecords, (record) => record.class),
-    [groupRecords]
-  );
-
-  const classRecords = useMemo(
-    () =>
-      groupRecords.filter(
-        (record) =>
-          classValue === ALL || record.class === classValue
-      ),
-    [groupRecords, classValue]
-  );
-
-  // Sub-class options.
-  const subClasses = useMemo(
-    () => uniqueValues(classRecords, (record) => record.sub_class),
-    [classRecords]
-  );
-
-  const subClassRecords = useMemo(
-    () =>
-      classRecords.filter(
-        (record) =>
-          subClass === ALL || record.sub_class === subClass
-      ),
-    [classRecords, subClass]
-  );
-
-  // Item options.
-  const items = useMemo(
-    () => uniqueValues(subClassRecords, (record) => record.item),
-    [subClassRecords]
-  );
-
-  // Records matching all selected filters.
-  const filteredRecords = useMemo(
-    () =>
-      records.filter(
-        (record) =>
-          (division === ALL || record.division === division) &&
-          (group === ALL || record.group === group) &&
-          (classValue === ALL || record.class === classValue) &&
-          (subClass === ALL || record.sub_class === subClass) &&
-          (item === ALL || record.item === item)
-      ),
-    [records, division, group, classValue, subClass, item]
-  );
-
-  // Group records by year and month.
-  // Multiple records in the same month are averaged.
+  // Filter to one consistent scope and group the remaining records by month.
   const chartData = useMemo(() => {
     const grouped = new Map<
       string,
       {
         year: string;
-        month: string;
+        monthNumber: number;
         values: number[];
       }
     >();
 
-    for (const record of filteredRecords) {
-      const rawValue = record[metric];
-      const value = toNumber(rawValue);
+    for (const record of records) {
+      // Avoid mixing data from individual states or Rural/Urban sectors.
+      if (record.state !== "All India") continue;
+      if (record.sector !== "Combined") continue;
+
+      const value = toNumber(record[metric]);
 
       if (value === null) continue;
 
-      const key = `${record.year}-${record.month}`;
+      const year = String(record.year);
+      const month = String(record.month);
+      const monthNumber = getMonthNumber(month);
+
+      if (monthNumber < 1 || monthNumber > 12) continue;
+
+      const key = `${year}-${String(monthNumber).padStart(2, "0")}`;
 
       if (!grouped.has(key)) {
         grouped.set(key, {
-          year: record.year,
-          month: record.month,
+          year,
+          monthNumber,
           values: [],
         });
       }
@@ -225,73 +267,62 @@ export default function CpiHierarchyChart() {
     return [...grouped.entries()]
       .map(([key, entry]) => ({
         key,
-        month: monthLabel(entry.year, entry.month),
+        month: monthLabel(
+          entry.year,
+          String(entry.monthNumber)
+        ),
         value:
-          entry.values.reduce(
-            (sum, current) => sum + current,
-            0
-          ) / entry.values.length,
+          entry.values.reduce((sum, current) => sum + current, 0) /
+          entry.values.length,
       }))
       .sort((a, b) => a.key.localeCompare(b.key));
-  }, [filteredRecords, metric]);
-
-  // Reset child filters when a parent selection changes.
-  function resetChildren(
-    level: "division" | "group" | "class" | "subClass"
-  ) {
-    if (level === "division") {
-      setGroup(ALL);
-      setClassValue(ALL);
-      setSubClass(ALL);
-      setItem(ALL);
-    } else if (level === "group") {
-      setClassValue(ALL);
-      setSubClass(ALL);
-      setItem(ALL);
-    } else if (level === "class") {
-      setSubClass(ALL);
-      setItem(ALL);
-    } else {
-      setItem(ALL);
-    }
-  }
+  }, [records, metric]);
 
   const selectClass =
-    "w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-800 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100";
+    "w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-800 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 disabled:cursor-not-allowed disabled:bg-gray-100";
 
   const labelClass =
     "mb-1 block text-sm font-medium text-gray-600";
 
-  if (loading) {
-    return (
-      <div className="rounded-xl border border-gray-200 p-6 text-sm text-gray-500">
-        Loading CPI data...
-      </div>
-    );
+  function resetFromDivision(code: string) {
+    setDivisionCode(code);
+    setGroupCode(ALL);
+    setClassCode(ALL);
+    setSubClassCode(ALL);
+    setItemCode(ALL);
   }
 
-  if (error) {
-    return (
-      <div className="rounded-xl border border-red-200 bg-red-50 p-6 text-sm text-red-700">
-        {error}
-      </div>
-    );
+  function resetFromGroup(code: string) {
+    setGroupCode(code);
+    setClassCode(ALL);
+    setSubClassCode(ALL);
+    setItemCode(ALL);
+  }
+
+  function resetFromClass(code: string) {
+    setClassCode(code);
+    setSubClassCode(ALL);
+    setItemCode(ALL);
+  }
+
+  function resetFromSubClass(code: string) {
+    setSubClassCode(code);
+    setItemCode(ALL);
   }
 
   return (
     <section className="w-full rounded-2xl border border-gray-200 bg-white p-4 shadow-sm sm:p-6">
-      <div className="mb-5">
+      <header className="mb-5">
         <h2 className="text-xl font-semibold text-gray-900">
           CPI Explorer
         </h2>
 
         <p className="mt-1 text-sm text-gray-500">
-          Explore consumer price data by category and view its monthly trend.
+          Explore CPI index and inflation trends by classification.
         </p>
-      </div>
+      </header>
 
-      {/* Metric selector */}
-      <div className="mb-4 flex flex-wrap items-center gap-2">
+      <div className="mb-4 flex flex-wrap gap-2">
         <button
           type="button"
           onClick={() => setMetric("index")}
@@ -317,24 +348,23 @@ export default function CpiHierarchyChart() {
         </button>
       </div>
 
-      {/* Hierarchy filters */}
       <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <div>
           <label className={labelClass}>Division</label>
 
           <select
             className={selectClass}
-            value={division}
-            onChange={(event) => {
-              setDivision(event.target.value);
-              resetChildren("division");
-            }}
+            value={divisionCode}
+            onChange={(e) => resetFromDivision(e.target.value)}
           >
-            <option value={ALL}>All divisions</option>
+            <option value={ALL}>Select division</option>
 
-            {divisions.map((value) => (
-              <option key={value} value={value}>
-                {value}
+            {divisions.map((option) => (
+              <option
+                key={option.code}
+                value={String(option.code)}
+              >
+                {option.code} — {option.name}
               </option>
             ))}
           </select>
@@ -345,18 +375,18 @@ export default function CpiHierarchyChart() {
 
           <select
             className={selectClass}
-            value={group}
-            disabled={groups.length === 0}
-            onChange={(event) => {
-              setGroup(event.target.value);
-              resetChildren("group");
-            }}
+            value={groupCode}
+            disabled={!divisionCode || groups.length === 0}
+            onChange={(e) => resetFromGroup(e.target.value)}
           >
-            <option value={ALL}>All groups</option>
+            <option value={ALL}>Select group</option>
 
-            {groups.map((value) => (
-              <option key={value} value={value}>
-                {value}
+            {groups.map((option) => (
+              <option
+                key={option.code}
+                value={String(option.code)}
+              >
+                {option.code} — {option.name}
               </option>
             ))}
           </select>
@@ -367,18 +397,18 @@ export default function CpiHierarchyChart() {
 
           <select
             className={selectClass}
-            value={classValue}
-            disabled={classes.length === 0}
-            onChange={(event) => {
-              setClassValue(event.target.value);
-              resetChildren("class");
-            }}
+            value={classCode}
+            disabled={!groupCode || classes.length === 0}
+            onChange={(e) => resetFromClass(e.target.value)}
           >
-            <option value={ALL}>All classes</option>
+            <option value={ALL}>Select class</option>
 
-            {classes.map((value) => (
-              <option key={value} value={value}>
-                {value}
+            {classes.map((option) => (
+              <option
+                key={option.code}
+                value={String(option.code)}
+              >
+                {option.code} — {option.name}
               </option>
             ))}
           </select>
@@ -389,18 +419,18 @@ export default function CpiHierarchyChart() {
 
           <select
             className={selectClass}
-            value={subClass}
-            disabled={subClasses.length === 0}
-            onChange={(event) => {
-              setSubClass(event.target.value);
-              resetChildren("subClass");
-            }}
+            value={subClassCode}
+            disabled={!classCode || subClasses.length === 0}
+            onChange={(e) => resetFromSubClass(e.target.value)}
           >
-            <option value={ALL}>All sub classes</option>
+            <option value={ALL}>Select sub class</option>
 
-            {subClasses.map((value) => (
-              <option key={value} value={value}>
-                {value}
+            {subClasses.map((option) => (
+              <option
+                key={option.code}
+                value={String(option.code)}
+              >
+                {option.code} — {option.name}
               </option>
             ))}
           </select>
@@ -411,22 +441,24 @@ export default function CpiHierarchyChart() {
 
           <select
             className={selectClass}
-            value={item}
-            disabled={items.length === 0}
-            onChange={(event) => setItem(event.target.value)}
+            value={itemCode}
+            disabled={!subClassCode || items.length === 0}
+            onChange={(e) => setItemCode(e.target.value)}
           >
-            <option value={ALL}>All items</option>
+            <option value={ALL}>Select item</option>
 
-            {items.map((value) => (
-              <option key={value} value={value}>
-                {value}
+            {items.map((option) => (
+              <option
+                key={option.code}
+                value={String(option.code)}
+              >
+                {option.code} — {option.name}
               </option>
             ))}
           </select>
         </div>
       </div>
 
-      {/* Chart heading */}
       <div className="mb-3">
         <h3 className="text-base font-semibold text-gray-800">
           {metric === "index"
@@ -435,14 +467,23 @@ export default function CpiHierarchyChart() {
         </h3>
 
         <p className="mt-1 text-xs text-gray-500">
-          {filteredRecords.length} matching records
+          {records.length} records returned by the API
+          {" · "}
+          {chartData.length} months plotted
         </p>
       </div>
 
-      {/* Chart */}
-      {chartData.length === 0 ? (
+      {error ? (
+        <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+          {error}
+        </div>
+      ) : loading ? (
         <div className="flex h-72 items-center justify-center rounded-xl bg-gray-50 text-sm text-gray-500">
-          No chart data found for this selection.
+          Loading CPI data...
+        </div>
+      ) : chartData.length === 0 ? (
+        <div className="flex h-72 items-center justify-center rounded-xl bg-gray-50 text-sm text-gray-500">
+          No chart data found for All India + Combined for this selection.
         </div>
       ) : (
         <div className="h-72 w-full">
@@ -483,7 +524,7 @@ export default function CpiHierarchyChart() {
                 dataKey="value"
                 stroke="#2563eb"
                 strokeWidth={2}
-                dot={false}
+                dot={{ r: 3 }}
                 activeDot={{ r: 5 }}
               />
             </LineChart>
