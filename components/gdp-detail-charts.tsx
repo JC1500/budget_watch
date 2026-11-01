@@ -109,6 +109,7 @@ function GDPBarChart({
   data,
   valueLabel,
   percentage = false,
+  horizontal = false,
 }: {
   data: Array<{
     label: string;
@@ -120,16 +121,72 @@ function GDPBarChart({
   }>;
   valueLabel: string;
   percentage?: boolean;
+  horizontal?: boolean;
 }) {
+  if (horizontal) {
+    return (
+      <ResponsiveContainer width="100%" height={Math.max(360, data.length * 22)}>
+        <BarChart
+          data={data}
+          layout="vertical"
+          margin={{ top: 8, right: 24, bottom: 8, left: 92 }}
+        >
+          <CartesianGrid
+            stroke="var(--chart-grid)"
+            strokeDasharray="3 4"
+            horizontal={false}
+          />
+          <XAxis
+            type="number"
+            tickFormatter={(value: number) =>
+              value.toLocaleString("en-IN")
+            }
+          />
+          <YAxis
+            dataKey="label"
+            type="category"
+            width={110}
+            tick={{ fontSize: 11 }}
+          />
+          <Tooltip
+            formatter={(value) => [
+              Number(value).toLocaleString("en-IN"),
+              valueLabel,
+            ]}
+            labelFormatter={(_label, payload) =>
+              payload?.[0]?.payload?.state ?? ""
+            }
+          />
+          <Bar
+            dataKey="value"
+            fill="var(--accent)"
+            radius={[0, 5, 5, 0]}
+            isAnimationActive={false}
+          />
+        </BarChart>
+      </ResponsiveContainer>
+    );
+  }
+
   return (
-    <ResponsiveContainer width="100%" height={350}>
-      <BarChart data={data} margin={{ top: 16, right: 20, bottom: 8, left: 18 }}>
+    <ResponsiveContainer width="100%" height={370}>
+      <BarChart
+        data={data}
+        margin={{ top: 16, right: 20, bottom: 36, left: 18 }}
+      >
         <CartesianGrid
           stroke="var(--chart-grid)"
           strokeDasharray="3 4"
           vertical={false}
         />
-        <XAxis dataKey="label" interval={0} />
+        <XAxis
+          dataKey="label"
+          interval="preserveStartEnd"
+          tick={{ fontSize: 11 }}
+          tickFormatter={(label: string) =>
+            label.replace(/^20(\d\d)-(\d\d)/, "$1-$2")
+          }
+        />
         <YAxis
           tickFormatter={(value: number) =>
             percentage
@@ -228,12 +285,16 @@ export function GDPDetailCharts() {
         .sort((first, second) => yearStart(first) - yearStart(second)),
     [nationalRequest.records],
   );
+  const effectiveStateYear =
+    selectedStateYear || stateYears.at(-1) || "";
+  const effectiveGrowthYear =
+    growthYear || growthYears.at(-1) || "";
 
   const stateChartData = useMemo(() => {
     const records = stateRequest.records
       .filter(
         (record) =>
-          (!selectedStateYear || record.year === selectedStateYear) &&
+          (!effectiveStateYear || record.year === effectiveStateYear) &&
           (!selectedState || record.state === selectedState),
       )
       .map((record) => ({
@@ -251,7 +312,7 @@ export function GDPDetailCharts() {
     return records;
   }, [
     selectedState,
-    selectedStateYear,
+    effectiveStateYear,
     statePrice,
     stateRequest.records,
   ]);
@@ -259,7 +320,7 @@ export function GDPDetailCharts() {
   const growthChartData = useMemo(
     () =>
       growthRequest.records
-        .filter((record) => !growthYear || record.year === growthYear)
+        .filter((record) => !effectiveGrowthYear || record.year === effectiveGrowthYear)
         .map((record) => ({
           label: record.quarter
             ? `${record.year} ${record.quarter}`
@@ -279,7 +340,7 @@ export function GDPDetailCharts() {
             yearStart(first.year) - yearStart(second.year) ||
             quarterOrder(first.quarter) - quarterOrder(second.quarter),
         ),
-    [growthRequest.records, growthYear],
+    [growthRequest.records, effectiveGrowthYear],
   );
 
   const nationalChartData = useMemo(
@@ -306,6 +367,18 @@ export function GDPDetailCharts() {
         ),
     [nationalRequest.records, nationalYear, price],
   );
+  const stateInsight = stateChartData.length
+    ? `${effectiveStateYear}: ${stateChartData
+        .slice()
+        .sort((first, second) => second.value - first.value)[0]?.state} has the highest GSDP in this comparison.`
+    : "";
+  const growthInsight = growthChartData.length
+    ? `${effectiveGrowthYear}: quarterly growth ranges from ${Math.min(
+        ...growthChartData.map((point) => point.value),
+      ).toFixed(1)}% to ${Math.max(
+        ...growthChartData.map((point) => point.value),
+      ).toFixed(1)}%.`
+    : "";
 
   return (
     <div className="inflation-history-charts">
@@ -314,7 +387,7 @@ export function GDPDetailCharts() {
           <div>
             <h2 className="panel-title">{t("State-wise GSDP")}</h2>
             <p className="panel-subtitle">
-              {t("Gross State Domestic Product at current prices")}
+              {t("Compare states for one financial year")}
             </p>
           </div>
         </div>
@@ -334,12 +407,12 @@ export function GDPDetailCharts() {
           <label>
             {t("Financial year")}
             <select
-              value={selectedStateYear}
+              value={effectiveStateYear}
               onChange={(event) =>
                 setSelectedStateYear(event.target.value)
               }
             >
-              <option value="">{t("All years")}</option>
+              <option value="">{t("Latest year")}</option>
               {stateYears.map((year) => (
                 <option key={year} value={year}>{year}</option>
               ))}
@@ -373,8 +446,10 @@ export function GDPDetailCharts() {
                   ? t("Current Price")
                   : t("Constant Price")
               }
+              horizontal
             />
           )}
+        {stateInsight && <p className="gdp-chart-insight">{stateInsight}</p>}
       </section>
 
       <section className="panel">
@@ -382,17 +457,17 @@ export function GDPDetailCharts() {
           <div>
             <h2 className="panel-title">{t("GDP Growth Rate")}</h2>
             <p className="panel-subtitle">
-              {t("Quarterly real GDP growth rate")}
+              {t("Quarterly real GDP growth rate · recent year")}
             </p>
           </div>
         </div>
         <label>
           {t("Financial year")}
           <select
-            value={growthYear}
+            value={effectiveGrowthYear}
             onChange={(event) => setGrowthYear(event.target.value)}
           >
-            <option value="">{t("All years")}</option>
+            <option value="">{t("Latest year")}</option>
             {growthYears.map((year) => (
               <option key={year} value={year}>{year}</option>
             ))}
@@ -412,6 +487,7 @@ export function GDPDetailCharts() {
               percentage
             />
           )}
+        {growthInsight && <p className="gdp-chart-insight">{growthInsight}</p>}
       </section>
 
       <section className="panel">
