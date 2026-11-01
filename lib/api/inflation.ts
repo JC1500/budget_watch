@@ -4,8 +4,7 @@ import type {
   InflationRecord,
 } from "@/lib/types/inflation";
 
-const MOSPI_API_URL =
-  "https://api.mospi.gov.in/api/cpi/getCPIData";
+const INFLATION_API_URL = "/api/inflation";
 
 const requestCache = new Map<
   string,
@@ -31,7 +30,7 @@ export async function getInflationData(
     return cachedRequest;
   }
 
-  const request = fetch(`${MOSPI_API_URL}?${requestKey}`)
+  const request = fetch(`${INFLATION_API_URL}?${requestKey}`)
     .then(async (response) => {
       if (!response.ok) {
         throw new Error(

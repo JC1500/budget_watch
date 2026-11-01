@@ -4,15 +4,14 @@ import type {
   GDPRecord,
 } from "@/lib/types/gdp";
 
-const MOSPI_API_URL =
-  "https://api.mospi.gov.in/api/nas/getNASData";
+const GDP_API_URL = "/api/gdp";
 
 const requestCache = new Map<string, Promise<GDPRecord[]>>();
 
 async function fetchGDPPage(
   query: URLSearchParams,
 ): Promise<{ records: GDPRecord[]; totalPages: number }> {
-  const response = await fetch(`${MOSPI_API_URL}?${query}`);
+  const response = await fetch(`${GDP_API_URL}?${query}`);
 
   if (!response.ok) {
     throw new Error(

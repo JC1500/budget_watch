@@ -4,8 +4,7 @@ import type {
   PLFSRecord,
 } from "@/lib/types/plfs";
 
-const PLFS_API_URL =
-  "https://api.mospi.gov.in/api/plfs/getData";
+const PLFS_API_URL = "/api/plfs";
 
 const requestCache = new Map<string, Promise<PLFSRecord[]>>();
 
