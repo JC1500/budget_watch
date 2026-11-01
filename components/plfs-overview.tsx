@@ -3,9 +3,9 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import {
-  Bar,
-  BarChart,
   CartesianGrid,
+  Line,
+  LineChart,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -14,90 +14,233 @@ import {
 
 import { getPLFSData } from "@/lib/api/plfs";
 import { useLanguage } from "@/lib/i18n/provider";
-import {
-  PLFS_DEFAULT_FILTERS,
-  PLFS_INDICATORS,
-  type PLFSRecord,
-} from "@/lib/types/plfs";
+import type { PLFSRecord } from "@/lib/types/plfs";
 
 export default function PLFSOverviewChart() {
   const { t } = useLanguage();
-  const [records, setRecords] = useState<PLFSRecord[]>([]);
+
+  const [maleRecords, setMaleRecords] = useState<PLFSRecord[]>([]);
+  const [femaleRecords, setFemaleRecords] = useState<PLFSRecord[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
-    getPLFSData({
-      indicator_code: PLFS_INDICATORS.wpr,
-      format: "JSON",
-      limit: 100,
-      page: 1,
-      ...PLFS_DEFAULT_FILTERS,
-    })
-      .then((result) => {
-        if (!cancelled) setRecords(result);
-      })
-      .catch((cause: unknown) => {
+
+    const fetchData = async () => {
+      try {
+        const commonParams = {
+          indicator_code: 1,
+          format: "JSON" as const,
+          limit: 100,
+          page: 1,
+          weekly_status_code: 2,
+          frequency_code: 1,
+          age_code: 4,
+          sector_code: 3,
+          social_category_code: 1,
+          state_code: 99,
+          education_code: 0,
+          religion_code: 1,
+        };
+
+        const [male, female] = await Promise.all([
+          getPLFSData({
+            ...commonParams,
+            gender_code: 1,
+          }),
+          getPLFSData({
+            ...commonParams,
+            gender_code: 2,
+          }),
+        ]);
+
+        if (!cancelled) {
+          setMaleRecords(male);
+          setFemaleRecords(female);
+        }
+      } catch (cause: unknown) {
         if (!cancelled) {
           console.error("PLFS API error:", cause);
           setError("Unable to load PLFS data.");
         }
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchData();
 
     return () => {
       cancelled = true;
     };
   }, []);
 
-  const data = useMemo(
-    () =>
-      records
-        .filter((record) => {
-          const state = String(record.state ?? "").toLowerCase();
-          const gender = String(record.gender ?? "").toLowerCase();
-          return (
-            (!state || state === "all india") &&
-            (!gender || gender === "male" || gender === "female")
-          );
-        })
-        .map((record) => ({
-          year: record.year ?? "",
-          value: Number(record.value ?? record.rate),
-        }))
-        .filter((record) => record.year && Number.isFinite(record.value))
-        .sort((first, second) => first.year.localeCompare(second.year)),
-    [records],
-  );
+  const data = useMemo(() => {
+    const yearlyData = new Map<
+      string,
+      {
+        year: string;
+        male: number | null;
+        female: number | null;
+      }
+    >();
+
+    const processRecords = (
+      records: PLFSRecord[],
+      gender: "male" | "female",
+    ) => {
+      records.forEach((record) => {
+        const state = String(record.state ?? "").toLowerCase();
+
+        if (state && state !== "all india") return;
+
+        const year = String(record.year ?? "");
+
+        if (!year) return;
+
+        const value = Number(record.value ?? record.rate);
+
+        if (!Number.isFinite(value)) return;
+
+        const existing = yearlyData.get(year) ?? {
+          year,
+          male: null,
+          female: null,
+        };
+
+        existing[gender] = value;
+
+        yearlyData.set(year, existing);
+      });
+    };
+
+    processRecords(maleRecords, "male");
+    processRecords(femaleRecords, "female");
+
+    return Array.from(yearlyData.values()).sort((a, b) =>
+      a.year.localeCompare(b.year),
+    );
+  }, [maleRecords, femaleRecords]);
 
   return (
     <Link href="/public-participation">
-      <section className="panel" aria-label={t("Worker Population Ratio")}>
+      <section
+        className="panel"
+        aria-label={t("Worker Population Ratio")}
+      >
         <div className="panel-header">
           <div>
-            <h2 className="panel-title">{t("Employment & Public Participation")}</h2>
-            <p className="panel-subtitle">{t("Worker Population Ratio (WPR)")}</p>
+            <h2 className="panel-title">
+              {t("Employment & Public Participation")}
+            </h2>
+
+            <p className="panel-subtitle">
+              {t("Worker Population Ratio (WPR)")}
+            </p>
           </div>
         </div>
+
         {loading ? (
-          <div className="empty-chart">{t("Loading PLFS data...")}</div>
+          <div className="empty-chart">
+            {t("Loading PLFS data...")}
+          </div>
         ) : error ? (
-          <div className="empty-chart" role="alert">{t(error)}</div>
+          <div className="empty-chart" role="alert">
+            {t(error)}
+          </div>
         ) : data.length === 0 ? (
-          <div className="empty-chart">{t("No PLFS data available.")}</div>
+          <div className="empty-chart">
+            {t("No PLFS data available.")}
+          </div>
         ) : (
           <div className="chart-frame">
             <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={data}>
-                <CartesianGrid stroke="var(--chart-grid)" strokeDasharray="3 4" vertical={false} />
-                <XAxis dataKey="year" />
-                <YAxis tickFormatter={(value: number) => `${value}%`} />
-                <Tooltip formatter={(value) => [`${Number(value).toFixed(2)}%`, "WPR"]} />
-                <Bar dataKey="value" fill="var(--accent)" radius={[5, 5, 0, 0]} isAnimationActive={false} />
-              </BarChart>
+              <LineChart
+                data={data}
+                margin={{
+                  top: 16,
+                  right: 20,
+                  left: 8,
+                  bottom: 8,
+                }}
+              >
+                <CartesianGrid
+                  stroke="var(--chart-grid)"
+                  strokeDasharray="3 4"
+                  vertical={false}
+                />
+
+                <XAxis
+                  dataKey="year"
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fontSize: 12 }}
+                />
+
+                <YAxis
+                  tickFormatter={(value: number) => `${value}%`}
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fontSize: 12 }}
+                  width={48}
+                  domain={[0, "auto"]}
+                />
+
+                <Tooltip
+                  shared
+                  contentStyle={{
+                    borderRadius: 10,
+                    border: "1px solid var(--border)",
+                    background: "var(--background)",
+                    padding: "12px 16px",
+                  }}
+                  labelStyle={{
+                    fontSize: 14,
+                    fontWeight: 600,
+                    marginBottom: 8,
+                  }}
+                  labelFormatter={(label) =>
+                    `Financial Year: ${label}`
+                  }
+                  formatter={(value, name) => [
+                    value === null || value === undefined
+                      ? "—"
+                      : `${Number(value).toFixed(2)}%`,
+                    name === "male"
+                      ? t("Male")
+                      : name === "female"
+                        ? t("Female")
+                        : String(name),
+                  ]}
+                />
+
+                <Line
+                  type="monotone"
+                  dataKey="male"
+                  name="male"
+                  stroke="#2563eb"
+                  strokeWidth={2.5}
+                  dot={{ r: 4 }}
+                  activeDot={{ r: 6 }}
+                  connectNulls={false}
+                  isAnimationActive={false}
+                />
+
+                <Line
+                  type="monotone"
+                  dataKey="female"
+                  name="female"
+                  stroke="#db2777"
+                  strokeWidth={2.5}
+                  dot={{ r: 4 }}
+                  activeDot={{ r: 6 }}
+                  connectNulls={false}
+                  isAnimationActive={false}
+                />
+              </LineChart>
             </ResponsiveContainer>
           </div>
         )}

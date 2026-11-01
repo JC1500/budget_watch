@@ -161,7 +161,7 @@ export default function PLFSCharts() {
     indicator_code: PLFS_INDICATORS.wpr,
     format: "JSON",
     year: stateYear,
-    gender_code: stateGender,
+    gender_code: 1,
     sector_code: stateSector,
     frequency_code: baseFilters.frequency_code,
     limit: 100,
@@ -170,7 +170,7 @@ export default function PLFSCharts() {
   const lfpr = usePLFSRequest({
     indicator_code: PLFS_INDICATORS.lfpr,
     format: "JSON",
-    gender_code: "male,female",
+    gender_code: 1,
     limit: 100,
     page: 1,
     ...baseFilters,

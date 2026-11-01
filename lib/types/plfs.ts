@@ -1,19 +1,18 @@
-export type PLFSIndicatorCode = 1 | 2 | 3;
-
 export type PLFSApiParams = {
-  indicator_code: PLFSIndicatorCode;
-  format: "JSON";
-  frequency_code?: string;
+  indicator_code: number;
+  format: string;
+  frequency_code?: number;
   year?: string;
   month_code?: string;
   quarter_code?: string;
-  state_code?: string;
-  gender_code?: string;
-  age_code?: string;
-  sector_code?: string;
-  religion_code?: string;
-  social_category_code?: string;
-  education_code?: string;
+  state_code?: number;
+  gender_code?: number;
+  age_code?: number;
+  sector_code?: number;
+  religion_code?: number;
+  social_category_code?: number;
+  education_code?: number;
+  weekly_status_code?:number;
   limit?: number;
   page?: number;
 };

@@ -125,6 +125,7 @@ function Panel({
 
 export function BudgetOverviewChart() {
   const { t } = useLanguage();
+
   const metrics = usableMetrics(
     budgetAnalysisData.sections.account_summary.metrics,
   ).filter((metric) =>
@@ -137,12 +138,238 @@ export function BudgetOverviewChart() {
     ].includes(metric.id),
   );
 
+  const chartData = metrics.map((metric) => ({
+    name: metric.name,
+    be: metric.budget_estimates,
+    actuals: metric.actuals,
+    utilization: metric.actuals_percent_of_budget,
+  }));
+
+  const totalExpenditure = metrics.find(
+    (metric) => metric.id === "total_expenditure",
+  );
+
+  const revenueReceipts = metrics.find(
+    (metric) => metric.id === "revenue_receipts",
+  );
+
+  const expenditure = totalExpenditure?.actuals ?? null;
+  const receipts = revenueReceipts?.actuals ?? null;
+
+  const spendingGap =
+    expenditure !== null && receipts !== null
+      ? expenditure - receipts
+      : null;
+
+  const utilization =
+    totalExpenditure?.actuals_percent_of_budget ?? null;
+
+  const formatAxis = (value: number) => {
+    if (Math.abs(value) >= 100000) {
+      return `₹${(value / 100000).toLocaleString("en-IN", {
+        maximumFractionDigits: 1,
+      })}L Cr`;
+    }
+
+    if (Math.abs(value) >= 1000) {
+      return `₹${(value / 1000).toLocaleString("en-IN", {
+        maximumFractionDigits: 1,
+      })}K Cr`;
+    }
+
+    return `₹${value.toLocaleString("en-IN")}`;
+  };
+
   return (
     <Panel
       title={t("Where Does Government Money Go?")}
-      description={`${t("Budget Estimates vs actuals")} · ${t(budgetAnalysisData.metadata.unit)}`}
+      description={`${t("Government income and expenditure")} · ₹ crore`}
     >
-      <MetricBars metrics={metrics} />
+      <div className="space-y-5 p-3 sm:p-4">
+
+        {/* Chart legend */}
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <p className="text-sm text-muted-foreground">
+            {t("Compare planned spending with actual spending")}
+          </p>
+
+          <div className="flex flex-wrap items-center gap-4 text-xs">
+            <span className="flex items-center gap-2">
+              <span
+                className="h-2.5 w-2.5 rounded-sm"
+                style={{
+                  background: "var(--chart-selected)",
+                }}
+              />
+              {t("Budget Estimate")}
+            </span>
+
+            <span className="flex items-center gap-2">
+              <span
+                className="h-2.5 w-2.5 rounded-sm"
+                style={{
+                  background: "var(--accent)",
+                }}
+              />
+              {t("Actuals")}
+            </span>
+          </div>
+        </div>
+
+        {/* Main chart */}
+        <div className="w-full" style={{ height: 340 }}>
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart
+              data={chartData}
+              layout="vertical"
+              margin={{
+                top: 8,
+                right: 24,
+                left: 8,
+                bottom: 8,
+              }}
+              barCategoryGap="25%"
+              barGap={4}
+            >
+              <CartesianGrid
+                stroke="var(--chart-grid)"
+                strokeDasharray="3 5"
+                horizontal={false}
+              />
+
+              <XAxis
+                type="number"
+                tickFormatter={formatAxis}
+                axisLine={false}
+                tickLine={false}
+                tick={{
+                  fontSize: 11,
+                  fill: "var(--chart-text)",
+                }}
+              />
+
+              <YAxis
+                type="category"
+                dataKey="name"
+                width={155}
+                axisLine={false}
+                tickLine={false}
+                tick={{
+                  fontSize: 12,
+                  fill: "var(--chart-text)",
+                }}
+              />
+
+              <Tooltip
+                cursor={{
+                  fill: "var(--chart-grid)",
+                  opacity: 0.2,
+                }}
+                contentStyle={{
+                  borderRadius: 10,
+                  border: "1px solid var(--border)",
+                  background: "var(--background)",
+                }}
+                formatter={(value, name) => [
+                  money(
+                    value === null ? null : Number(value),
+                    t,
+                  ),
+                  t(
+                    name === "be"
+                      ? "Budget Estimate"
+                      : "Actuals",
+                  ),
+                ]}
+              />
+
+              <Bar
+                dataKey="be"
+                name={t("Budget Estimate")}
+                fill="var(--chart-selected)"
+                radius={[0, 5, 5, 0]}
+                maxBarSize={18}
+                isAnimationActive={false}
+              />
+
+              <Bar
+                dataKey="actuals"
+                name={t("Actuals")}
+                fill="var(--accent)"
+                radius={[0, 5, 5, 0]}
+                maxBarSize={18}
+                isAnimationActive={false}
+              />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* Key insights */}
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+
+          <div className="rounded-xl border p-3">
+            <p className="text-xs text-muted-foreground">
+              {t("Total expenditure")}
+            </p>
+
+            <p className="mt-1 text-lg font-semibold">
+              {expenditure !== null
+                ? formatAxis(expenditure)
+                : "—"}
+            </p>
+
+            {utilization !== null && (
+              <p className="mt-1 text-xs text-muted-foreground">
+                {utilization.toFixed(1)}%{" "}
+                {t("of budget estimate")}
+              </p>
+            )}
+          </div>
+
+          <div className="rounded-xl border p-3">
+            <p className="text-xs text-muted-foreground">
+              {t("Government receipts")}
+            </p>
+
+            <p className="mt-1 text-lg font-semibold">
+              {receipts !== null
+                ? formatAxis(receipts)
+                : "—"}
+            </p>
+
+            <p className="mt-1 text-xs text-muted-foreground">
+              {t("Money received by the government")}
+            </p>
+          </div>
+
+          <div className="rounded-xl border p-3">
+            <p className="text-xs text-muted-foreground">
+              {t("Spending minus receipts")}
+            </p>
+
+            <p className="mt-1 text-lg font-semibold">
+              {spendingGap !== null
+                ? formatAxis(spendingGap)
+                : "—"}
+            </p>
+
+            <p className="mt-1 text-xs text-muted-foreground">
+              {t("Not the official fiscal deficit")}
+            </p>
+          </div>
+
+        </div>
+
+        {/* Simple explanation */}
+        <div className="rounded-lg bg-muted/40 p-3">
+          <p className="text-sm text-muted-foreground">
+            {t(
+              "Revenue receipts are the money received by the government. Revenue expenditure pays for regular services, while capital expenditure supports infrastructure and long-term assets. Compare the estimated and actual bars to see how spending differs from the plan.",
+            )}
+          </p>
+        </div>
+
+      </div>
     </Panel>
   );
 }
