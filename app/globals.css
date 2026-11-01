@@ -852,6 +852,38 @@ h1 {
   height: 360px;
 }
 
+.chart-frame.estimated-actual-chart-frame {
+  height: 360px;
+  padding: 10px 12px 5px 4px;
+}
+
+.estimated-actual-view-picker {
+  width: min(100%, 210px);
+  flex-basis: 210px;
+}
+
+.estimated-actual-legend {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.estimated-actual-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.estimated-actual-legend-swatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+}
+
 .panel-title {
   margin: 0;
   font-size: 14px;
@@ -2829,6 +2861,11 @@ html:lang(hi) .data-table th {
 
   .chart-frame.department-analysis-chart-frame {
     height: 300px;
+  }
+
+  .chart-frame.estimated-actual-chart-frame {
+    height: 320px;
+    padding-inline: 0;
   }
 
   .chart-heading {

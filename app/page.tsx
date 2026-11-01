@@ -5,6 +5,7 @@ import InflationChart from "@/components/inflation-charts";
 import PLFSOverviewChart from "@/components/plfs-overview";
 import { BudgetOverviewChart } from "@/components/budget-analysis-chart";
 import { BudgetCategoryChart } from "@/components/budget-category-chart";
+import { EstimatedActualExpenditureChart } from "@/components/estimated-actual-expenditure-chart";
 import GDPChart from "@/components/gdp-overview";
 import {
   budgetRecords,
@@ -14,6 +15,7 @@ import {
 } from "@/lib/budget-data";
 import { buildYearTotals, summarizeBudget } from "@/lib/analytics/budget";
 import { getBudgetCategorySummaries } from "@/lib/data/categories";
+import { getEstimatedActualExpenditure } from "@/lib/data/estimated-actual-expenditure";
 import { formatCroreCompact } from "@/lib/format";
 
 type PageProps = {
@@ -55,6 +57,7 @@ async function DashboardData({ searchParams }: PageProps) {
   const entries = getDepartments(selectedYear);
   const summary = summarizeBudget(entries);
   const yearTotals = buildYearTotals(budgetRecords, years);
+  const expenditure = getEstimatedActualExpenditure();
   const initialId = [...entries].sort(
     (a, b) => b.amountCrore - a.amountCrore,
   )[0]?.id ?? "";
@@ -125,6 +128,10 @@ async function DashboardData({ searchParams }: PageProps) {
             }}
           />
         </Link>
+        <EstimatedActualExpenditureChart
+          observations={expenditure.observations}
+          unit={expenditure.unit}
+        />
         <PLFSOverviewChart />
         <TotalBudgetTimeline yearTotals={yearTotals} />
       </div>
