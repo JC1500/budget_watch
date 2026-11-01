@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-
+import CpiHierarchyChart from "@/components/CpiHierarchyChart";
 import InflationChart from "@/components/inflation-charts";
 
 export const metadata: Metadata = {
@@ -90,6 +90,7 @@ export default function InflationPage() {
           }}
         />
       </section>
+      <CpiHierarchyChart />
     </main>
   );
 }

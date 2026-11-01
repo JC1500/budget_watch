@@ -2,6 +2,8 @@ import { Suspense } from "react";
 import Link from "next/link";
 import { TotalBudgetTimeline } from "@/components/yearly-budget-charts";
 import InflationChart from "@/components/inflation-charts";
+import PLFSOverviewChart from "@/components/plfs-overview";
+import { BudgetOverviewChart } from "@/components/budget-analysis-chart";
 import { BudgetCategoryChart } from "@/components/budget-category-chart";
 import GDPChart from "@/components/gdp-overview";
 import {
@@ -107,6 +109,9 @@ async function DashboardData({ searchParams }: PageProps) {
       </div>
 
       <div className="overview-flow">
+        <Link href="/budget-analysis">
+          <BudgetOverviewChart />
+        </Link>
         <Link href="/inflation">
           <InflationChart
             variant="All-India"
@@ -119,6 +124,7 @@ async function DashboardData({ searchParams }: PageProps) {
             }}
           />
         </Link>
+        <PLFSOverviewChart />
         <TotalBudgetTimeline yearTotals={yearTotals} />
       </div>
     </>

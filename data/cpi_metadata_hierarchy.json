@@ -1,0 +1,1277 @@
+{
+  "division": {
+    "CPI (General)": {
+      "Groups": {}
+    },
+    "Food and beverages": {
+      "Groups": {
+        "Food": {
+          "Group": {
+            "Cereals and cereal products": {
+              "subClass": {
+                "Cereals": [
+                  "Rice",
+                  "Wheat",
+                  "Jowar and its products",
+                  "Ragi and its products",
+                  "Bajra and its products",
+                  "Maize and its products",
+                  "Small millets and its products",
+                  "Barley and its products",
+                  "Other cereals and products",
+                  "Other wheat products",
+                  "Rice PDS",
+                  "Wheat PDS"
+                ],
+                "Flour of cereals": [
+                  "Wheat atta",
+                  "Maida",
+                  "Wheat atta PDS"
+                ],
+                "Bread and bakery products": [
+                  "Biscuits",
+                  "Chips , nachos, puffs, wafers, etc.",
+                  "Cake, pastry",
+                  "Bread (bakery)"
+                ],
+                "Breakfast cereals": [
+                  "Breakfast cereals",
+                  "Muri",
+                  "Other rice products"
+                ],
+                "Macaroni, noodles, couscous and similar pasta products": [
+                  "Noodles",
+                  "Vermicelli (sewai)"
+                ],
+                "Other milled cereal and grain products": [
+                  "Suji, rawa",
+                  "Chidwa"
+                ]
+              }
+            },
+            "Meat, fresh, chilled or frozen": {
+              "subClass": {
+                "Meat, fresh, chilled or frozen": [
+                  "Chicken",
+                  "Goat meat/ mutton",
+                  "Beef/ buffalo meat",
+                  "Pork",
+                  "Others: birds, crab,oyster, etc."
+                ]
+              }
+            },
+            "Fish and other seafood": {
+              "subClass": {
+                "Fish and prawn": [
+                  "Fish and prawn"
+                ]
+              }
+            },
+            "Milk, other dairy products and eggs": {
+              "subClass": {
+                "Milk: liquid": [
+                  "Milk: liquid"
+                ],
+                "Milk: condensed/ powder": [
+                  "Milk: condensed/ powder"
+                ],
+                "Cheese": [
+                  "Paneer",
+                  "Cheese"
+                ],
+                "Curd, Yoghurt and similar products": [
+                  "Curd, yogurt",
+                  "Butter milk",
+                  "Lassi"
+                ],
+                "Milk-based dessert and beverages": [
+                  "Tea: cups",
+                  "Prepared sweets- milk based",
+                  "Coffee: cups"
+                ],
+                "Eggs": [
+                  "Eggs"
+                ],
+                "Other dairy products": [
+                  "Other milk products"
+                ]
+              }
+            },
+            "Oils and fats": {
+              "subClass": {
+                "Vegetable oils": [
+                  "Refined oil",
+                  "Mustard oil",
+                  "Groundnut oil",
+                  "Coconut oil",
+                  "Edible oil",
+                  "Edible oil PDS"
+                ],
+                "Butter and other oils and fats derived from milk": [
+                  "Ghee",
+                  "Butter"
+                ],
+                "Margarine and similar preparations": [
+                  "Vanaspati and margarine"
+                ]
+              }
+            },
+            "Fruits and nuts": {
+              "subClass": {
+                "Dates, figs and tropical fruits, fresh": [
+                  "Banana",
+                  "Mango",
+                  "Green coconut",
+                  "Coconut",
+                  "Papaya",
+                  "Guava",
+                  "Pineapple",
+                  "Fig: anjeer"
+                ],
+                "Citrus fruits, fresh": [
+                  "Orange and sweet lime (mausami)",
+                  "Lemon"
+                ],
+                "Stone fruits and pome fruits, fresh": [
+                  "Apple",
+                  "Litchi",
+                  "Pears/ nashpati",
+                  "Apricot"
+                ],
+                "Berries, fresh": [
+                  "Berries"
+                ],
+                "Other fruits, fresh": [
+                  "Grapes",
+                  "Watermelon",
+                  "Kharbooza",
+                  "Singara",
+                  "Other fresh fruits"
+                ],
+                "Fruits, dried and dehydrated": [
+                  "Dates",
+                  "Raisin (kishmish) and monacca",
+                  "Coconut: copra",
+                  "Other dry fruits"
+                ],
+                "Nuts, in shell or shelled": [
+                  "Groundnut",
+                  "Cashew nut",
+                  "Other nuts"
+                ]
+              }
+            },
+            "Vegetables, tubers, plantains, cooking bananas and pulses": {
+              "subClass": {
+                "Leafy or stem vegetables, fresh or chilled": [
+                  "Cauliflower",
+                  "Cabbage",
+                  "Palak and other leafy vegetables"
+                ],
+                "Fruit-bearing vegetables, fresh or chilled": [
+                  "Tomato",
+                  "Lady's finger",
+                  "Brinjal",
+                  "Green chillies",
+                  "Gourd, pumpkin",
+                  "Parwal/patal and Kundru"
+                ],
+                "Green leguminous vegetables, fresh or chilled": [
+                  "Beans and Barbati",
+                  "Peas"
+                ],
+                "Other vegetables, fresh or chilled": [
+                  "Onion",
+                  "Garlic",
+                  "Carrot",
+                  "Radish",
+                  "Jackfruit",
+                  "Other vegetables"
+                ],
+                "Tubers, plantains and cooking bananas, fresh or chilled": [
+                  "Potato"
+                ],
+                "Pulses": [
+                  "Arhar, tur",
+                  "Moong",
+                  "Urd",
+                  "Masur",
+                  "Gram: split",
+                  "Gram: whole",
+                  "Peas, chickpeas",
+                  "Other pulses",
+                  "Pulses PDS"
+                ],
+                "Vegetables, tubers, plantains, cooking bananas and pulses ground, and in other preparations": [
+                  "Besan and Gram products",
+                  "Pickles",
+                  "Other pulse products"
+                ]
+              }
+            },
+            "Sugar, confectionery and desserts": {
+              "subClass": {
+                "Cane sugar and beet sugar": [
+                  "Sugar",
+                  "Jaggery (gur)",
+                  "Sugar PDS"
+                ],
+                "Jams, marmalades, fruit jellies, purées and pastes, and honey": [
+                  "Jam/ jelly",
+                  "Honey"
+                ],
+                "Chocolate, cocoa and cocoa-based food products": [
+                  "Chocolates, etc."
+                ],
+                "Ice, ice cream and sorbets": [
+                  "Ice-cream"
+                ],
+                "Other sugar confectionery and desserts": [
+                  "Prepared sweets - non milk based",
+                  "Candy, misri"
+                ]
+              }
+            },
+            "Ready-made food and other food products": {
+              "subClass": {
+                "Ready-made food": [
+                  "Other served processed food",
+                  "Other packaged processed food"
+                ],
+                "Baby food": [
+                  "Baby food"
+                ],
+                "Salt, condiments and sauces": [
+                  "Salt",
+                  "Sauce and Mayonnaise",
+                  "Salt PDS"
+                ],
+                "Spices, culinary herbs and seeds": [
+                  "Dry chillies",
+                  "Cumin (jeera)",
+                  "Coriander (dhania)",
+                  "Ginger",
+                  "Turmeric",
+                  "Curry powder",
+                  "Black pepper",
+                  "Tamarind",
+                  "Oilseeds",
+                  "Poppy seeds",
+                  "Other spices"
+                ],
+                "Other food products n.e.c.": [
+                  "Papad, bhujia, namkeen, mixture and chanachur",
+                  "Health supplements (probiotic tablet and drinks)"
+                ]
+              }
+            }
+          }
+        },
+        "Beverages": {
+          "Group": {
+            "Fruit and vegetable juices": {
+              "subClass": {
+                "Fruit and vegetable juices": [
+                  "Fruit juice"
+                ]
+              }
+            },
+            "Coffee and coffee substitutes": {
+              "subClass": {
+                "Coffee: powder": [
+                  "Coffee: powder"
+                ]
+              }
+            },
+            "Tea, maté and other plant-derived products for infusion": {
+              "subClass": {
+                "Tea: leaf": [
+                  "Tea: leaf"
+                ]
+              }
+            },
+            "Other beverages": {
+              "subClass": {
+                "Other beverages": [
+                  "Health drinks",
+                  "Health supplements (protein powder)",
+                  "Other cold beverages"
+                ]
+              }
+            },
+            "Cocoa drinks": {
+              "subClass": {
+                "Cocoa drinks": [
+                  "Beverages: cocoa and chocolate drink"
+                ]
+              }
+            },
+            "Water": {
+              "subClass": {
+                "Packaged water": [
+                  "Packaged water"
+                ]
+              }
+            },
+            "Soft drinks": {
+              "subClass": {
+                "Soda drinks": [
+                  "Soda drinks"
+                ]
+              }
+            }
+          }
+        },
+        "Services for processing primary goods for food": {
+          "Group": {
+            "Services for processing primary goods for food": {
+              "subClass": {
+                "Services for processing primary goods for food": [
+                  "Grinding/ husking charges"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "Paan, tobacco and intoxicants": {
+      "Groups": {
+        "Alcoholic beverages": {
+          "Group": {
+            "Spirits and liquors": {
+              "subClass": {
+                "Spirits and liquors": [
+                  "Foreign/refined liquor or wine",
+                  "Country liquor"
+                ]
+              }
+            },
+            "Wine": {
+              "subClass": {
+                "Wine from other sources": [
+                  "Toddy"
+                ]
+              }
+            },
+            "Beer": {
+              "subClass": {
+                "Beer": [
+                  "Beer"
+                ]
+              }
+            },
+            "Other alcoholic beverages": {
+              "subClass": {
+                "Other alcoholic beverages": [
+                  "Other intoxicants"
+                ]
+              }
+            }
+          }
+        },
+        "Paan and tobacco": {
+          "Group": {
+            "Paan and other tobacco products": {
+              "subClass": {
+                "Cigarettes": [
+                  "Cigarettes"
+                ],
+                "Cigars": [
+                  "Cheroot"
+                ],
+                "Paan and other tobacco products": [
+                  "Gutka, zarda, kimam, surti",
+                  "Paan: finished",
+                  "Bidi",
+                  "Ingredients for paan",
+                  "Leaf tobacco",
+                  "Paan: leaf",
+                  "Hookah tobacco",
+                  "Snuff",
+                  "Other tobacco products"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "Clothing and footwear": {
+      "Groups": {
+        "Clothing": {
+          "Group": {
+            "Clothing materials": {
+              "subClass": {
+                "Clothing materials": [
+                  "Clothing materials"
+                ]
+              }
+            },
+            "Garments": {
+              "subClass": {
+                "Garments for men or boys": [
+                  "Shirts, T-shirts, Kurta (gents)",
+                  "Trousers, jeans, track pant, shorts (gents)",
+                  "Coat, jacket, blazer, sweater, sweatshirts and windcheater (gents)",
+                  "Dhoti/ Lungi",
+                  "Other garments for men or boys"
+                ],
+                "Garments for women or girls": [
+                  "Saree",
+                  "Tops, shrugs, kurti (ladies)",
+                  "Trousers, jeans, slawars, Skirts (ladies)",
+                  "Coat, jacket, blazer, sweater, sweatshirts and windcheater  (ladies)",
+                  "Other garments for women or girls"
+                ],
+                "Garments for infants (under 2 years of age)": [
+                  "Garments for infants"
+                ],
+                "School uniforms": [
+                  "School uniforms"
+                ]
+              }
+            },
+            "Other articles of clothing and clothing accessories": {
+              "subClass": {
+                "Other articles of clothing": [
+                  "Gamchha, towel and handkerchief",
+                  "Shawl and chaddar",
+                  "Other articles of clothing (including knitting wool)"
+                ]
+              }
+            },
+            "Cleaning, ironing, dry cleaning, dyeing, repair, tailoring and hire of clothing": {
+              "subClass": {
+                "Cleaning, ironing, dry cleaning and dyeing of clothing": [
+                  "Washerman, laundry, ironing, dry cleaning and dyeing"
+                ],
+                "Repair, tailoring and hire of clothing": [
+                  "Tailor"
+                ]
+              }
+            }
+          }
+        },
+        "Footwear": {
+          "Group": {
+            "Shoes and other footwear": {
+              "subClass": {
+                "Footwear for men": [
+                  "Footwear for men"
+                ],
+                "Footwear for women": [
+                  "Footwear for women"
+                ],
+                "Footwear for infants and children": [
+                  "Footwear for infants and children"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "Housing, water, electricity, gas and other fuels": {
+      "Groups": {
+        "Actual rental payments made for housing": {
+          "Group": {
+            "Actual rental payments made by tenants for main residence": {
+              "subClass": {
+                "Actual rental payments made by tenants for main residence": [
+                  "House Rent"
+                ]
+              }
+            }
+          }
+        },
+        "Maintenance, repair and security of the dwelling": {
+          "Group": {
+            "Security equipment and materials for dwelling maintenance and repair": {
+              "subClass": {
+                "Materials for the maintenance and repair of the dwelling": [
+                  "Plugs, switches and other electrical fittings"
+                ]
+              }
+            },
+            "Services for the maintenance, repair and security of the dwelling": {
+              "subClass": {
+                "Services for the maintenance, repair and security of the dwelling": [
+                  "Residential building and land (minor repairs)",
+                  "Repair charges for non-durables (electricity charges, plumbing charges etc.)",
+                  "Watchmen/security guard",
+                  "Other consumer rent"
+                ]
+              }
+            }
+          }
+        },
+        "Water supply and miscellaneous services relating to the dwelling": {
+          "Group": {
+            "Water supply": {
+              "subClass": {
+                "Water charges": [
+                  "Water charges"
+                ]
+              }
+            },
+            "Other services related to the dwelling": {
+              "subClass": {
+                "Other services related to the dwelling n.e.c.": [
+                  "Sweeper"
+                ]
+              }
+            }
+          }
+        },
+        "Electricity, gas and other fuels": {
+          "Group": {
+            "Electricity": {
+              "subClass": {
+                "Electricity": [
+                  "Electricity charges"
+                ]
+              }
+            },
+            "Gas": {
+              "subClass": {
+                "LPG Cylinders and Piped natural gas": [
+                  "LPG cylinder and piped natural gas"
+                ]
+              }
+            },
+            "Liquid fuels": {
+              "subClass": {
+                "Liquid fuels": [
+                  "Kerosene",
+                  "Kerosene PDS"
+                ]
+              }
+            },
+            "Solid fuels": {
+              "subClass": {
+                "Coal": [
+                  "Coal"
+                ],
+                "Firewood and chips": [
+                  "Firewood and chips"
+                ],
+                "Charcoal": [
+                  "Charcoal"
+                ],
+                "Other solid fuels": [
+                  "Dung cake",
+                  "Fuel (biogas and gobar gas)"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "Furnishings, household equipment and routine household maintenance": {
+      "Groups": {
+        "Furniture, furnishings, and loose carpets": {
+          "Group": {
+            "Furniture, furnishings and loose carpets": {
+              "subClass": {
+                "Household furniture": [
+                  "Chair, stool, bench and table",
+                  "Almirah and dressing table",
+                  "Bedstead",
+                  "Other furniture and fixtures"
+                ],
+                "Lighting equipment": [
+                  "Lantern, lamp, electric lampshade and emergency light",
+                  "Other electric bulb, tubelight and decorative lights"
+                ],
+                "Furnishings, loose carpets and rugs": [
+                  "Carpet, daree and other floor mattings",
+                  "Paintings, drawings and engravings"
+                ]
+              }
+            }
+          }
+        },
+        "Household textiles": {
+          "Group": {
+            "Household textiles": {
+              "subClass": {
+                "Furnishing fabrics and curtains": [
+                  "Cloth for upholstery, curtains, tablecloth etc."
+                ],
+                "Bed linen and bedding": [
+                  "Bed sheet and bed cover",
+                  "Rug and blanket",
+                  "Pillow and cushion",
+                  "Quilt and mattress",
+                  "Mosquito net",
+                  "Bedding"
+                ]
+              }
+            }
+          }
+        },
+        "Household appliances": {
+          "Group": {
+            "Major electric and other household appliances": {
+              "subClass": {
+                "Major kitchen appliances": [
+                  "Refrigerator/freezers",
+                  "stove, gas burner and induction"
+                ],
+                "Major laundry appliances": [
+                  "Washing machine"
+                ],
+                "Heaters and air conditioners": [
+                  "Air conditioner",
+                  "Air cooler",
+                  "Geysers and sterilizers",
+                  "Electric air heaters and blowers",
+                  "Ventilation system such as exhaust, chimney, etc."
+                ],
+                "Other major household appliances": [
+                  "Water purifier",
+                  "Inverter, generators and stabilizers",
+                  "Sewing machine",
+                  "Air purifier",
+                  "Other machines for household work",
+                  "Other durables"
+                ]
+              }
+            },
+            "Small household appliances": {
+              "subClass": {
+                "Small appliances for the cooking and processing of food": [
+                  "Mixer/grinder, juicer and food processor",
+                  "Other cooking/ household appliances"
+                ],
+                "Other small household appliances": [
+                  "Electric fan",
+                  "Bathroom and sanitary equipment",
+                  "Electric iron, heater, toaster, micro-oven, electric kettle, vacuum cleaner and other electric heating appliances"
+                ]
+              }
+            }
+          }
+        },
+        "Glassware, tableware and household utensils": {
+          "Group": {
+            "Glassware, tableware and household utensils": {
+              "subClass": {
+                "Glassware, crystal ware, ceramic ware and china ware": [
+                  "Glassware"
+                ],
+                "Kitchen utensils and articles": [
+                  "Bucket and other plastic goods",
+                  "Stainless steel utensils",
+                  "Water bottle/feeding bottle",
+                  "Casseroles, thermos, flask and thermoware",
+                  "Other metal utensils (non-stick cookware, etc.)",
+                  "Other crockery and utensils",
+                  "Pressure cooker/ pressure pan"
+                ]
+              }
+            }
+          }
+        },
+        "Tools and equipment for house and garden": {
+          "Group": {
+            "Non-motorized tools and miscellaneous accessories": {
+              "subClass": {
+                "Miscellaneous accessories": [
+                  "LED bulb, CFL bulbs",
+                  "Electric batteries",
+                  "Other minor durable-type goods"
+                ]
+              }
+            }
+          }
+        },
+        "Goods and services for routine household maintenance": {
+          "Group": {
+            "Non-durable household goods": {
+              "subClass": {
+                "Household cleaning and maintenance products": [
+                  "Washing soap/soda/powder/liquid detergent",
+                  "Floor cleaner, toilet cleaner",
+                  "Other washing requisites"
+                ],
+                "Other non-durable household goods": [
+                  "Incense (agarbatti) and room freshener",
+                  "Mosquito repellent, insecticide, anti-rodent, etc.",
+                  "Earthenware, paperware, thermocol plates, etc.",
+                  "Matchbox",
+                  "Candle",
+                  "Other petty articles"
+                ]
+              }
+            },
+            "Domestic services and household services": {
+              "subClass": {
+                "Domestic services provided by paid staff": [
+                  "Domestic helper/cook",
+                  "Driver",
+                  "Attendant, babysitter"
+                ],
+                "Other consumer services excluding conveyance": [
+                  "Other consumer services excluding conveyance"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "Health": {
+      "Groups": {
+        "Medicines and health products": {
+          "Group": {
+            "Medicines": {
+              "subClass": {
+                "Medicines and vaccines": [
+                  "Medicine"
+                ],
+                "Health supplements": [
+                  "Health supplements (chawanprash)"
+                ]
+              }
+            },
+            "Medical products": {
+              "subClass": {
+                "Medical diagnostic products": [
+                  "Other medical equipment"
+                ],
+                "Family planning devices": [
+                  "Family planning devices"
+                ],
+                "Treatment devices for personal use": [
+                  "Nebulizer"
+                ]
+              }
+            },
+            "Assistive products": {
+              "subClass": {
+                "Assistive products for vision": [
+                  "Spectacles/goggles, contact lenses"
+                ],
+                "Assistive products for hearing and communication": [
+                  "Hearing aids and orthopaedic equipment"
+                ],
+                "Assistive products for mobility and daily living": [
+                  "Massager",
+                  "Wheelchair"
+                ]
+              }
+            }
+          }
+        },
+        "Outpatient care services": {
+          "Group": {
+            "Other outpatient care services": {
+              "subClass": {
+                "Outpatient curative and rehabilitative services": [
+                  "Doctor's/surgeon's fee",
+                  "Other medical expenses"
+                ]
+              }
+            }
+          }
+        },
+        "Inpatient care services": {
+          "Group": {
+            "Inpatient curative and rehabilitative services": {
+              "subClass": {
+                "Inpatient curative and rehabilitative services": [
+                  "Hospital and nursing home charges"
+                ]
+              }
+            }
+          }
+        },
+        "Other health services": {
+          "Group": {
+            "Diagnostic imaging services and medical laboratory services": {
+              "subClass": {
+                "Diagnostic imaging services and medical laboratory services": [
+                  "X-ray, ECG and pathological test"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "Transport": {
+      "Groups": {
+        "Purchase of vehicles": {
+          "Group": {
+            "Motor cars": {
+              "subClass": {
+                "Motor car and jeep": [
+                  "Motor car and jeep"
+                ]
+              }
+            },
+            "Motorcycles": {
+              "subClass": {
+                "Motor cycle and scooter": [
+                  "Motor cycle and scooter"
+                ]
+              }
+            },
+            "Bicycles": {
+              "subClass": {
+                "Bicycle": [
+                  "Bicycle"
+                ]
+              }
+            }
+          }
+        },
+        "Operation of personal transport equipment": {
+          "Group": {
+            "Parts and accessories for personal transport equipment": {
+              "subClass": {
+                "Tyres and tubes": [
+                  "Tyres and tubes"
+                ],
+                "Parts for personal transport equipment": [
+                  "Other transport equipment"
+                ],
+                "Accessories for personal transport equipment": [
+                  "Helmet"
+                ]
+              }
+            },
+            "Fuels and lubricants for personal transport equipment": {
+              "subClass": {
+                "Diesel": [
+                  "Diesel"
+                ],
+                "Petrol": [
+                  "Petrol"
+                ],
+                "Other fuels for personal transport equipment": [
+                  "Other natural gas (CNG)"
+                ]
+              }
+            }
+          }
+        },
+        "Passenger transport services": {
+          "Group": {
+            "Passenger transport by railway": {
+              "subClass": {
+                "Passenger transport by train": [
+                  "Rail fare"
+                ],
+                "Passenger transport by rapid transit and tram": [
+                  "Bus/tram fare: occasional"
+                ]
+              }
+            },
+            "Passenger transport by road": {
+              "subClass": {
+                "Passenger transport by bus and coach": [
+                  "Bus/tram fare for commuting to work: daily",
+                  "Bus fare for commuting to work: periodic"
+                ],
+                "Passenger transport by taxi and hired vehicle with driver": [
+                  "Taxi fare",
+                  "Car/bus hired for ceremonial occasion, picnic, etc"
+                ],
+                "Passenger transport for students to and from school": [
+                  "Bus fare for school, college: periodic",
+                  "Bus /tram fare for school, college: daily"
+                ],
+                "Other passenger transport by road": [
+                  "Auto-rickshaw/e-rickshaw fare",
+                  "Rickshaw fare",
+                  "Other conveyance expenses"
+                ]
+              }
+            },
+            "Passenger transport by air": {
+              "subClass": {
+                "Passenger transport by air, domestic": [
+                  "Airfare"
+                ]
+              }
+            },
+            "Passenger transport by sea and inland waterway": {
+              "subClass": {
+                "Passenger transport by sea and inland waterway": [
+                  "Steamer, boat fare"
+                ]
+              }
+            }
+          }
+        },
+        "Transport services for goods": {
+          "Group": {
+            "Postal and courier services": {
+              "subClass": {
+                "Courier and parcel delivery services": [
+                  "Postage, couriers and money order"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "Information and communication": {
+      "Groups": {
+        "Information and communication equipment": {
+          "Group": {
+            "Telephone instrument (landline)": {
+              "subClass": {
+                "Telephone instrument (landline)": [
+                  "Telephone instrument (landline)"
+                ]
+              }
+            },
+            "Mobile handset": {
+              "subClass": {
+                "Mobile handset": [
+                  "Mobile handset"
+                ]
+              }
+            },
+            "Information processing equipment": {
+              "subClass": {
+                "Computers, laptops and tablets including Software": [
+                  "PC/ Laptop/ tablet and other peripherals incl. software"
+                ]
+              }
+            },
+            "Audio-visual devices": {
+              "subClass": {
+                "Audio-visual devices": [
+                  "Television",
+                  "Headphone, earphone, ear pod, airpod and bluetooth devices"
+                ]
+              }
+            },
+            "Unrecorded recording media": {
+              "subClass": {
+                "Unrecorded recording media": [
+                  "Pen-drive and external hard disk"
+                ]
+              }
+            }
+          }
+        },
+        "Information and communication services": {
+          "Group": {
+            "Internet access provision services and online storage services": {
+              "subClass": {
+                "Internet expenses": [
+                  "Internet expenses"
+                ]
+              }
+            },
+            "Telephone charges: mobile and landline": {
+              "subClass": {
+                "Telephone charges: mobile and landline": [
+                  "Telephone charges: mobile",
+                  "Telephone charges: landline"
+                ]
+              }
+            },
+            "Other information and communication services": {
+              "subClass": {
+                "Subscriptions to streaming services": [
+                  "Cable TV/DTH/set top box",
+                  "Online media service provider/streaming services"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "Recreation, sport and culture": {
+      "Groups": {
+        "Recreational durables": {
+          "Group": {
+            "Photographic and cinematographic equipment and optical instruments": {
+              "subClass": {
+                "Camera and photographic equipment": [
+                  "Camera and photographic equipment"
+                ]
+              }
+            }
+          }
+        },
+        "Other recreational goods": {
+          "Group": {
+            "Games, toys and hobby-related articles": {
+              "subClass": {
+                "Other goods for recreation": [
+                  "Other goods for recreation"
+                ]
+              }
+            },
+            "Sporting, camping and open-air recreation equipment": {
+              "subClass": {
+                "Sporting equipment": [
+                  "Sports goods",
+                  "Exercise equipment",
+                  "Other sports goods"
+                ]
+              }
+            }
+          }
+        },
+        "Garden products and pets": {
+          "Group": {
+            "Garden products, plants and flowers": {
+              "subClass": {
+                "Plants, seeds and flowers": [
+                  "Flower (fresh)"
+                ]
+              }
+            },
+            "Pets and pet products": {
+              "subClass": {
+                "Pets": [
+                  "Pet animals"
+                ]
+              }
+            }
+          }
+        },
+        "Recreational services": {
+          "Group": {
+            "Recreational and sporting services": {
+              "subClass": {
+                "Recreational and leisure services": [
+                  "Other entertainment (mela, fair, picnic, etc.)"
+                ],
+                "Services associated with the practice of sports": [
+                  "Club, gym, swimming fees and other subscriptions"
+                ]
+              }
+            }
+          }
+        },
+        "Cultural goods": {
+          "Group": {
+            "Musical instruments": {
+              "subClass": {
+                "Musical instruments": [
+                  "Musical instruments"
+                ]
+              }
+            }
+          }
+        },
+        "Cultural services": {
+          "Group": {
+            "Services provided by cinemas, theatres and concert venues": {
+              "subClass": {
+                "Cinema, theatre": [
+                  "Cinema, theatre"
+                ]
+              }
+            },
+            "Photographic services": {
+              "subClass": {
+                "Photography": [
+                  "Photography"
+                ]
+              }
+            }
+          }
+        },
+        "Newspapers, books and stationery": {
+          "Group": {
+            "Books": {
+              "subClass": {
+                "Educational books and textbooks": [
+                  "Books/ journals"
+                ]
+              }
+            },
+            "Newspapers and periodicals": {
+              "subClass": {
+                "Newspapers and periodicals": [
+                  "Newspapers and periodicals"
+                ]
+              }
+            },
+            "Stationery and drawing materials": {
+              "subClass": {
+                "Stationery and drawing materials": [
+                  "Stationery"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "Education services": {
+      "Groups": {
+        "Early childhood and primary education": {
+          "Group": {
+            "Early childhood and primary education": {
+              "subClass": {
+                "Primary education": [
+                  "Tuition fees (Primary/Upper Primary class)"
+                ]
+              }
+            }
+          }
+        },
+        "Secondary education": {
+          "Group": {
+            "Secondary education": {
+              "subClass": {
+                "Secondary education": [
+                  "Tuition fees (Secondary/Upper Secondary class)"
+                ]
+              }
+            }
+          }
+        },
+        "Higher education": {
+          "Group": {
+            "Higher education": {
+              "subClass": {
+                "Higher education": [
+                  "Tuition fees (Higher education)"
+                ]
+              }
+            }
+          }
+        },
+        "Education not defined by level": {
+          "Group": {
+            "Education not defined by level": {
+              "subClass": {
+                "Private tutor/ coaching centre and other educational expenses": [
+                  "Private tutor/ coaching centre",
+                  "Other educational expenses"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "Restaurants and accommodation services": {
+      "Groups": {
+        "Food and beverage serving services": {
+          "Group": {
+            "Restaurants, cafés and the like": {
+              "subClass": {
+                "Restaurants, cafés and the like – with full service": [
+                  "Cooked meals"
+                ],
+                "Restaurants, cafés and the like – with limited service": [
+                  "Cooked snacks"
+                ]
+              }
+            }
+          }
+        },
+        "Accommodation services": {
+          "Group": {
+            "Accommodation services": {
+              "subClass": {
+                "Hotels, motels, inns and similar accommodation services": [
+                  "Hotel lodging charges"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "Personal care, social protection and miscellaneous goods and services": {
+      "Groups": {
+        "Personal care": {
+          "Group": {
+            "Appliances for personal care": {
+              "subClass": {
+                "Purchase of appliances for personal care": [
+                  "Other personal goods"
+                ]
+              }
+            },
+            "Other appliances, articles and products for personal care": {
+              "subClass": {
+                "Other appliances, articles and products for personal care": [
+                  "Toilet soap, body-wash, hand-wash, shower gel and face-wash",
+                  "Perfume, body spray, deodorant and roll-ons",
+                  "Powder, cream, body lotion and moisturizers",
+                  "Toothpaste, mouthwash and toothbrush",
+                  "Hair oil and hair colour",
+                  "Shampoo, conditioner, hair serum/gel and hair cream",
+                  "Sanitary napkins",
+                  "Baby products",
+                  "Shaving blades, shaving stick and razor",
+                  "Shaving cream, shaving foam, aftershave lotion and aftershave balm",
+                  "Sanitizer",
+                  "Weighing machine",
+                  "Other beauty products",
+                  "Other toilet articles",
+                  "Other hair products"
+                ]
+              }
+            },
+            "Hairdressing salons and personal grooming establishments": {
+              "subClass": {
+                "Personal grooming treatments": [
+                  "Barber, beautician and spas"
+                ]
+              }
+            }
+          }
+        },
+        "Other personal effects": {
+          "Group": {
+            "Jewellery and watches": {
+              "subClass": {
+                "Purchase of jewellery and watches": [
+                  "Gold /diamond /platinum jewellery",
+                  "Silver jewellery",
+                  "Clock, watch, smartwatch and fitness tracker",
+                  "Jewels, pearls, precious stones",
+                  "Other jewellery and ornaments"
+                ]
+              }
+            },
+            "Other personal effects n.e.c.": {
+              "subClass": {
+                "Travel goods, baby articles and other personal effects n.e.c.": [
+                  "Back-pack, handbags, vanity bags, purse and clutch",
+                  "Suitcase, trolley bag, duffle bag and trunk",
+                  "Umbrella and Raincoat"
+                ]
+              }
+            }
+          }
+        },
+        "Other services": {
+          "Group": {
+            "Other services": {
+              "subClass": {
+                "Religious services": [
+                  "Priest"
+                ],
+                "Other services n.e.c.": [
+                  "Photocopying charges",
+                  "Legal expenses"
+                ]
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
