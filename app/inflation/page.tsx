@@ -10,10 +10,43 @@ export const metadata: Metadata = {
 };
 
 const states = [
-  { name: "Uttarakhand", code: "1" },
-  { name: "Himachal Pradesh", code: "2" },
-  { name: "Punjab", code: "3" },
-  { name: "Chandigarh", code: "4" },
+  { name: "All India", code: "1" },
+  { name: "Andaman And Nicobar Islands", code: "2" },
+  { name: "Andhra Pradesh", code: "3" },
+  { name: "Arunachal Pradesh", code: "4" },
+  { name: "Assam", code: "5" },
+  { name: "Bihar", code: "6" },
+  { name: "Chandigarh", code: "7" },
+  { name: "Chhattisgarh", code: "8" },
+  { name: "Goa", code: "9" },
+  { name: "Gujarat", code: "10" },
+  { name: "Haryana", code: "11" },
+  { name: "Himachal Pradesh", code: "12" },
+  { name: "Jammu And Kashmir", code: "13" },
+  { name: "Jharkhand", code: "14" },
+  { name: "Karnataka", code: "15" },
+  { name: "Kerala", code: "16" },
+  { name: "Ladakh", code: "17" },
+  { name: "Lakshadweep", code: "18" },
+  { name: "Madhya Pradesh", code: "19" },
+  { name: "Maharashtra", code: "20" },
+  { name: "Manipur", code: "21" },
+  { name: "Meghalaya", code: "22" },
+  { name: "Mizoram", code: "23" },
+  { name: "Nagaland", code: "24" },
+  { name: "NCT of Delhi", code: "25" },
+  { name: "Odisha", code: "26" },
+  { name: "Puducherry", code: "27" },
+  { name: "Punjab", code: "28" },
+  { name: "Rajasthan", code: "29" },
+  { name: "Sikkim", code: "30" },
+  { name: "Tamil Nadu", code: "31" },
+  { name: "Telangana", code: "32" },
+  { name: "The Dadra And Nagar Haveli And Daman And Diu", code: "33" },
+  { name: "Tripura", code: "34" },
+  { name: "Uttar Pradesh", code: "35" },
+  { name: "Uttarakhand", code: "36" },
+  { name: "West Bengal", code: "37" },
 ];
 
 const sectors = [
@@ -48,15 +81,16 @@ export default function InflationPage() {
         <h2>All-India Inflation</h2>
 
         <InflationChart
-          variant="All-India"
-          params={{
-            year: "2026",
-            sector_code: "3",
-            division_code: "0",
-            limit: 100,
-            page: 1,
-          }}
-        />
+                    variant="All-India"
+                    params={{
+                      year: "2026",
+                      sector_code: "3",
+                      state_code: "1",
+                      division_code: "0",
+                      limit: 100,
+                      page: 1,
+                    }}
+                  />
       </section>
 
       <section className="inflation-chart-section">

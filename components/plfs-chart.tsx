@@ -46,7 +46,7 @@ function normalizedGender(record: PLFSRecord) {
 
 function isPerson(record: PLFSRecord) {
   const gender = normalizedGender(record);
-  return !gender || gender === "person";
+  return !gender || gender === "male" || gender === "female" ;
 }
 
 function isAllIndia(record: PLFSRecord) {

@@ -59,7 +59,7 @@ export default function PLFSOverviewChart() {
           const gender = String(record.gender ?? "").toLowerCase();
           return (
             (!state || state === "all india") &&
-            (!gender || gender === "person")
+            (!gender || gender === "male" || gender === "female")
           );
         })
         .map((record) => ({

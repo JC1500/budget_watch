@@ -116,8 +116,9 @@ async function DashboardData({ searchParams }: PageProps) {
           <InflationChart
             variant="All-India"
             params={{
-              year: "2025",
+              year: "2026",
               sector_code: "3",
+              state_code: "1",
               division_code: "0",
               limit: 100,
               page: 1,
