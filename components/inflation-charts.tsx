@@ -12,6 +12,7 @@ import {
 } from "recharts";
 
 import { getInflationData } from "@/lib/api/inflation";
+import { useLanguage } from "@/lib/i18n/provider";
 import {
   CPI_BASE_YEAR,
   MONTHS,
@@ -52,6 +53,7 @@ export default function InflationChart({
   sectors = [],
   params,
 }: InflationChartProps) {
+  const { t } = useLanguage();
   const [records, setRecords] = useState<InflationRecord[]>([]);
   const [selectedState, setSelectedState] = useState(
     states[0]?.name ?? "",
@@ -191,8 +193,8 @@ export default function InflationChart({
     <section className="panel">
       <div className="panel-header">
         <div>
-          <h2 className="panel-title">CPI Inflation Trend</h2>
-          <p className="text-sm text-muted">Base Year: 2024</p>
+          <h2 className="panel-title">{t("CPI Inflation Trend")}</h2>
+          <p className="text-sm text-muted">{t("Base Year")}: 2024</p>
         </div>
 
         {variant === "State-wise" && (
@@ -226,11 +228,11 @@ export default function InflationChart({
 
       <div className="chart-container">
         {loading ? (
-          <p className="chart-message">Loading CPI data...</p>
+          <p className="chart-message">{t("Loading CPI data...")}</p>
         ) : error ? (
-          <p className="chart-message">{error}</p>
+          <p className="chart-message">{t(error)}</p>
         ) : chartData.length === 0 ? (
-          <p className="chart-message">No CPI data available.</p>
+          <p className="chart-message">{t("No CPI data available.")}</p>
         ) : (
           <ResponsiveContainer width="100%" height={350}>
             <LineChart
@@ -260,7 +262,7 @@ export default function InflationChart({
               <Tooltip
                 formatter={(value) => [
                   `${Number(value).toFixed(2)}%`,
-                  "Inflation",
+                  t("Inflation"),
                 ]}
               />
 

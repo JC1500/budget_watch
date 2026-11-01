@@ -21,6 +21,7 @@ import {
   YAxis,
 } from "recharts";
 import type { BudgetEntry } from "@/lib/budget-data";
+import { useLanguage } from "@/lib/i18n/provider";
 import {
   calculateBudgetShare,
   calculateCAGR,
@@ -47,6 +48,7 @@ function ChartTooltip({
   payload?: { payload?: Record<string, unknown> }[];
   label?: string;
 }) {
+  const { t } = useLanguage();
   if (!active || !payload?.length) return null;
   const data = payload[0]?.payload;
   if (!data) return null;
@@ -66,37 +68,37 @@ function ChartTooltip({
       {year && <span>{year}</span>}
       {typeof amount === "number" && (
         <div className="chart-tooltip-row">
-          <span>Allocation</span>
+          <span>{t("Allocation")}</span>
           <strong>{formatCroreExact(amount)}</strong>
         </div>
       )}
       {share !== null && (
         <div className="chart-tooltip-row">
-          <span>Share of total budget</span>
+          <span>{t("Share of total budget")}</span>
           <strong>{formatShare(share)}</strong>
         </div>
       )}
       {yoy !== null && (
         <div className="chart-tooltip-row">
-          <span>YoY change</span>
+          <span>{t("YoY change")}</span>
           <strong>{formatPercent(yoy)}</strong>
         </div>
       )}
       {absoluteChange !== null && (
         <div className="chart-tooltip-row">
-          <span>Absolute change</span>
+          <span>{t("Absolute change")}</span>
           <strong>{formatCroreExact(absoluteChange)}</strong>
         </div>
       )}
       {percentChange !== null && (
         <div className="chart-tooltip-row">
-          <span>Percentage change</span>
+          <span>{t("Percentage change")}</span>
           <strong>{formatPercent(percentChange)}</strong>
         </div>
       )}
       {typeof data.rank === "number" && (
         <div className="chart-tooltip-row">
-          <span>Rank</span>
+          <span>{t("Rank")}</span>
           <strong>#{data.rank}</strong>
         </div>
       )}
@@ -109,14 +111,15 @@ export function TotalBudgetTimeline({
 }: {
   yearTotals: YearTotal[];
 }) {
+  const { t } = useLanguage();
   return (
     <section className="panel" aria-labelledby="total-timeline-title">
       <div className="panel-header">
         <div>
           <h2 className="panel-title" id="total-timeline-title">
-            Total budget across years
+            {t("Total budget across years")}
           </h2>
-          <p className="panel-subtitle">Sum of department totals · ₹ crore</p>
+          <p className="panel-subtitle">{t("Sum of department totals · ₹ crore")}</p>
         </div>
       </div>
       {yearTotals.length > 0 ? (
@@ -134,7 +137,7 @@ export function TotalBudgetTimeline({
               <Tooltip content={<ChartTooltip />} />
               <Line
                 dataKey="total"
-                name="Total allocation"
+                name={t("Total allocation")}
                 stroke="#245c46"
                 strokeWidth={2.5}
                 dot={{ fill: "#245c46", r: 3 }}
@@ -144,15 +147,15 @@ export function TotalBudgetTimeline({
           </ResponsiveContainer>
         </div>
       ) : (
-        <div className="empty-chart">No yearly totals are available.</div>
+        <div className="empty-chart">{t("No yearly totals are available.")}</div>
       )}
       <div className="table-wrap">
         <table className="data-table compact-table">
           <thead>
             <tr>
-              <th scope="col">Financial year</th>
-              <th className="numeric" scope="col">Total</th>
-              <th className="numeric" scope="col">Change vs prior year</th>
+              <th scope="col">{t("Financial year")}</th>
+              <th className="numeric" scope="col">{t("Total")}</th>
+              <th className="numeric" scope="col">{t("Change vs prior year")}</th>
             </tr>
           </thead>
           <tbody>
@@ -257,6 +260,7 @@ function DepartmentHistoryTooltip({
   label?: string;
   mode: DepartmentChartMode;
 }) {
+  const { t } = useLanguage();
   if (!active || !payload?.length) return null;
   const data = payload[0]?.payload;
   if (!data) return null;
@@ -280,15 +284,15 @@ function DepartmentHistoryTooltip({
         {department && <strong>{department}</strong>}
         {financialYear && <span>{financialYear}</span>}
         <div className="chart-tooltip-row">
-          <span>Department allocation</span>
+          <span>{t("Department allocation")}</span>
           <strong>{allocation === null ? "—" : formatCroreExact(allocation)}</strong>
         </div>
         <div className="chart-tooltip-row">
-          <span>Total budget</span>
+          <span>{t("Total budget")}</span>
           <strong>{totalBudget === null ? "—" : formatCroreExact(totalBudget)}</strong>
         </div>
         <div className="chart-tooltip-row">
-          <span>Share of total budget</span>
+          <span>{t("Share of total budget")}</span>
           <strong>{formatShare(sharePercentage)}</strong>
         </div>
       </div>
@@ -309,15 +313,15 @@ function DepartmentHistoryTooltip({
       {department && <strong>{department}</strong>}
       {financialYear && <span>{financialYear}</span>}
       <div className="chart-tooltip-row">
-        <span>Allocation</span>
+        <span>{t("Allocation")}</span>
         <strong>{allocation === null ? "—" : formatCroreExact(allocation)}</strong>
       </div>
       <div className="chart-tooltip-row">
-        <span>Share of total budget</span>
+        <span>{t("Share of total budget")}</span>
         <strong>{formatShare(share)}</strong>
       </div>
       <div className="chart-tooltip-row">
-        <span>YoY change</span>
+        <span>{t("YoY change")}</span>
         <strong>{formatPercent(percentageChange)}</strong>
       </div>
     </div>
@@ -341,6 +345,7 @@ export function DepartmentHistoryChart({
   enableViewSelector?: boolean;
   locked?: boolean;
 }) {
+  const { t } = useLanguage();
   const [departmentId, setDepartmentId] = useState(initialId);
   const [mode, setMode] = useState<DepartmentChartMode>("allocation");
   const history = useMemo(
@@ -389,20 +394,20 @@ export function DepartmentHistoryChart({
         <div>
           <h2 className="panel-title" id="department-trend-title">
             {mode === "allocation"
-              ? "Department budget over time"
-              : "Share of total budget over time"}
+              ? t("Department budget over time")
+              : t("Share of total budget over time")}
           </h2>
           <p className="panel-subtitle">
             {mode === "allocation"
-              ? "Available financial years · ₹ crore"
-              : "Percentage of each financial year's total allocation assigned to this department"}
+              ? t("Available financial years · ₹ crore")
+              : t("Percentage of each financial year's total allocation assigned to this department")}
           </p>
         </div>
         {enableViewSelector && (
           <label className="chart-view-picker">
-            <span>View</span>
+            <span>{t("View")}</span>
             <select
-              aria-label="Chart view"
+              aria-label={t("Chart view")}
               className="chart-view-select"
               onChange={(event) => {
                 const nextMode = event.target.value;
@@ -412,8 +417,8 @@ export function DepartmentHistoryChart({
               }}
               value={mode}
             >
-              <option value="allocation">Budget allocation</option>
-              <option value="share">Share of total budget</option>
+              <option value="allocation">{t("Budget allocation")}</option>
+              <option value="share">{t("Share of total budget")}</option>
             </select>
           </label>
         )}
@@ -421,7 +426,7 @@ export function DepartmentHistoryChart({
       {!locked && (
         <div className="trend-controls">
           <label className="field-label" htmlFor="trend-department">
-            Department
+            {t("Department")}
             <select
               className="select-field"
               id="trend-department"
@@ -431,7 +436,7 @@ export function DepartmentHistoryChart({
               {[...new Map(entries.map((entry) => [entry.id, entry])).values()]
                 .sort((a, b) => a.department.localeCompare(b.department))
                 .map((entry) => (
-                  <option key={entry.id} value={entry.id}>{entry.department}</option>
+                  <option data-i18n-skip="true" key={entry.id} value={entry.id}>{entry.department}</option>
                 ))}
             </select>
           </label>
@@ -481,8 +486,8 @@ export function DepartmentHistoryChart({
                   }
                   name={
                     mode === "allocation"
-                      ? "Department allocation"
-                      : "Share of total budget"
+                      ? t("Department allocation")
+                      : t("Share of total budget")
                   }
                   stroke="var(--chart-positive)"
                   strokeWidth={2.5}
@@ -522,22 +527,22 @@ export function DepartmentHistoryChart({
             {mode === "allocation" ? (
               <>
                 <div>
-                  <span>First available allocation</span>
+                  <span>{t("First available allocation")}</span>
                   <strong>{first ? `${first.financialYear} · ${formatCroreExact(first.departmentAllocation)}` : "—"}</strong>
                 </div>
                 <div>
-                  <span>Latest available allocation</span>
+                  <span>{t("Latest available allocation")}</span>
                   <strong>{last ? `${last.financialYear} · ${formatCroreExact(last.departmentAllocation)}` : "—"}</strong>
                 </div>
                 <div>
-                  <span>Annualized change</span>
+                  <span>{t("Annualized change")}</span>
                   <strong>{formatPercent(cagr)}</strong>
                 </div>
               </>
             ) : (
               <>
                 <div>
-                  <span>First available share</span>
+                  <span>{t("First available share")}</span>
                   <strong>
                     {firstShare
                       ? `${firstShare.financialYear} · ${formatShare(firstShare.sharePercentage)}`
@@ -545,7 +550,7 @@ export function DepartmentHistoryChart({
                   </strong>
                 </div>
                 <div>
-                  <span>Latest available share</span>
+                  <span>{t("Latest available share")}</span>
                   <strong>
                     {lastShare
                       ? `${lastShare.financialYear} · ${formatShare(lastShare.sharePercentage)}`
@@ -553,7 +558,7 @@ export function DepartmentHistoryChart({
                   </strong>
                 </div>
                 <div>
-                  <span>Share movement</span>
+                  <span>{t("Share movement")}</span>
                   <strong>
                     {shareMovement === null || !Number.isFinite(shareMovement)
                       ? "—"
@@ -566,8 +571,8 @@ export function DepartmentHistoryChart({
         </>
       ) : (
         <div className="empty-chart" role="status">
-          <strong>Historical data is not available for this department.</strong>
-          No records match the selected department across the available years.
+          <strong>{t("Historical data is not available for this department.")}</strong>
+          {t("No records match the selected department across the available years.")}
         </div>
       )}
     </section>
@@ -583,6 +588,7 @@ export function BudgetChangeChart({
   previousEntries: BudgetEntry[];
   year: string;
 }) {
+  const { t } = useLanguage();
   const [direction, setDirection] = useState<"increase" | "decrease">("increase");
   const [metric, setMetric] = useState<"amount" | "percentage">("amount");
   const previous = new Map(previousEntries.map((entry) => [entry.id, entry]));
@@ -620,13 +626,13 @@ export function BudgetChangeChart({
     <section className="panel" aria-labelledby="change-chart-title">
       <div className="panel-header chart-heading">
         <div>
-          <h2 className="panel-title" id="change-chart-title">Largest budget changes</h2>
+          <h2 className="panel-title" id="change-chart-title">{t("Largest budget changes")}</h2>
           <p className="panel-subtitle">
-            {year} compared with the previous available year
+            {year} {t("compared with the previous available year")}
           </p>
         </div>
         <div className="chart-control-groups">
-          <div className="chart-controls" role="group" aria-label="Change direction">
+          <div className="chart-controls" role="group" aria-label={t("Change direction")}>
             {(["increase", "decrease"] as const).map((value) => (
               <button
                 aria-pressed={direction === value}
@@ -634,12 +640,12 @@ export function BudgetChangeChart({
                 onClick={() => setDirection(value)}
                 type="button"
               >
-                {value === "increase" ? "Increase" : "Decrease"}
+                {t(value === "increase" ? "Increase" : "Decrease")}
               </button>
             ))}
           </div>
-          <div className="chart-controls" role="group" aria-label="Change measurement">
-            <button aria-pressed={metric === "amount"} onClick={() => setMetric("amount")} type="button">₹ crore</button>
+          <div className="chart-controls" role="group" aria-label={t("Change measurement")}>
+            <button aria-pressed={metric === "amount"} onClick={() => setMetric("amount")} type="button">{t("₹ crore")}</button>
             <button aria-pressed={metric === "percentage"} onClick={() => setMetric("percentage")} type="button">%</button>
           </div>
         </div>
@@ -665,7 +671,7 @@ export function BudgetChangeChart({
               <Tooltip content={<ChartTooltip />} />
               <Bar
                 dataKey={metric === "amount" ? "amountChange" : "percentageChange"}
-                name={metric === "amount" ? "Absolute change" : "Percentage change"}
+                name={t(metric === "amount" ? "Absolute change" : "Percentage change")}
                 fill="#4a8062"
                 radius={[0, 3, 3, 0]}
               >
@@ -687,9 +693,8 @@ export function BudgetChangeChart({
         </div>
       ) : (
         <div className="empty-chart" role="status">
-          <strong>No matched year-over-year changes are available.</strong>
-          Department changes require records in both the selected and previous
-          year, with a non-zero previous allocation.
+          <strong>{t("No matched year-over-year changes are available.")}</strong>
+          {t("Department changes require records in both the selected and previous year, with a non-zero previous allocation.")}
         </div>
       )}
     </section>
@@ -701,13 +706,14 @@ export function BudgetDistributionHistogram({
 }: {
   entries: BudgetEntry[];
 }) {
+  const { t } = useLanguage();
   const bins = [
-    { name: "Below ₹0 Cr", min: Number.NEGATIVE_INFINITY, max: 0 },
-    { name: "₹0–1,000 Cr", min: 0, max: 1_000 },
-    { name: "₹1,000–5,000 Cr", min: 1_000, max: 5_000 },
-    { name: "₹5,000–10,000 Cr", min: 5_000, max: 10_000 },
-    { name: "₹10,000–50,000 Cr", min: 10_000, max: 50_000 },
-    { name: "₹50,000 Cr+", min: 50_000, max: Number.POSITIVE_INFINITY },
+    { name: t("Below ₹0 Cr"), min: Number.NEGATIVE_INFINITY, max: 0 },
+    { name: t("₹0–1,000 Cr"), min: 0, max: 1_000 },
+    { name: t("₹1,000–5,000 Cr"), min: 1_000, max: 5_000 },
+    { name: t("₹5,000–10,000 Cr"), min: 5_000, max: 10_000 },
+    { name: t("₹10,000–50,000 Cr"), min: 10_000, max: 50_000 },
+    { name: t("₹50,000 Cr+"), min: 50_000, max: Number.POSITIVE_INFINITY },
   ];
   const data = bins.map((bin) => ({
     ...bin,
@@ -721,8 +727,8 @@ export function BudgetDistributionHistogram({
     <section className="panel" aria-labelledby="histogram-title">
       <div className="panel-header">
         <div>
-          <h2 className="panel-title" id="histogram-title">Budget size distribution</h2>
-          <p className="panel-subtitle">Number of departments by allocation range</p>
+          <h2 className="panel-title" id="histogram-title">{t("Budget size distribution")}</h2>
+          <p className="panel-subtitle">{t("Number of departments by allocation range")}</p>
         </div>
       </div>
       <div className="chart-frame">
@@ -732,7 +738,7 @@ export function BudgetDistributionHistogram({
             <XAxis dataKey="name" axisLine={false} tickLine={false} interval={0} tick={{ fontSize: 9 }} />
             <YAxis allowDecimals={false} axisLine={false} tickLine={false} />
             <Tooltip />
-            <Bar dataKey="count" name="Departments" fill="#6e937b" radius={[3, 3, 0, 0]}>
+            <Bar dataKey="count" name={t("Departments")} fill="#6e937b" radius={[3, 3, 0, 0]}>
               <LabelList dataKey="count" position="top" style={{ fill: "#45504a", fontSize: 10 }} />
               {data.map((entry) => <Cell key={entry.name} />)}
             </Bar>
@@ -750,6 +756,7 @@ export function DepartmentHeatmap({
   records: BudgetEntry[];
   years: string[];
 }) {
+  const { t } = useLanguage();
   const [query, setQuery] = useState("");
   const [metric, setMetric] = useState<"amount" | "percentage">("amount");
   const [topN, setTopN] = useState(20);
@@ -803,21 +810,21 @@ export function DepartmentHeatmap({
     <section className="panel table-panel" aria-labelledby="heatmap-title">
       <div className="panel-header">
         <div>
-          <h2 className="panel-title" id="heatmap-title">Department budget heatmap</h2>
-          <p className="panel-subtitle">Rows are ranked by the latest available allocation</p>
+          <h2 className="panel-title" id="heatmap-title">{t("Department budget heatmap")}</h2>
+          <p className="panel-subtitle">{t("Rows are ranked by the latest available allocation")}</p>
         </div>
-        <div className="chart-controls" role="group" aria-label="Heatmap measure">
-          <button aria-pressed={metric === "amount"} onClick={() => setMetric("amount")} type="button">Budget</button>
+        <div className="chart-controls" role="group" aria-label={t("Heatmap measure")}>
+          <button aria-pressed={metric === "amount"} onClick={() => setMetric("amount")} type="button">{t("Budget")}</button>
           <button aria-pressed={metric === "percentage"} onClick={() => setMetric("percentage")} type="button">YoY %</button>
         </div>
       </div>
       <div className="heatmap-tools">
-        <label className="sr-only" htmlFor="heatmap-search">Search departments</label>
+        <label className="sr-only" htmlFor="heatmap-search">{t("Search departments")}</label>
         <input
           className="search-field"
           id="heatmap-search"
           onChange={(event) => setQuery(event.target.value)}
-          placeholder="Search departments"
+          placeholder={t("Search departments")}
           type="search"
           value={query}
         />
@@ -826,27 +833,27 @@ export function DepartmentHeatmap({
           onClick={() => setSortDescending((value) => !value)}
           type="button"
         >
-          Sort {sortDescending ? "↓" : "↑"}
+          {t("Sort")} {sortDescending ? "↓" : "↑"}
         </button>
         <label className="field-label heatmap-top" htmlFor="heatmap-top">
-          Show
+          {t("Show")}
           <select
             className="select-field"
             id="heatmap-top"
             onChange={(event) => setTopN(Number(event.target.value))}
             value={topN}
           >
-            <option value={20}>Top 20</option>
-            <option value={50}>Top 50</option>
-            <option value={allDepartments.length}>All</option>
+            <option value={20}>{t("Top 20")}</option>
+            <option value={50}>{t("Top 50")}</option>
+            <option value={allDepartments.length}>{t("All")}</option>
           </select>
         </label>
       </div>
-      <div className="heatmap-wrap" role="region" aria-label="Department budget heatmap" tabIndex={0}>
+      <div className="heatmap-wrap" role="region" aria-label={t("Department budget heatmap region")} tabIndex={0}>
         <table className="heatmap-table">
           <thead>
             <tr>
-              <th scope="col">Department</th>
+              <th scope="col">{t("Department")}</th>
               {years.map((year) => <th className="numeric" key={year} scope="col">{year}</th>)}
             </tr>
           </thead>
@@ -854,14 +861,14 @@ export function DepartmentHeatmap({
             {visible.map((entry) => (
               <tr key={entry.id}>
                 <th scope="row">
-                  <Link href={`/departments/${entry.id}`} title={entry.department}>
+                  <Link data-i18n-skip="true" href={`/departments/${entry.id}`} title={entry.department}>
                     {entry.department}
                   </Link>
                 </th>
                 {years.map((year, index) => {
                   const value = valueFor(entry.id, index);
                   return (
-                    <td key={year} style={cellStyle(value)} title={value === null ? "No previous-year comparison" : metric === "amount" ? formatCroreExact(value) : formatPercent(value)}>
+                    <td key={year} style={cellStyle(value)} title={value === null ? t("No previous-year comparison") : metric === "amount" ? formatCroreExact(value) : formatPercent(value)}>
                       {value === null ? "—" : metric === "amount" ? formatCroreCompact(value) : formatPercent(value)}
                     </td>
                   );
@@ -872,8 +879,8 @@ export function DepartmentHeatmap({
         </table>
         {visible.length === 0 && (
           <div className="empty-state" role="status">
-            <strong>No departments match your search.</strong>
-            Try a different department name.
+            <strong>{t("No departments match your search.")}</strong>
+            {t("Try a different department name.")}
           </div>
         )}
       </div>
@@ -890,15 +897,16 @@ export function DepartmentIndexedGrowthChart({
     overallIndex: number;
   }[];
 }) {
+  const { t } = useLanguage();
   return (
     <section className="panel" aria-labelledby="indexed-growth-chart-title">
       <div className="panel-header">
         <div>
           <h2 className="panel-title" id="indexed-growth-chart-title">
-            Indexed growth
+            {t("Indexed growth")}
           </h2>
           <p className="panel-subtitle">
-            First common year = 100 · index values, not ₹ crore
+            {t("First common year = 100 · index values, not ₹ crore")}
           </p>
         </div>
       </div>
@@ -913,14 +921,14 @@ export function DepartmentIndexedGrowthChart({
               <Legend />
               <Line
                 dataKey="departmentIndex"
-                name="Department"
+                name={t("Department")}
                 stroke="#245c46"
                 strokeWidth={2.5}
                 dot={{ r: 3 }}
               />
               <Line
                 dataKey="overallIndex"
-                name="Overall budget"
+                name={t("Overall budget")}
                 stroke="#b2874e"
                 strokeWidth={2}
                 dot={{ r: 3 }}
@@ -930,7 +938,7 @@ export function DepartmentIndexedGrowthChart({
         </div>
       ) : (
         <div className="empty-chart">
-          Indexed growth requires two or more common financial years.
+          {t("Indexed growth requires two or more common financial years.")}
         </div>
       )}
     </section>

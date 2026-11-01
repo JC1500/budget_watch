@@ -6,6 +6,7 @@ import {
   formatCroreExact,
   formatShare,
 } from "@/lib/format";
+import { useLanguage } from "@/lib/i18n/provider";
 
 type Rectangle = {
   entry: BudgetEntry;
@@ -75,6 +76,7 @@ function layoutTreemap(
 }
 
 export function BudgetTreemap({ entries }: { entries: BudgetEntry[] }) {
+  const { t } = useLanguage();
   const total = entries.reduce((sum, entry) => sum + entry.amountCrore, 0);
   const positiveEntries = [...entries]
     .filter((entry) => entry.amountCrore > 0)
@@ -87,22 +89,22 @@ export function BudgetTreemap({ entries }: { entries: BudgetEntry[] }) {
       <div className="panel-header">
         <div>
           <h2 className="panel-title" id="treemap-title">
-            Budget distribution by department
+            {t("Budget distribution by department")}
           </h2>
           <p className="panel-subtitle">
-            Rectangle area represents each department&apos;s allocation
+            {t("Rectangle area represents each department's allocation")}
           </p>
         </div>
       </div>
       {rectangles.length > 0 ? (
         <>
-          <div className="treemap" aria-label="Budget distribution treemap">
+          <div className="treemap" aria-label={t("Budget distribution treemap")}>
             {rectangles.map(({ entry, x, y, width, height }, index) => {
               const share = calculateShare(entry.amountCrore, total);
               const rank = getDepartmentRank(entry, entries);
               return (
                 <Link
-                  aria-label={`${entry.department}, rank ${rank}, ${formatCroreExact(entry.amountCrore)}, ${formatShare(share)} of listed total`}
+                  aria-label={`${entry.department}, ${t("rank")} ${rank}, ${formatCroreExact(entry.amountCrore)}, ${formatShare(share)} ${t("of listed total")}`}
                   className={`treemap-tile${width > 13 && height > 14 ? " treemap-tile-labeled" : ""}`}
                   href={`/departments/${entry.id}?year=${encodeURIComponent(entry.financialYear)}`}
                   key={entry.id}
@@ -113,11 +115,11 @@ export function BudgetTreemap({ entries }: { entries: BudgetEntry[] }) {
                     height: `${height}%`,
                     backgroundColor: index % 2 === 0 ? "#e5eee7" : "#dce9df",
                   }}
-                  title={`${entry.department}\nRank ${rank}\n${formatCroreExact(entry.amountCrore)}\n${formatShare(share)} of listed total`}
+                  title={`${entry.department}\n${t("Rank")} ${rank}\n${formatCroreExact(entry.amountCrore)}\n${formatShare(share)} ${t("of listed total")}`}
                 >
                   {width > 13 && height > 14 && (
                     <>
-                      <span className="treemap-name">{entry.department}</span>
+                      <span className="treemap-name" data-i18n-skip="true">{entry.department}</span>
                       <span className="treemap-amount">
                         {formatCroreExact(entry.amountCrore)}
                       </span>
@@ -128,8 +130,7 @@ export function BudgetTreemap({ entries }: { entries: BudgetEntry[] }) {
             })}
           </div>
           <p className="ranking-caption">
-            Select a rectangle for department details. Hover or focus to view
-            the exact allocation and share.
+            {t("Select a rectangle for department details. Hover or focus to view the exact allocation and share.")}
             {nonPositiveCount > 0 &&
               ` ${nonPositiveCount} non-positive allocation${nonPositiveCount === 1 ? "" : "s"} cannot be shown with area.`}
           </p>
@@ -144,7 +145,7 @@ export function BudgetTreemap({ entries }: { entries: BudgetEntry[] }) {
         </>
       ) : (
         <div className="empty-state" role="status">
-          Budget distribution is not available in this snapshot.
+          {t("Budget distribution is not available in this snapshot.")}
         </div>
       )}
     </section>

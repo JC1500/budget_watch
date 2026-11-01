@@ -12,6 +12,7 @@ import {
   YAxis,
 } from "recharts";
 import type { BudgetCategorySummary } from "@/lib/data/categories";
+import { useLanguage } from "@/lib/i18n/provider";
 import { formatCroreCompact, formatCroreExact, formatShare } from "@/lib/format";
 
 type BudgetCategoryChartProps = {
@@ -46,7 +47,7 @@ function CategoryYAxisTick({ x, y, payload }: { x?: number; y?: number; payload?
 
   return (
     <g transform={`translate(${x ?? 0},${y ?? 0})`}>
-      <text fill="var(--text-secondary)" fontSize={13} fontWeight={500} textAnchor="end">
+      <text data-i18n-skip="true" fill="var(--text-secondary)" fontSize={13} fontWeight={500} textAnchor="end">
         {first && <tspan x={-10} dy={0}>{first}</tspan>}
         {second && <tspan x={-10} dy="1.35em">{second}</tspan>}
       </text>
@@ -65,6 +66,7 @@ function CategoryTooltip({
   selectedYear: string;
   viewMode: "allocation" | "share";
 }) {
+  const { t } = useLanguage();
   if (!active || !payload?.length) return null;
   const item = payload[0]?.payload as
     | (BudgetCategorySummary & { fill: string; href: string })
@@ -75,18 +77,18 @@ function CategoryTooltip({
 
   return (
     <div className="chart-tooltip compact-category-tooltip">
-      <strong>{item.name}</strong>
+      <strong data-i18n-skip="true">{item.name}</strong>
       <span>{selectedYear}</span>
       <div className="chart-tooltip-row">
-        <span>{viewMode === "share" ? "Share of total budget" : "Allocation"}</span>
+        <span>{t(viewMode === "share" ? "Share of total budget" : "Allocation")}</span>
         <strong>{viewMode === "share" ? formatShare(amount) : formatCroreExact(amount)}</strong>
       </div>
       <div className="chart-tooltip-row">
-        <span>{viewMode === "share" ? "Allocation" : "Share of total budget"}</span>
+        <span>{t(viewMode === "share" ? "Allocation" : "Share of total budget")}</span>
         <strong>{viewMode === "share" ? formatCroreExact(item.total) : formatShare(item.shareOfTotal)}</strong>
       </div>
       <div className="chart-tooltip-row">
-        <span>Departments</span>
+        <span>{t("Departments")}</span>
         <strong>{item.departmentCount}</strong>
       </div>
     </div>
@@ -97,6 +99,7 @@ export function BudgetCategoryChart({
   categories,
   selectedYear,
 }: BudgetCategoryChartProps) {
+  const { t } = useLanguage();
   const [viewMode, setViewMode] = useState<"allocation" | "share">("allocation");
 
   const chartData = categories.map((category, index) => ({
@@ -113,17 +116,17 @@ export function BudgetCategoryChart({
       <div className="panel-header">
         <div>
           <h2 className="panel-title" id="category-budget-title">
-            Budget allocation by major category
+            {t("Budget allocation by major category")}
           </h2>
           <p className="panel-subtitle">
-            Major government spending categories · {selectedYear}
+            {t("Major government spending categories")} · {selectedYear}
           </p>
         </div>
 
         <label className="chart-view-picker">
-          <span>Display</span>
+          <span>{t("Display")}</span>
           <select
-            aria-label="Category chart display mode"
+            aria-label={t("Category chart display mode")}
             className="chart-view-select"
             value={viewMode}
             onChange={(event) => {
@@ -133,8 +136,8 @@ export function BudgetCategoryChart({
               }
             }}
           >
-            <option value="allocation">Allocation</option>
-            <option value="share">Share of total budget</option>
+            <option value="allocation">{t("Allocation")}</option>
+            <option value="share">{t("Share of total budget")}</option>
           </select>
         </label>
       </div>
@@ -225,7 +228,7 @@ export function BudgetCategoryChart({
           </ResponsiveContainer>
         </div>
       ) : (
-        <div className="empty-state">No category data is available.</div>
+        <div className="empty-state">{t("No category data is available.")}</div>
       )}
     </div>
   );

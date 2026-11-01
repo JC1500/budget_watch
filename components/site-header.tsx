@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState, useSyncExternalStore } from "react";
 import type { BudgetEntity, FinancialYear } from "@/lib/budget-data";
+import { useLanguage } from "@/lib/i18n/provider";
 
 const navigation = [
   { href: "/", label: "Overview" },
@@ -12,7 +13,7 @@ const navigation = [
   { href: "/compare", label: "Compare" },
   { href: "/trends", label: "Trends" },
   { href: "/explorer", label: "Explorer" },
-  { href: "/data-sources", label: "Data sources" },
+  { href: "/data-sources", label: "Data Sources" },
 ];
 
 export function SiteHeader({
@@ -23,6 +24,7 @@ export function SiteHeader({
   entities: BudgetEntity[];
 }) {
   const pathname = usePathname();
+  const { language, setLanguage, t } = useLanguage();
   const defaultYear = years.at(-1)?.year ?? "";
   const isDepartmentDetail = pathname.startsWith("/departments/") && pathname !== "/departments";
   const isSchemeDetail = pathname.startsWith("/schemes/");
@@ -117,11 +119,11 @@ export function SiteHeader({
   return (
     <header className="site-header">
       <div className="header-inner">
-        <Link className="brand" href="/" aria-label="Budget Watch overview">
+        <Link className="brand" href="/" aria-label={t("Budget Watch overview")}>
           <span className="brand-mark" aria-hidden="true">BW</span>
           <span>Budget Watch</span>
         </Link>
-        <nav className="main-nav" aria-label="Main navigation">
+        <nav className="main-nav" aria-label={t("Main navigation")}>
           {navigation.map((item) => (
             <Link
               className="nav-link"
@@ -136,12 +138,12 @@ export function SiteHeader({
                 window.location.assign(url.toString());
               }}
             >
-              {item.label}
+              {t(item.label)}
             </Link>
           ))}
         </nav>
         <div className="global-search">
-          <label className="sr-only" htmlFor="global-budget-search">Search departments and schemes</label>
+          <label className="sr-only" htmlFor="global-budget-search">{t("Search departments and schemes")}</label>
           <input
             autoComplete="off"
             className="global-search-input"
@@ -152,12 +154,12 @@ export function SiteHeader({
               setSearchOpen(true);
             }}
             onFocus={() => setSearchOpen(true)}
-            placeholder="Search budgets…"
+            placeholder={t("Search budgets…")}
             type="search"
             value={searchQuery}
           />
           {searchOpen && normalizedSearch && (
-            <div className="global-search-results" role="listbox" aria-label="Search results">
+            <div className="global-search-results" role="listbox" aria-label={t("Search results")}>
               {searchResults.length > 0 ? searchResults.map((entity) => (
                 <Link
                   className="global-search-result"
@@ -171,24 +173,33 @@ export function SiteHeader({
                   role="option"
                 >
                   <span>
-                    <strong>{entity.name}</strong>
+                    <strong data-i18n-skip="true">{entity.name}</strong>
                     {entity.type === "scheme" && entity.departmentName && (
-                      <small>{entity.departmentName}</small>
+                      <small data-i18n-skip="true">{entity.departmentName}</small>
                     )}
                   </span>
                   <small className="search-result-type">
-                    {entity.type === "department" ? "Department" : "Scheme"}
+                    {entity.type === "department" ? t("Department") : t("Scheme")}
                   </small>
                 </Link>
               )) : (
-                <div className="combo-empty">No departments or schemes found.</div>
+                <div className="combo-empty">{t("No departments or schemes found.")}</div>
               )}
             </div>
           )}
         </div>
         <div className="header-actions">
           <button
-            aria-label={`Switch to ${theme === "light" ? "dark" : "light"} mode`}
+            aria-label={t(language === "en" ? "Switch language to Hindi" : "Switch language to English")}
+            className="language-toggle"
+            data-i18n-skip="true"
+            onClick={() => setLanguage(language === "en" ? "hi" : "en")}
+            type="button"
+          >
+            {language === "en" ? "हिन्दी" : "English"}
+          </button>
+          <button
+            aria-label={t(theme === "light" ? "Switch to dark mode" : "Switch to light mode")}
             className="theme-toggle"
             onClick={() => {
               const nextTheme = theme === "light" ? "dark" : "light";
@@ -203,9 +214,9 @@ export function SiteHeader({
           </button>
           {!isDepartmentDetail && !isSchemeDetail && (
             <label className="year-picker">
-              <span>Financial year</span>
+              <span>{t("Financial year")}</span>
               <select
-                aria-label="Financial year"
+                aria-label={t("Financial year")}
                 className="year-select"
                 onChange={(event) => navigateToYear(event.target.value)}
                 value={selectedYear}

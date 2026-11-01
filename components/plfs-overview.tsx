@@ -13,6 +13,7 @@ import {
 } from "recharts";
 
 import { getPLFSData } from "@/lib/api/plfs";
+import { useLanguage } from "@/lib/i18n/provider";
 import {
   PLFS_DEFAULT_FILTERS,
   PLFS_INDICATORS,
@@ -20,6 +21,7 @@ import {
 } from "@/lib/types/plfs";
 
 export default function PLFSOverviewChart() {
+  const { t } = useLanguage();
   const [records, setRecords] = useState<PLFSRecord[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -73,19 +75,19 @@ export default function PLFSOverviewChart() {
 
   return (
     <Link href="/public-participation">
-      <section className="panel" aria-label="Worker Population Ratio">
+      <section className="panel" aria-label={t("Worker Population Ratio")}>
         <div className="panel-header">
           <div>
-            <h2 className="panel-title">Employment &amp; Public Participation</h2>
-            <p className="panel-subtitle">Worker Population Ratio (WPR)</p>
+            <h2 className="panel-title">{t("Employment & Public Participation")}</h2>
+            <p className="panel-subtitle">{t("Worker Population Ratio (WPR)")}</p>
           </div>
         </div>
         {loading ? (
-          <div className="empty-chart">Loading PLFS data...</div>
+          <div className="empty-chart">{t("Loading PLFS data...")}</div>
         ) : error ? (
-          <div className="empty-chart" role="alert">{error}</div>
+          <div className="empty-chart" role="alert">{t(error)}</div>
         ) : data.length === 0 ? (
-          <div className="empty-chart">No PLFS data available.</div>
+          <div className="empty-chart">{t("No PLFS data available.")}</div>
         ) : (
           <div className="chart-frame">
             <ResponsiveContainer width="100%" height={300}>

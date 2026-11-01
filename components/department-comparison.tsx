@@ -13,6 +13,7 @@ import {
 } from "recharts";
 import type { BudgetEntry } from "@/lib/budget-data";
 import { getDepartmentCagr } from "@/lib/analytics/budget";
+import { useLanguage } from "@/lib/i18n/provider";
 import {
   calculateShare,
   calculateYoY,
@@ -35,6 +36,7 @@ export function DepartmentComparison({
   selectedYear: string;
   departments: BudgetEntry[];
 }) {
+  const { t } = useLanguage();
   const [selectedIds, setSelectedIds] = useState(
     departments.slice(0, 2).map((entry) => entry.id),
   );
@@ -115,7 +117,7 @@ export function DepartmentComparison({
 
   return (
     <>
-      <section className="panel" aria-label="Choose departments to compare">
+      <section className="panel" aria-label={t("Choose departments to compare")}>
         <div className="compare-controls compare-controls-multi">
           {selectedIds.map((id, index) => {
             const search = searches[index] ?? "";
@@ -128,7 +130,7 @@ export function DepartmentComparison({
             return (
               <div className="compare-select-group" key={index}>
                 <label className="field-label" htmlFor={`compare-search-${index}`}>
-                  Search Department {String.fromCharCode(65 + index)}
+                  {t("Search Department")} {String.fromCharCode(65 + index)}
                   <input
                     className="search-field"
                     id={`compare-search-${index}`}
@@ -140,13 +142,13 @@ export function DepartmentComparison({
                         return next;
                       });
                     }}
-                    placeholder="Type a department name"
+                    placeholder={t("Type a department name")}
                     type="search"
                     value={search}
                   />
                 </label>
                 <label className="sr-only" htmlFor={`compare-${index}`}>
-                  Department {String.fromCharCode(65 + index)}
+                  {t("Department")} {String.fromCharCode(65 + index)}
                 </label>
                 <select
                   className="select-field"
@@ -157,6 +159,7 @@ export function DepartmentComparison({
                   {choices.map((entry) => (
                     <option
                       disabled={selectedIds.includes(entry.id) && entry.id !== id}
+                      data-i18n-skip="true"
                       key={entry.id}
                       value={entry.id}
                     >
@@ -169,11 +172,11 @@ export function DepartmentComparison({
           })}
           {selectedIds.length < 3 ? (
             <button className="secondary-button compare-add" onClick={addDepartment} type="button">
-              + Add department
+              + {t("Add department")}
             </button>
           ) : (
             <button className="secondary-button compare-add" onClick={() => setSelectedIds((ids) => ids.slice(0, 2))} type="button">
-              Remove Department C
+              {t("Remove Department C")}
             </button>
           )}
         </div>
@@ -193,17 +196,17 @@ export function DepartmentComparison({
                 return (
                   <article className="compare-result" key={department.id}>
                     <span className="compare-result-label">
-                      Department {String.fromCharCode(65 + index)} · {department.department}
+                      {t("Department")} {String.fromCharCode(65 + index)} · <span data-i18n-skip="true">{department.department}</span>
                     </span>
                     <strong className="compare-result-value">
                       {current ? formatCroreExact(current.amountCrore) : "—"}
                     </strong>
                     <span className="summary-sub">
-                      YoY {formatPercent(current && old ? calculateYoY(current.amountCrore, old.amountCrore) : null)}
+                      {t("YoY")} {formatPercent(current && old ? calculateYoY(current.amountCrore, old.amountCrore) : null)}
                       {" · "}CAGR {formatPercent(cagr)}
                     </span>
                     <span className="summary-sub">
-                      {formatShare(calculateShare(current?.amountCrore ?? 0, selectedYearTotal))} of total
+                      {formatShare(calculateShare(current?.amountCrore ?? 0, selectedYearTotal))} {t("of total")}
                     </span>
                   </article>
                 );
@@ -239,14 +242,14 @@ export function DepartmentComparison({
               <table className="data-table">
                 <thead>
                   <tr>
-                    <th scope="col">Financial year</th>
+                    <th scope="col">{t("Financial year")}</th>
                     {selectedHistories.map((department, index) => (
                       <th className="numeric" key={department.id} scope="col">
-                        {String.fromCharCode(65 + index)} · {department.department}
+                        {String.fromCharCode(65 + index)} · <span data-i18n-skip="true">{department.department}</span>
                       </th>
                     ))}
-                    <th className="numeric" scope="col">Difference (B − A)</th>
-                    <th className="numeric" scope="col">Difference %</th>
+                    <th className="numeric" scope="col">{t("Difference (B − A)")}</th>
+                    <th className="numeric" scope="col">{t("Difference %")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -268,21 +271,18 @@ export function DepartmentComparison({
               </table>
             </div>
             <p className="ranking-caption">
-              Historical difference compares Department B with A. For a third
-              selection, values are displayed in the chart and individual
-              summaries; no performance judgment is implied.
+              {t("Historical difference compares Department B with A. For a third selection, values are displayed in the chart and individual summaries; no performance judgment is implied.")}
             </p>
           </>
         ) : (
-          <div className="empty-state">At least two departments with budget data are needed.</div>
+          <div className="empty-state">{t("At least two departments with budget data are needed.")}</div>
         )}
       </section>
       <p className="ranking-caption">
-        Comparison for {selectedYear}. Budget allocation differences are
-        descriptive and do not imply performance or priority.
+        {t("Comparison for")} {selectedYear}. {t("Budget allocation differences are descriptive and do not imply performance or priority.")}
       </p>
       {currentRecords.length === 0 && (
-        <div className="empty-state">No budget data is available for {selectedYear}.</div>
+        <div className="empty-state">{t("No budget data is available for")} {selectedYear}.</div>
       )}
     </>
   );

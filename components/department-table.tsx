@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import type { BudgetEntry } from "@/lib/budget-data";
 import { getDepartmentCagr, getDepartmentRank } from "@/lib/analytics/budget";
+import { useLanguage } from "@/lib/i18n/provider";
 import {
   calculateAbsoluteChange,
   calculateShare,
@@ -58,6 +59,7 @@ export function DepartmentTable({
   explorer = false,
   schemeCounts = {},
 }: Props) {
+  const { t } = useLanguage();
   const [query, setQuery] = useState("");
   const [sortKey, setSortKey] = useState<SortKey>("budget-desc");
   const [minBudget, setMinBudget] = useState("");
@@ -239,16 +241,16 @@ export function DepartmentTable({
       <div className="panel-header">
         <div>
           <h2 className="panel-title" id="department-table-title">
-            {explorer ? "Explore department data" : "Department budgets"}
+            {t(explorer ? "Explore department data" : "Department budgets")}
           </h2>
           <p className="panel-subtitle">
-            {entries.length} departments · {entries[0]?.financialYear ?? "no year selected"}
+            {entries.length} {t("Departments").toLocaleLowerCase()} · {entries[0]?.financialYear ?? t("no year selected")}
           </p>
         </div>
         {explorer && (
           <div className="table-actions">
             <details className="column-menu">
-              <summary className="secondary-button">Columns</summary>
+              <summary className="secondary-button">{t("Columns")}</summary>
               <div className="column-menu-content">
                 {columns.filter(([key]) => key !== "department").map(([key, title]) => (
                   <label key={key}>
@@ -257,20 +259,20 @@ export function DepartmentTable({
                       onChange={() => toggleColumn(key)}
                       type="checkbox"
                     />
-                    {title}
+                    {t(title)}
                   </label>
                 ))}
               </div>
             </details>
             <button className="secondary-button" onClick={exportCsv} type="button">
-              Export CSV
+              {t("Export CSV")}
             </button>
           </div>
         )}
       </div>
       <div className="table-filters">
         <label className="sr-only" htmlFor={`department-search-${explorer ? "explore" : "list"}`}>
-          Search departments or ministries
+          {t("Search departments or ministries")}
         </label>
         <input
           className="search-field"
@@ -279,12 +281,12 @@ export function DepartmentTable({
             setQuery(event.target.value);
             resetPage();
           }}
-          placeholder="Search departments or ministries"
+          placeholder={t("Search departments or ministries")}
           type="search"
           value={query}
         />
         <label className="sr-only" htmlFor={`sort-${explorer ? "explore" : "list"}`}>
-          Sort departments
+          {t("Sort departments")}
         </label>
         <select
           className="select-field table-select"
@@ -295,32 +297,32 @@ export function DepartmentTable({
           }}
           value={sortKey}
         >
-          <option value="budget-desc">Highest budget</option>
-          <option value="budget-asc">Lowest budget</option>
-          <option value="increase">Largest increase</option>
-          <option value="decrease">Largest decrease</option>
-          <option value="department-asc">Alphabetical (A–Z)</option>
-          <option value="department-desc">Alphabetical (Z–A)</option>
+          <option value="budget-desc">{t("Highest budget")}</option>
+          <option value="budget-asc">{t("Lowest budget")}</option>
+          <option value="increase">{t("Largest increase")}</option>
+          <option value="decrease">{t("Largest decrease")}</option>
+          <option value="department-asc">{t("Alphabetical (A–Z)")}</option>
+          <option value="department-desc">{t("Alphabetical (Z–A)")}</option>
         </select>
         {explorer && (
           <>
-            <label className="sr-only" htmlFor="minimum-budget">Minimum budget in crore</label>
-            <input className="search-field range-field" id="minimum-budget" min="0" onChange={(event) => { setMinBudget(event.target.value); resetPage(); }} placeholder="Min ₹ crore" type="number" value={minBudget} />
-            <label className="sr-only" htmlFor="maximum-budget">Maximum budget in crore</label>
-            <input className="search-field range-field" id="maximum-budget" min="0" onChange={(event) => { setMaxBudget(event.target.value); resetPage(); }} placeholder="Max ₹ crore" type="number" value={maxBudget} />
-            <label className="sr-only" htmlFor="minimum-yoy">Minimum YoY percent</label>
-            <input className="search-field range-field" id="minimum-yoy" onChange={(event) => { setMinYoy(event.target.value); resetPage(); }} placeholder="Min YoY %" type="number" value={minYoy} />
-            <label className="sr-only" htmlFor="maximum-yoy">Maximum YoY percent</label>
-            <input className="search-field range-field" id="maximum-yoy" onChange={(event) => { setMaxYoy(event.target.value); resetPage(); }} placeholder="Max YoY %" type="number" value={maxYoy} />
-            <label className="sr-only" htmlFor="minimum-rank">Minimum rank</label>
-            <input className="search-field rank-field" id="minimum-rank" min="1" onChange={(event) => { setMinRank(event.target.value); resetPage(); }} placeholder="Min rank" type="number" value={minRank} />
-            <label className="sr-only" htmlFor="maximum-rank">Maximum rank</label>
-            <input className="search-field rank-field" id="maximum-rank" min="1" onChange={(event) => { setMaxRank(event.target.value); resetPage(); }} placeholder="Max rank" type="number" value={maxRank} />
-            <label className="sr-only" htmlFor="top-n">Limit number of rows</label>
+            <label className="sr-only" htmlFor="minimum-budget">{t("Minimum budget in crore")}</label>
+            <input className="search-field range-field" id="minimum-budget" min="0" onChange={(event) => { setMinBudget(event.target.value); resetPage(); }} placeholder={t("Min ₹ crore")} type="number" value={minBudget} />
+            <label className="sr-only" htmlFor="maximum-budget">{t("Maximum budget in crore")}</label>
+            <input className="search-field range-field" id="maximum-budget" min="0" onChange={(event) => { setMaxBudget(event.target.value); resetPage(); }} placeholder={t("Max ₹ crore")} type="number" value={maxBudget} />
+            <label className="sr-only" htmlFor="minimum-yoy">{t("Minimum YoY percent")}</label>
+            <input className="search-field range-field" id="minimum-yoy" onChange={(event) => { setMinYoy(event.target.value); resetPage(); }} placeholder={t("Min YoY %")} type="number" value={minYoy} />
+            <label className="sr-only" htmlFor="maximum-yoy">{t("Maximum YoY percent")}</label>
+            <input className="search-field range-field" id="maximum-yoy" onChange={(event) => { setMaxYoy(event.target.value); resetPage(); }} placeholder={t("Max YoY %")} type="number" value={maxYoy} />
+            <label className="sr-only" htmlFor="minimum-rank">{t("Minimum rank")}</label>
+            <input className="search-field rank-field" id="minimum-rank" min="1" onChange={(event) => { setMinRank(event.target.value); resetPage(); }} placeholder={t("Min rank")} type="number" value={minRank} />
+            <label className="sr-only" htmlFor="maximum-rank">{t("Maximum rank")}</label>
+            <input className="search-field rank-field" id="maximum-rank" min="1" onChange={(event) => { setMaxRank(event.target.value); resetPage(); }} placeholder={t("Max rank")} type="number" value={maxRank} />
+            <label className="sr-only" htmlFor="top-n">{t("Limit number of rows")}</label>
             <select className="select-field table-select top-select" id="top-n" onChange={(event) => { setTopN(event.target.value); resetPage(); }} value={topN}>
-              <option value="all">All rows</option>
-              <option value="10">Top 10</option>
-              <option value="20">Top 20</option>
+              <option value="all">{t("All rows")}</option>
+              <option value="10">{t("Top 10")}</option>
+              <option value="20">{t("Top 20")}</option>
             </select>
           </>
         )}
@@ -329,16 +331,16 @@ export function DepartmentTable({
         <table className="data-table sticky-table">
           <thead>
             <tr>
-              {isVisible("rank") && <th scope="col">Rank</th>}
-              <th scope="col">Department</th>
-              {isVisible("ministry") && <th scope="col">Ministry</th>}
-              {isVisible("budget") && <th className="numeric" scope="col">Budget</th>}
-              {isVisible("previous") && <th className="numeric" scope="col">Previous year</th>}
-              {isVisible("change") && <th className="numeric" scope="col">Absolute change</th>}
-              {isVisible("yoy") && <th className="numeric" scope="col">YoY %</th>}
-              {isVisible("share") && <th className="numeric" scope="col">Share of total</th>}
-              {isVisible("cagr") && <th className="numeric" scope="col">CAGR</th>}
-              {isVisible("action") && <th scope="col">Action</th>}
+              {isVisible("rank") && <th scope="col">{t("Rank")}</th>}
+              <th scope="col">{t("Department")}</th>
+              {isVisible("ministry") && <th scope="col">{t("Ministry")}</th>}
+              {isVisible("budget") && <th className="numeric" scope="col">{t("Budget")}</th>}
+              {isVisible("previous") && <th className="numeric" scope="col">{t("Previous year")}</th>}
+              {isVisible("change") && <th className="numeric" scope="col">{t("Absolute change")}</th>}
+              {isVisible("yoy") && <th className="numeric" scope="col">{t("YoY %")}</th>}
+              {isVisible("share") && <th className="numeric" scope="col">{t("Share of total")}</th>}
+              {isVisible("cagr") && <th className="numeric" scope="col">{t("CAGR")}</th>}
+              {isVisible("action") && <th scope="col">{t("Action")}</th>}
             </tr>
           </thead>
           <tbody>
@@ -351,21 +353,21 @@ export function DepartmentTable({
                 <tr key={entry.id}>
                   {isVisible("rank") && <td>{rankById.get(entry.id) ?? "—"}</td>}
                   <td>
-                    <Link className="department-link" href={`/departments/${entry.id}${yearQuery}`}>{entry.department}</Link>
+                    <Link className="department-link" data-i18n-skip="true" href={`/departments/${entry.id}${yearQuery}`}>{entry.department}</Link>
                     {schemeCounts[entry.id] !== undefined && (
                       <span className="department-scheme-count">
-                        {schemeCounts[entry.id]} schemes
+                        {schemeCounts[entry.id]} {t("schemes")}
                       </span>
                     )}
                   </td>
-                  {isVisible("ministry") && <td><span className="ministry-cell" title={entry.ministry}>{entry.ministry}</span></td>}
+                  {isVisible("ministry") && <td><span className="ministry-cell" data-i18n-skip="true" title={entry.ministry}>{entry.ministry}</span></td>}
                   {isVisible("budget") && <td className="numeric">{formatCroreExact(entry.amountCrore)}</td>}
                   {isVisible("previous") && <td className="numeric">{old ? formatCroreExact(old.amountCrore) : "—"}</td>}
                   {isVisible("change") && <td className="numeric">{change === null ? "—" : formatCroreExact(change)}</td>}
                   {isVisible("yoy") && <td className="numeric">{formatPercent(old ? calculateYoY(entry.amountCrore, old.amountCrore) : null)}</td>}
                   {isVisible("share") && <td className="numeric">{formatShare(calculateShare(entry.amountCrore, totalBudget))}</td>}
                   {isVisible("cagr") && <td className="numeric">{formatPercent(cagr)}</td>}
-                  {isVisible("action") && <td><Link className="text-link" href={`/departments/${entry.id}${yearQuery}`}>View details</Link></td>}
+                  {isVisible("action") && <td><Link className="text-link" href={`/departments/${entry.id}${yearQuery}`}>{t("View details")}</Link></td>}
                 </tr>
               );
             })}
@@ -373,24 +375,24 @@ export function DepartmentTable({
         </table>
         {filtered.length === 0 && (
           <div className="empty-state" role="status">
-            <strong>No departments match these filters.</strong>
-            Try a different name or budget range.
+            <strong>{t("No departments match these filters.")}</strong>
+            {t("Try a different name or budget range.")}
           </div>
         )}
       </div>
       <div className="table-footer">
         <span>
           {filtered.length === 0
-            ? "0 departments"
+            ? t("0 departments")
             : `${currentPage * pageSize + 1}–${Math.min(
                 (currentPage + 1) * pageSize,
                 filtered.length,
-              )} of ${filtered.length} departments`}
+              )} ${t("of")} ${filtered.length} ${t("departments")}`}
         </span>
-        <div className="pagination" aria-label="Department table pagination">
-          <button disabled={currentPage === 0 || filtered.length === 0} onClick={() => setPage((value) => Math.max(value - 1, 0))} type="button">Previous</button>
+        <div className="pagination" aria-label={t("Department table pagination")}>
+          <button disabled={currentPage === 0 || filtered.length === 0} onClick={() => setPage((value) => Math.max(value - 1, 0))} type="button">{t("Previous")}</button>
           <span aria-live="polite">{pageCount === 0 ? 0 : currentPage + 1} / {pageCount}</span>
-          <button disabled={currentPage >= pageCount - 1 || filtered.length === 0} onClick={() => setPage((value) => Math.min(value + 1, pageCount - 1))} type="button">Next</button>
+          <button disabled={currentPage >= pageCount - 1 || filtered.length === 0} onClick={() => setPage((value) => Math.min(value + 1, pageCount - 1))} type="button">{t("Next")}</button>
         </div>
       </div>
     </section>

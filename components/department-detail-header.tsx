@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useLanguage } from "@/lib/i18n/provider";
 
 export type DepartmentPickerOption = {
   id: string;
@@ -22,6 +23,7 @@ export function DepartmentDetailHeader({
   selectedYear: string;
   years: string[];
 }) {
+  const { t } = useLanguage();
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -87,28 +89,32 @@ export function DepartmentDetailHeader({
   return (
     <section className="department-header">
       <div className="department-header-topline">
-        <nav className="department-breadcrumb" aria-label="Breadcrumb">
+        <nav className="department-breadcrumb" aria-label={t("Breadcrumb")}>
           <Link href={`/departments?year=${encodeURIComponent(selectedYear)}`} className="crumb-link">
-            Departments
+            {t("Departments")}
           </Link>
           <span aria-hidden="true">/</span>
-          <span>{activeDepartment?.name ?? "Department"}</span>
+          <span data-i18n-skip={activeDepartment?.name ? "true" : undefined}>
+            {activeDepartment?.name ?? t("Department")}
+          </span>
         </nav>
 
         <div className="department-selector-group">
           <label className="field-stack">
-            <span>Department</span>
+            <span>{t("Department")}</span>
             <div className="combo-field" aria-expanded={open}>
               <button
                 type="button"
                 className="combo-trigger"
                 onClick={() => setOpen((value) => !value)}
               >
-                <span>{activeDepartment?.name ?? "Select department"}</span>
+                <span data-i18n-skip={activeDepartment?.name ? "true" : undefined}>
+                  {activeDepartment?.name ?? t("Select department")}
+                </span>
                 <span aria-hidden="true">▾</span>
               </button>
               {open && (
-                <div className="combo-panel" role="listbox" aria-label="Department selector">
+                <div className="combo-panel" role="listbox" aria-label={t("Department selector")}>
                   <div className="combo-search-wrap">
                     <input
                       ref={inputRef}
@@ -118,7 +124,7 @@ export function DepartmentDetailHeader({
                         setHighlightedIndex(0);
                       }}
                       onKeyDown={handleKeyDown}
-                      placeholder="Search departments..."
+                      placeholder={t("Search departments...")}
                       type="search"
                       value={query}
                     />
@@ -137,12 +143,13 @@ export function DepartmentDetailHeader({
                           onClick={() => goToDepartment(department.id)}
                           role="option"
                           aria-selected={department.id === selectedDepartmentId}
+                          data-i18n-skip="true"
                         >
                           {department.name}
                         </button>
                       ))
                     ) : (
-                      <div className="combo-empty">No matching departments.</div>
+                      <div className="combo-empty">{t("No matching departments.")}</div>
                     )}
                   </div>
                 </div>
@@ -151,7 +158,7 @@ export function DepartmentDetailHeader({
           </label>
 
           <label className="field-stack">
-            <span>Financial year</span>
+            <span>{t("Financial year")}</span>
             <select
               className="select-field compact-select"
               onChange={(event) => handleYearChange(event.target.value)}
@@ -167,7 +174,9 @@ export function DepartmentDetailHeader({
 
       <div className="department-header-main">
         <div className="department-header-title">
-          <h1>{activeDepartment?.name ?? "Department"}</h1>
+          <h1 data-i18n-skip={activeDepartment?.name ? "true" : undefined}>
+            {activeDepartment?.name ?? t("Department")}
+          </h1>
         </div>
       </div>
     </section>
