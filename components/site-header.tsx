@@ -26,6 +26,7 @@ export function SiteHeader({
   const pathname = usePathname();
   const { language, setLanguage, t } = useLanguage();
   const defaultYear = years.at(-1)?.year ?? "";
+  const showGlobalSearch = pathname !== "/";
   const isDepartmentDetail = pathname.startsWith("/departments/") && pathname !== "/departments";
   const isSchemeDetail = pathname.startsWith("/schemes/");
   const [searchQuery, setSearchQuery] = useState("");
@@ -142,52 +143,54 @@ export function SiteHeader({
             </Link>
           ))}
         </nav>
-        <div className="global-search">
-          <label className="sr-only" htmlFor="global-budget-search">{t("Search departments and schemes")}</label>
-          <input
-            autoComplete="off"
-            className="global-search-input"
-            id="global-budget-search"
-            onBlur={() => window.setTimeout(() => setSearchOpen(false), 120)}
-            onChange={(event) => {
-              setSearchQuery(event.target.value);
-              setSearchOpen(true);
-            }}
-            onFocus={() => setSearchOpen(true)}
-            placeholder={t("Search budgets…")}
-            type="search"
-            value={searchQuery}
-          />
-          {searchOpen && normalizedSearch && (
-            <div className="global-search-results" role="listbox" aria-label={t("Search results")}>
-              {searchResults.length > 0 ? searchResults.map((entity) => (
-                <Link
-                  className="global-search-result"
-                  href={entity.type === "department" ? `/departments/${entity.id}` : `/schemes/${encodeURIComponent(entity.id)}`}
-                  key={`${entity.type}:${entity.id}`}
-                  onMouseDown={(event) => event.preventDefault()}
-                  onClick={() => {
-                    setSearchQuery("");
-                    setSearchOpen(false);
-                  }}
-                  role="option"
-                >
-                  <span>
-                    <strong data-i18n-skip="true">{entity.name}</strong>
-                    {entity.type === "scheme" && entity.departmentName && (
-                      <small data-i18n-skip="true">{entity.departmentName}</small>
-                    )}
-                  </span>
-                  <small className="search-result-type">
-                    {entity.type === "department" ? t("Department") : t("Scheme")}
-                  </small>
-                </Link>
-              )) : (
-                <div className="combo-empty">{t("No departments or schemes found.")}</div>
-              )}
-            </div>
-          )}
-        </div>
+        {showGlobalSearch && (
+          <div className="global-search">
+            <label className="sr-only" htmlFor="global-budget-search">{t("Search departments and schemes")}</label>
+            <input
+              autoComplete="off"
+              className="global-search-input"
+              id="global-budget-search"
+              onBlur={() => window.setTimeout(() => setSearchOpen(false), 120)}
+              onChange={(event) => {
+                setSearchQuery(event.target.value);
+                setSearchOpen(true);
+              }}
+              onFocus={() => setSearchOpen(true)}
+              placeholder={t("Search budgets…")}
+              type="search"
+              value={searchQuery}
+            />
+            {searchOpen && normalizedSearch && (
+              <div className="global-search-results" role="listbox" aria-label={t("Search results")}>
+                {searchResults.length > 0 ? searchResults.map((entity) => (
+                  <Link
+                    className="global-search-result"
+                    href={entity.type === "department" ? `/departments/${entity.id}` : `/schemes/${encodeURIComponent(entity.id)}`}
+                    key={`${entity.type}:${entity.id}`}
+                    onMouseDown={(event) => event.preventDefault()}
+                    onClick={() => {
+                      setSearchQuery("");
+                      setSearchOpen(false);
+                    }}
+                    role="option"
+                  >
+                    <span>
+                      <strong data-i18n-skip="true">{entity.name}</strong>
+                      {entity.type === "scheme" && entity.departmentName && (
+                        <small data-i18n-skip="true">{entity.departmentName}</small>
+                      )}
+                    </span>
+                    <small className="search-result-type">
+                      {entity.type === "department" ? t("Department") : t("Scheme")}
+                    </small>
+                  </Link>
+                )) : (
+                  <div className="combo-empty">{t("No departments or schemes found.")}</div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
         <div className="header-actions">
           <button
             aria-label={t(language === "en" ? "Switch language to Hindi" : "Switch language to English")}
