@@ -16,226 +16,257 @@ import { useLanguage } from "@/lib/i18n/provider";
 
 import { getPLFSData } from "@/lib/api/plfs";
 import type { PLFSApiParams, PLFSRecord } from "@/lib/types/plfs";
-import {
-  PLFS_DEFAULT_FILTERS,
-  PLFS_INDICATORS,
-  PLFS_YEARS,
-} from "@/lib/types/plfs";
+import { PLFS_INDICATORS, PLFS_YEARS } from "@/lib/types/plfs";
 
-type ChartState = {
+const STATE_CODES = [
+  1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18,
+  19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 35, 36,
+  37, 38,
+].join(",");
+
+const COMMON_FILTERS = {
+  format: "JSON",
+  frequency_code: 1,
+  limit: 200,
+  page: 1,
+  age_code: 4,
+  education_code: 0,
+  religion_code: 1,
+  sector_code: 3,
+  weekly_status_code: 2,
+  year_type_code: 1,
+} as const;
+
+type RequestState = {
   records: PLFSRecord[];
   loading: boolean;
   error: string | null;
 };
 
-function numericValue(record: PLFSRecord) {
-  const value = record.value ?? record.rate;
-  if (value === null || value === undefined || value === "") {
-    return null;
-  }
-  const parsed = Number(value);
-  return Number.isFinite(parsed) ? parsed : null;
-}
-
-function yearOrder(year: string | null | undefined) {
-  return Number(year?.slice(0, 4)) || 0;
-}
-
-function normalizedGender(record: PLFSRecord) {
-  return String(record.gender ?? "").trim().toLowerCase();
-}
-
-function isPerson(record: PLFSRecord) {
-  const gender = normalizedGender(record);
-  return !gender || gender === "male" || gender === "female" ;
-}
-
-function isAllIndia(record: PLFSRecord) {
-  const state = String(record.state ?? "").trim().toLowerCase();
-  return !state || state === "all india";
-}
-
-function usePLFSRequest(params: PLFSApiParams): ChartState {
-  const requestKey = JSON.stringify(params);
+function usePLFSRequest(params: PLFSApiParams): RequestState {
+  const key = JSON.stringify(params);
   const [records, setRecords] = useState<PLFSRecord[]>([]);
-  const [error, setError] = useState<string | null>(null);
   const [completedKey, setCompletedKey] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
-    const requestParams = JSON.parse(requestKey) as PLFSApiParams;
+    const requestParams = JSON.parse(key) as PLFSApiParams;
 
     getPLFSData(requestParams)
-      .then((records) => {
-        if (!cancelled) {
-          setRecords(records);
-          setError(null);
-          setCompletedKey(requestKey);
-        }
+      .then((result) => {
+        if (cancelled) return;
+        setRecords(result);
+        setError(null);
+        setCompletedKey(key);
       })
       .catch((cause: unknown) => {
-        if (!cancelled) {
-          console.error("PLFS API error:", cause);
-          setRecords([]);
-          setError("Unable to load PLFS data.");
-          setCompletedKey(requestKey);
-        }
+        if (cancelled) return;
+        console.error("PLFS API error:", cause);
+        setRecords([]);
+        setError(
+          cause instanceof Error
+            ? cause.message
+            : "Unable to load PLFS data.",
+        );
+        setCompletedKey(key);
       });
 
     return () => {
       cancelled = true;
     };
-  }, [requestKey]);
+  }, [key]);
 
   return {
     records,
-    loading: completedKey !== requestKey,
-    error: completedKey === requestKey ? error : null,
+    loading: completedKey !== key,
+    error: completedKey === key ? error : null,
   };
 }
 
-function ChartMessage({
-  state,
+function numberValue(record: PLFSRecord) {
+  const value = Number(record.value ?? record.rate);
+  return Number.isFinite(value) ? value : null;
+}
+
+function recordYear(record: PLFSRecord) {
+  return String(record.year ?? "");
+}
+
+function recordGender(record: PLFSRecord) {
+  return String(record.gender ?? "").trim().toLowerCase();
+}
+
+function isAllIndia(record: PLFSRecord) {
+  return String(record.state ?? "").trim().toLowerCase() === "all india";
+}
+
+function Message({
+  request,
   empty,
 }: {
-  state: ChartState;
+  request: RequestState;
   empty: boolean;
 }) {
   const { t } = useLanguage();
-  if (state.loading) {
+  if (request.loading) {
     return <div className="empty-chart">{t("Loading PLFS data...")}</div>;
   }
-  if (state.error) {
+  if (request.error) {
     return (
       <div className="empty-chart" role="alert">
-        {t(state.error)}
+        {t(request.error)}
       </div>
     );
   }
-  if (empty) return <div className="empty-chart">{t("No PLFS data available.")}</div>;
-  return null;
+  return empty ? (
+    <div className="empty-chart">{t("No PLFS data available.")}</div>
+  ) : null;
 }
 
-function PercentageYAxis() {
+function PercentageAxis() {
   return (
     <YAxis
-      tickFormatter={(value: number) => `${value}%`}
       domain={[0, "auto"]}
+      tickFormatter={(value: number) => `${value}%`}
+      width={52}
     />
   );
-}
-
-function filterRecords(
-  records: PLFSRecord[],
-  predicate: (record: PLFSRecord) => boolean,
-) {
-  return records
-    .filter(predicate)
-    .map((record) => ({
-      ...record,
-      value: numericValue(record),
-    }))
-    .filter(
-      (record): record is typeof record & { value: number } =>
-        record.value !== null,
-    );
 }
 
 export default function PLFSCharts() {
   const { t } = useLanguage();
   const [stateYear, setStateYear] = useState("2023-24");
-  const [stateGender, setStateGender] = useState("person");
-  const [stateSector, setStateSector] = useState("rural + urban");
-  const baseFilters = {
-    ...PLFS_DEFAULT_FILTERS,
-  };
 
   const unemployment = usePLFSRequest({
+    ...COMMON_FILTERS,
     indicator_code: PLFS_INDICATORS.unemployment,
-    format: "JSON",
-    limit: 100,
-    page: 1,
-    ...baseFilters,
+    gender_code: 3,
+    state_code: 99,
   });
   const stateEmployment = usePLFSRequest({
+    ...COMMON_FILTERS,
     indicator_code: PLFS_INDICATORS.wpr,
-    format: "JSON",
+    state_code: STATE_CODES,
     year: stateYear,
-    gender_code: 1,
-    sector_code: stateSector,
-    frequency_code: baseFilters.frequency_code,
-    limit: 100,
-    page: 1,
   });
-  const lfpr = usePLFSRequest({
+  const maleLfpr = usePLFSRequest({
+    ...COMMON_FILTERS,
     indicator_code: PLFS_INDICATORS.lfpr,
-    format: "JSON",
     gender_code: 1,
-    limit: 100,
-    page: 1,
-    ...baseFilters,
+    state_code: 99,
+  });
+  const femaleLfpr = usePLFSRequest({
+    ...COMMON_FILTERS,
+    indicator_code: PLFS_INDICATORS.lfpr,
+    gender_code: 2,
+    state_code: 99,
   });
 
   const unemploymentData = useMemo(
     () =>
-      filterRecords(
-        unemployment.records,
-        (record) => isAllIndia(record) && isPerson(record),
-      ).sort(
-        (first, second) =>
-          yearOrder(first.year) - yearOrder(second.year),
-      ),
+      unemployment.records
+        .filter(
+          (record) =>
+            isAllIndia(record) && recordGender(record) === "person",
+        )
+        .map((record) => ({
+          year: recordYear(record),
+          value: numberValue(record),
+        }))
+        .filter(
+          (record): record is { year: string; value: number } =>
+            Boolean(record.year) && record.value !== null,
+        )
+        .sort((a, b) => a.year.localeCompare(b.year)),
     [unemployment.records],
   );
+
   const stateData = useMemo(
-    () =>
-      filterRecords(
-        stateEmployment.records,
-        (record) =>
-          !record.state ||
-          record.state.toLowerCase() !== "all india",
-      ).sort((first, second) =>
-        String(first.state).localeCompare(String(second.state)),
-      ),
+    () => {
+      const byState = new Map<string, number>();
+
+      for (const record of stateEmployment.records) {
+        if (isAllIndia(record) || recordGender(record) !== "person") {
+          continue;
+        }
+
+        const value = numberValue(record);
+        if (value !== null && record.state) {
+          byState.set(record.state, value);
+        }
+      }
+
+      return [...byState.entries()]
+        .map(([state, value]) => ({ state, value }))
+        .sort((a, b) => a.state.localeCompare(b.state));
+    },
     [stateEmployment.records],
   );
+
   const lfprData = useMemo(() => {
-    const records = filterRecords(lfpr.records, () => true);
-    return PLFS_YEARS.map((year) => {
-      const yearRecords = records.filter((record) => record.year === year);
-      const male = yearRecords.find((record) =>
-        normalizedGender(record) === "male",
-      );
-      const female = yearRecords.find((record) =>
-        normalizedGender(record) === "female",
-      );
-      return {
-        year,
-        male: male?.value ?? null,
-        female: female?.value ?? null,
-      };
-    }).filter((record) => record.male !== null || record.female !== null);
-  }, [lfpr.records]);
+    const values = new Map<
+      string,
+      { year: string; male: number | null; female: number | null }
+    >();
+
+    for (const record of maleLfpr.records) {
+      if (!isAllIndia(record)) continue;
+      const value = numberValue(record);
+      if (value === null) continue;
+      values.set(recordYear(record), {
+        year: recordYear(record),
+        male: value,
+        female: values.get(recordYear(record))?.female ?? null,
+      });
+    }
+    for (const record of femaleLfpr.records) {
+      if (!isAllIndia(record)) continue;
+      const value = numberValue(record);
+      if (value === null) continue;
+      values.set(recordYear(record), {
+        year: recordYear(record),
+        male: values.get(recordYear(record))?.male ?? null,
+        female: value,
+      });
+    }
+
+    return [...values.values()]
+      .filter((record) => record.male !== null || record.female !== null)
+      .sort((a, b) => a.year.localeCompare(b.year));
+  }, [femaleLfpr.records, maleLfpr.records]);
+
+  const stateRanking = stateData
+    .slice()
+    .sort((a, b) => b.value - a.value);
+  const stateInsight = stateRanking.length
+    ? `${stateYear}: ${stateRanking[0].state} leads this comparison at ${stateRanking[0].value.toFixed(1)}%; ${stateRanking.at(-1)?.state} is lowest at ${stateRanking.at(-1)?.value.toFixed(1)}%.`
+    : "";
+  const lfprInsight = lfprData.length
+    ? `The latest available year shows a ${(
+        (lfprData.at(-1)?.male ?? 0) - (lfprData.at(-1)?.female ?? 0)
+      ).toFixed(1)} percentage-point male–female gap.`
+    : "";
 
   return (
-    <div className="inflation-history-charts">
+    <div className="inflation-history-charts plfs-charts">
       <section className="panel" aria-label={t("Unemployment Rate vs Years")}>
         <div className="panel-header">
           <div>
             <h2 className="panel-title">{t("Unemployment Rate vs Years")}</h2>
-            <p className="panel-subtitle">{t("Annual PLFS unemployment rate")}</p>
+            <p className="panel-subtitle">{t("Annual PLFS unemployment rate · All India")}</p>
           </div>
         </div>
-        <ChartMessage state={unemployment} empty={unemploymentData.length === 0} />
+        <Message request={unemployment} empty={!unemploymentData.length} />
         {!unemployment.loading && !unemployment.error && unemploymentData.length > 0 && (
           <div className="chart-frame">
-            <ResponsiveContainer width="100%" height={350}>
-              <BarChart data={unemploymentData}>
+            <ResponsiveContainer width="100%" height={340}>
+              <BarChart data={unemploymentData} margin={{ top: 16, right: 20, bottom: 12, left: 8 }}>
                 <CartesianGrid stroke="var(--chart-grid)" strokeDasharray="3 4" vertical={false} />
                 <XAxis dataKey="year" />
-                <PercentageYAxis />
+                <PercentageAxis />
                 <Tooltip formatter={(value) => [`${Number(value).toFixed(2)}%`, t("Unemployment Rate")]} />
-                <Bar dataKey="value" fill="var(--accent)" isAnimationActive={false} />
+                <Bar dataKey="value" fill="var(--accent)" radius={[5, 5, 0, 0]} isAnimationActive={false} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -243,40 +274,36 @@ export default function PLFSCharts() {
       </section>
 
       <section className="panel" aria-label={t("State-wise Employment Percentage")}>
-        <div className="panel-header">
+        <div className="panel-header plfs-panel-header">
           <div>
             <h2 className="panel-title">{t("State-wise Employment Percentage")}</h2>
-            <p className="panel-subtitle">{t("Worker Population Ratio (WPR)")}</p>
+            <p className="panel-subtitle">{t("Worker Population Ratio · Person · Rural + Urban")}</p>
           </div>
-          <div className="chart-controls">
-            <select aria-label={t("Employment year")} value={stateYear} onChange={(event) => setStateYear(event.target.value)}>
-              {PLFS_YEARS.slice().reverse().map((year) => <option key={year}>{year}</option>)}
+          <label className="plfs-year-control">
+            <span>{t("Financial year")}</span>
+            <select value={stateYear} onChange={(event) => setStateYear(event.target.value)}>
+              {PLFS_YEARS.slice().reverse().map((year) => (
+                <option key={year}>{year}</option>
+              ))}
             </select>
-            <select aria-label={t("Employment gender")} value={stateGender} onChange={(event) => setStateGender(event.target.value)}>
-              <option value="person">{t("Person")}</option>
-              <option value="male">{t("Male")}</option>
-              <option value="female">{t("Female")}</option>
-            </select>
-            <select aria-label={t("Employment sector")} value={stateSector} onChange={(event) => setStateSector(event.target.value)}>
-              <option value="rural + urban">{t("Rural + Urban")}</option>
-              <option value="rural">{t("Rural")}</option>
-              <option value="urban">{t("Urban")}</option>
-            </select>
-          </div>
+          </label>
         </div>
-        <ChartMessage state={stateEmployment} empty={stateData.length === 0} />
+        <Message request={stateEmployment} empty={!stateData.length} />
         {!stateEmployment.loading && !stateEmployment.error && stateData.length > 0 && (
-          <div className="chart-frame">
-            <ResponsiveContainer width="100%" height={420}>
-              <BarChart data={stateData} margin={{ bottom: 40 }}>
-                <CartesianGrid stroke="var(--chart-grid)" strokeDasharray="3 4" vertical={false} />
-                <XAxis dataKey="state" angle={-35} textAnchor="end" interval={0} height={90} />
-                <PercentageYAxis />
-                <Tooltip formatter={(value) => [`${Number(value).toFixed(2)}%`, "WPR"]} labelFormatter={(label) => `${label} · ${stateYear}`} />
-                <Bar dataKey="value" fill="var(--accent)" isAnimationActive={false} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
+          <>
+            <div className="chart-frame plfs-state-chart">
+              <ResponsiveContainer width="100%" height={Math.max(420, stateData.length * 22)}>
+                <BarChart data={stateData} layout="vertical" margin={{ top: 12, right: 24, bottom: 12, left: 108 }}>
+                  <CartesianGrid stroke="var(--chart-grid)" strokeDasharray="3 4" horizontal={false} />
+                  <XAxis type="number" domain={[0, "auto"]} tickFormatter={(value: number) => `${value}%`} />
+                  <YAxis type="category" dataKey="state" width={104} tick={{ fontSize: 11 }} />
+                  <Tooltip formatter={(value) => [`${Number(value).toFixed(2)}%`, t("WPR")]} labelFormatter={(label) => `${label} · ${stateYear}`} />
+                  <Bar dataKey="value" fill="var(--accent)" radius={[0, 5, 5, 0]} isAnimationActive={false} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+            <p className="plfs-insight">{stateInsight}</p>
+          </>
         )}
       </section>
 
@@ -284,23 +311,33 @@ export default function PLFSCharts() {
         <div className="panel-header">
           <div>
             <h2 className="panel-title">{t("Labour Force Participation Rate")}</h2>
-            <p className="panel-subtitle">{t("Male vs Female · Annual PLFS")}</p>
+            <p className="panel-subtitle">{t("Male vs Female · All India · Annual PLFS")}</p>
           </div>
         </div>
-        <ChartMessage state={lfpr} empty={lfprData.length === 0} />
-        {!lfpr.loading && !lfpr.error && lfprData.length > 0 && (
-          <div className="chart-frame">
-            <ResponsiveContainer width="100%" height={350}>
-              <LineChart data={lfprData}>
-                <CartesianGrid stroke="var(--chart-grid)" strokeDasharray="3 4" vertical={false} />
-                <XAxis dataKey="year" />
-                <PercentageYAxis />
-                <Tooltip formatter={(value, name) => [`${Number(value).toFixed(2)}%`, t(name === "male" ? "Male" : "Female")]} />
-                <Line dataKey="male" name={t("Male")} stroke="var(--accent)" strokeWidth={2.5} dot={{ r: 4 }} connectNulls />
-                <Line dataKey="female" name={t("Female")} stroke="var(--warning)" strokeWidth={2.5} dot={{ r: 4 }} connectNulls />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
+        <Message
+          request={{
+            loading: maleLfpr.loading || femaleLfpr.loading,
+            error: maleLfpr.error ?? femaleLfpr.error,
+            records: [],
+          }}
+          empty={!lfprData.length}
+        />
+        {!maleLfpr.loading && !femaleLfpr.loading && !maleLfpr.error && !femaleLfpr.error && lfprData.length > 0 && (
+          <>
+            <div className="chart-frame">
+              <ResponsiveContainer width="100%" height={350}>
+                <LineChart data={lfprData} margin={{ top: 16, right: 20, bottom: 12, left: 8 }}>
+                  <CartesianGrid stroke="var(--chart-grid)" strokeDasharray="3 4" vertical={false} />
+                  <XAxis dataKey="year" />
+                  <PercentageAxis />
+                  <Tooltip formatter={(value, name) => [`${Number(value).toFixed(2)}%`, name === "male" ? t("Male") : t("Female")]} />
+                  <Line dataKey="male" name="male" stroke="#2563eb" strokeWidth={2.5} dot={{ r: 4 }} connectNulls={false} isAnimationActive={false} />
+                  <Line dataKey="female" name="female" stroke="#db2777" strokeWidth={2.5} dot={{ r: 4 }} connectNulls={false} isAnimationActive={false} />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+            <p className="plfs-insight">{lfprInsight}</p>
+          </>
         )}
       </section>
     </div>

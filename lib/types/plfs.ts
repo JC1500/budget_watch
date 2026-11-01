@@ -1,18 +1,19 @@
 export type PLFSApiParams = {
   indicator_code: number;
   format: string;
-  frequency_code?: number;
+  frequency_code?: number | string;
   year?: string;
   month_code?: string;
   quarter_code?: string;
-  state_code?: number;
-  gender_code?: number;
-  age_code?: number;
-  sector_code?: number;
-  religion_code?: number;
-  social_category_code?: number;
-  education_code?: number;
-  weekly_status_code?:number;
+  state_code?: number | string;
+  gender_code?: number | string;
+  age_code?: number | string;
+  sector_code?: number | string;
+  religion_code?: number | string;
+  social_category_code?: number | string;
+  education_code?: number | string;
+  weekly_status_code?: number | string;
+  year_type_code?: number | string;
   limit?: number;
   page?: number;
 };
@@ -23,6 +24,7 @@ export type PLFSRecord = {
   gender?: string | null;
   sector?: string | null;
   age_group?: string | null;
+  AgeGroup?: string | null;
   indicator?: string | null;
   value?: string | number | null;
   rate?: string | number | null;

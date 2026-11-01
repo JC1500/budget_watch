@@ -1093,6 +1093,44 @@ h1 {
   color: var(--text-primary);
 }
 
+.plfs-panel-header {
+  align-items: flex-start;
+}
+
+.plfs-year-control {
+  display: grid;
+  flex: 0 0 auto;
+  gap: 4px;
+  color: var(--text-muted);
+  font-size: 10px;
+  font-weight: 650;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.plfs-year-control select {
+  min-width: 118px;
+  min-height: 32px;
+  padding: 5px 26px 5px 9px;
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--text-primary);
+}
+
+.plfs-state-chart {
+  overflow-x: auto;
+}
+
+.plfs-insight {
+  margin: 0;
+  padding: 10px 16px 14px;
+  border-top: 1px solid var(--border);
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
 .gdp-tooltip-action {
   padding-top: 4px;
   border-top: 1px solid var(--border);
